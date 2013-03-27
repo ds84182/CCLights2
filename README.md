@@ -3,3 +3,4 @@ TODO:
 -  Add in-world monitors (Similar to CCLights 1)
 -  Fix any bugs with texture binding
 -  Make Network code more efficent (Note: This should never be checked off, because the network code always needs to be more efficent)
+-  Add border to Monitor GUI
