@@ -71,7 +71,7 @@ public class CCLights2 {
 		GameRegistry.addRecipe(new ItemStack(monitorBig,16),new Object[]{
 			"LLL",
 			"LGL",
-			"LLL",'G',gpu,'L',Block.thinGlass});
+			"LLL",'G',monitor,'L',Block.thinGlass});
 		ram = new ItemRAM(4097-256);
 		GameRegistry.registerItem(ram, "CCLRAM");
 		LanguageRegistry.addName(ram, "RAM");
