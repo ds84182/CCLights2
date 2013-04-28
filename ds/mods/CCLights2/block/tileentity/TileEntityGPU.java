@@ -3,6 +3,7 @@ package ds.mods.CCLights2.block.tileentity;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Stack;
@@ -39,7 +40,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 	public TreeMap<String, Integer> playerToClickMap = new TreeMap<String, Integer>();
 	public TreeMap<Integer, int[]> clickToDataMap = new TreeMap<Integer, int[]>();
 	public Random rand = new Random();
-	public int[] addedType = new int[8];
+	public int[] addedType = new int[1025];
 	public DebugWindow wind;
 	
 	public TileEntityGPU()
@@ -125,9 +126,9 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 		TileEntity ftile = worldObj.getBlockTileEntity(xCoord+mondir.offsetX, yCoord+mondir.offsetY, zCoord+mondir.offsetZ);
 		if (ftile != null)
 		{
-			if (ftile instanceof TileEntityMonitor)
+			if (ftile instanceof MonitorBase)
 			{
-				TileEntityMonitor tile = (TileEntityMonitor) worldObj.getBlockTileEntity(xCoord+mondir.offsetX, yCoord+mondir.offsetY, zCoord+mondir.offsetZ);
+				MonitorBase tile = (MonitorBase) worldObj.getBlockTileEntity(xCoord+mondir.offsetX, yCoord+mondir.offsetY, zCoord+mondir.offsetZ);
                 return tile != null && tile.isGPUConnected() & tile.gpudir == mondir.getOpposite();
             }
 		}
@@ -147,9 +148,9 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			TileEntity ftile = worldObj.getBlockTileEntity(xCoord+dir.offsetX, yCoord+dir.offsetY, zCoord+dir.offsetZ);
 			if (ftile != null)
 			{
-				if (ftile instanceof TileEntityMonitor)
+				if (ftile instanceof MonitorBase)
 				{
-					TileEntityMonitor tile = (TileEntityMonitor) worldObj.getBlockTileEntity(xCoord+dir.offsetX, yCoord+dir.offsetY, zCoord+dir.offsetZ);
+					MonitorBase tile = (MonitorBase) worldObj.getBlockTileEntity(xCoord+dir.offsetX, yCoord+dir.offsetY, zCoord+dir.offsetZ);
 					if (tile != null)
 					{
 						System.out.println("Connecting!");
@@ -177,7 +178,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 
 	@Override
 	public String[] getMethodNames() {
-		return new String[] {"fill","createTexture","getFreeMemory","getTotalMemory","getUsedMemory","bindTexture","setColorRGB","plot","drawTexture","freeTexture","line","getSize","getTextureSize","setTransparent","setTransparencyColor","getColorRGB","getPixel","rectangle","filledRectangle","setBPP","getBindedTexture","getBPP","getNativePixel"};
+		return new String[] {"fill","createTexture","getFreeMemory","getTotalMemory","getUsedMemory","bindTexture","setColorRGB","plot","drawTexture","freeTexture","line","getSize","getTextureSize","setTransparent","setTransparencyColor","getColorRGB","getPixel","rectangle","filledRectangle","setBPP","getBindedTexture","getBPP","getNativePixel","setPixels","setPixelsYX","flipTextureV"};
 	}
 
 	@Override
@@ -452,6 +453,89 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				}
 				return ret;
 			}
+			case 23:
+			{
+				if (args.length < 4)
+				{
+					throw new Exception("w, h, x, y, [r,g,b]... expected");
+				}
+				else
+				{
+					int w = Convert.toInt(args[0]);
+					int h = Convert.toInt(args[1]);
+					if (args.length<(w*h*3)+4)
+					{
+						throw new Exception("not enough arguments to fill area!");
+					}
+					else
+					{
+						//We send the arguments straight to the GPU!
+						wait2 = true;
+						DrawCMD cmd = new DrawCMD();
+						int[] nargs = new int[(w*h*3)+4+1];
+						nargs[0] = 0;
+						for (int i = 1; i<(w*h*3)+4+1; i++)
+						{
+							nargs[i] = Convert.toInt(args[i-1]);
+						}
+						cmd.cmd = 12;
+						cmd.args = nargs;
+						Object[] ret = gpu.processCommand(cmd);
+						newarr.add(cmd);
+						wait2 = false;
+						return ret;
+					}
+				}
+			}
+			case 24:
+			{
+				if (args.length < 4)
+				{
+					throw new Exception("w, h, x, y, [r,g,b]... expected");
+				}
+				else
+				{
+					int w = Convert.toInt(args[0]);
+					int h = Convert.toInt(args[1]);
+					if (args.length<(w*h*3)+4)
+					{
+						throw new Exception("not enough arguments to fill area!");
+					}
+					else
+					{
+						//We send the arguments straight to the GPU!
+						wait2 = true;
+						DrawCMD cmd = new DrawCMD();
+						int[] nargs = new int[(w*h*3)+4+1];
+						nargs[0] = 1;
+						for (int i = 1; i<(w*h*3)+4+1; i++)
+						{
+							nargs[i] = Convert.toInt(args[i-1]);
+						}
+						cmd.cmd = 12;
+						cmd.args = nargs;
+						Object[] ret = gpu.processCommand(cmd);
+						newarr.add(cmd);
+						wait2 = false;
+						return ret;
+					}
+				}
+			}
+			case 25:
+			{
+				if (args.length == 1)
+				{
+					wait2 = true;
+					DrawCMD cmd = new DrawCMD();
+					int[] nargs = new int[]{Convert.toInt(args[0])};
+					cmd.cmd = 13;
+					cmd.args = nargs;
+					Object[] ret = gpu.processCommand(cmd);
+					newarr.add(cmd);
+					wait2 = false;
+					return ret;
+				}
+			}
 		}
 		return null;
 	}
@@ -500,11 +584,11 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 		addedType = nbt.getIntArray("addedTypes");
 		if (addedType == null)
 		{
-			addedType = new int[8];
+			addedType = new int[1025];
 		}
-		else if (addedType.length != 8)
+		else if (addedType.length != 1025)
 		{
-			addedType = new int[8];
+			addedType = new int[1025];
 		}
 		int init = gpu.maxmem;
 		gpu.maxmem = nbt.getInteger("vram");

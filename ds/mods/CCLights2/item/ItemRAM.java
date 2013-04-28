@@ -11,10 +11,10 @@ public class ItemRAM extends Item {
 
 	public ItemRAM(int par1) {
 		super(par1);
-		this.setTextureFile("/ds/mods/CCLights2/texture/items.png");
-		this.iconIndex = 0;
+		//this.setTextureFile("/ds/mods/CCLights2/texture/items.png");
+		//this.iconIndex = 0;
 		this.hasSubtypes = true;
-		this.setItemName("RAM");
+		//this.setItemName("RAM");
 	}
 	
 	public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List par3List, boolean par4)

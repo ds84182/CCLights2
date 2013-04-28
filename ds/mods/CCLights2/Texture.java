@@ -60,8 +60,19 @@ public class Texture {
 		int conv = Convert.toColorDepth(r, g, b, bpp);
 		transparentColor = conv;
 	}
+	public void resize(int w, int h)
+	{
+		width = w;
+		height = h;
+		texture = new int[w*h];
+		bytedata = new int[3*w*h];
+	}
 	public void plot(int r, int g, int b, int x, int y)
 	{
+		if (r<0 || g<0 || b<0)
+		{
+			return;
+		}
 		int conv = Convert.toColorDepth(r, g, b, bpp);
 		int i = (y*width)+x;
 		if (i<texture.length & x>-1 & y>-1 & x<width & y<height)
@@ -142,8 +153,64 @@ public class Texture {
 			if (sum < 0) {y = y + prirastokDy; sum += Dx;}
 		}
 	}
+	public void flipV()
+	{
+		if (height%2 == 0)
+		{
+			Texture tmp = new Texture(width,height/2);
+			tmp.setBPP(bpp);
+			//Render the bottom half flipped to a texture
+			for (int y=(height/2); y<height; y++)
+			{
+				int co = height-y-1;
+				for (int x = 0; x<width; x++)
+				{
+					tmp.plot(texture[(y*width)+x], x, co);
+				}
+				//tmp.drawTexture(this, 0, co, 0, y, width, 1, 255, 255, 255);
+			}
+			//Render me to the bottom half to me
+			for (int y=0; y<(height/2); y++)
+			{
+				int co = height-y-1;
+				for (int x = 0; x<width; x++)
+				{
+					plot(texture[(y*width)+x], x, co);
+				}
+				//tmp.drawTexture(this, 0, co, 0, y, width, 1, 255, 255, 255);
+			}
+			//Render tmp to the top half of me
+			drawTexture(tmp,0,0);
+		}
+		else
+		{
+			//I hate odd numbers
+			int rh = height-1;
+			Texture tmp = new Texture(width,rh/2);
+			tmp.setBPP(bpp);
+			//Render the bottom half flipped to a texture
+			for (int y=height-(rh/2); y<height; y++)
+			{
+				int co = y-height;
+				tmp.drawTexture(this, 0, co, 0, y, width, 1, 255, 255, 255);
+			}
+			//Render me to the bottom half to me
+			for (int y=0; y<(rh/2)-1; y++)
+			{
+				int co = y+(rh/2)+1;
+				drawTexture(this, 0, co, 0, y, width, 1, 255, 255, 255);
+			}
+			//Render tmp to the top half of me
+			drawTexture(tmp,0,(rh/2)+1);
+		}
+	}
 	public void drawTexture(Texture tex, int x, int y)
 	{
+		if (tex == null)
+		{
+			System.out.println("Texture to draw is null.");
+			return;
+		}
 		drawTexture(tex,x,y,0,0,tex.width,tex.height, 255, 255, 255);
 	}
 	public void drawTexture(Texture tex, int x, int y, int tx, int ty, int w, int h, int r, int g, int b)
@@ -157,15 +224,15 @@ public class Texture {
 		{
 			for (int ny = 0; ny<h; ny++)
 			{
-				int i = (ny*tex.width)+nx;
+				int i = ((ny+tx)*tex.width)+(nx+ty);
 				if (!tex.isTransparent | tex.texture[i] != tex.transparentColor)
 				{
 					plot(
 					tex.bytedata[i*3]*(r/255),
 					tex.bytedata[i*3+1]*(g/255),
 					tex.bytedata[i*3+2]*(b/255),
-					(nx-tx)+x,
-					(ny-ty)+y);
+					nx+x,
+					ny+y);
 				}
 			}
 		}

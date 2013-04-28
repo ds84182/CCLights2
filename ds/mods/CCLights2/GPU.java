@@ -246,6 +246,36 @@ public class GPU {
 			{
 				return new Object[]{changeBitDepth(cmd.args[0])};
 			}
+			case 12:
+			{
+				int i = 5;
+				int type = cmd.args[0];
+				if (type == 0)
+				{
+					for (int x = 0; x<cmd.args[1]; x++)
+					{
+						for (int y = 0; y<cmd.args[2]; y++)
+						{
+							bindedTexture.plot(cmd.args[i++], cmd.args[i++], cmd.args[i++], x+cmd.args[3], y+cmd.args[4]);
+						}
+					}
+				}
+				else
+				{
+					for (int y = 0; y<cmd.args[2]; y++)
+					{
+						for (int x = 0; x<cmd.args[1]; x++)
+						{
+							bindedTexture.plot(cmd.args[i++], cmd.args[i++], cmd.args[i++], x+cmd.args[3], y+cmd.args[2]);
+						}
+					}
+				}
+				break;
+			}
+			case 13:
+			{
+				textures[cmd.args[0]].flipV();
+			}
 		}
 		return null;
 	}

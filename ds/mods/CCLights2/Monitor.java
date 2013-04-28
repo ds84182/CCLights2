@@ -14,6 +14,14 @@ public class Monitor {
 		tex = new Texture(w, h);
 	}
 	
+	public void resize(int w, int h)
+	{
+		width = w;
+		height = h;
+		tex.resize(w, h);
+		System.out.println("Resized to: "+w+","+h);
+	}
+	
 	public GPU getGpu() {
 		return gpu;
 	}

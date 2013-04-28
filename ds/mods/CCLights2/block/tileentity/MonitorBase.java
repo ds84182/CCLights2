@@ -32,5 +32,6 @@ public class MonitorBase extends TileEntity {
 		gpu = g;
 		gpudir = dir.getOpposite();
 		gputile = tile;
+		mon.setGpu(g);
 	}
 }

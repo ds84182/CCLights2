@@ -2,12 +2,17 @@ package ds.mods.CCLights2.block;
 
 import java.util.Random;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Icon;
 import net.minecraft.world.World;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
@@ -18,6 +23,7 @@ public class BlockGPU extends Block {
 
 	public BlockGPU(int par1, Material par2Material) {
 		super(par1, par2Material);
+		this.setUnlocalizedName("gpu");
 	}
 	
 	public boolean onBlockActivated(World par1World, int par2, int par3, int par4, EntityPlayer par5EntityPlayer, int par6, float par7, float par8, float par9)
@@ -42,9 +48,9 @@ public class BlockGPU extends Block {
 		    TileEntityGPU tile = (TileEntityGPU) par1World.getBlockTileEntity(par2, par3, par4);
 		    tile.wind = new DebugWindow(tile);
         }*/
-		return true;
+		return false;
     }
-	
+
 	public void breakBlock(World par1World, int par2, int par3, int par4, int par5, int par6)
 	{
 		TileEntityGPU tile = (TileEntityGPU) par1World.getBlockTileEntity(par2, par3, par4);
@@ -89,5 +95,11 @@ public class BlockGPU extends Block {
 	{
 		return new TileEntityGPU();
 	}
+	
+	@SideOnly(Side.CLIENT)
+	public void registerIcons(IconRegister par1IconRegister)
+    {
+        this.blockIcon = par1IconRegister.registerIcon("CCLights2" + ":" + this.getUnlocalizedName2());
+    }
 
 }

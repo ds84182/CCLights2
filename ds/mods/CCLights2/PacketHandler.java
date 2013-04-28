@@ -16,8 +16,9 @@ import com.google.common.io.ByteStreams;
 import cpw.mods.fml.common.network.IPacketHandler;
 import cpw.mods.fml.common.network.PacketDispatcher;
 import cpw.mods.fml.common.network.Player;
+import ds.mods.CCLights2.block.tileentity.MonitorBase;
+import ds.mods.CCLights2.block.tileentity.TileEntityBigMonitor;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
-import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
 
 public class PacketHandler implements IPacketHandler {
 
@@ -101,7 +102,7 @@ public class PacketHandler implements IPacketHandler {
 					}
 				}
 			}
-			TileEntityMonitor mtile = (TileEntityMonitor) world.getBlockTileEntity(x, y, z);
+			MonitorBase mtile = (MonitorBase) world.getBlockTileEntity(x, y, z);
 			TileEntityGPU tile = mtile.gputile;
 			if (tile != null)
 			{
@@ -195,7 +196,7 @@ public class PacketHandler implements IPacketHandler {
 					}
 				}
 			}
-			TileEntityMonitor mtile = (TileEntityMonitor) world.getBlockTileEntity(x, y, z);
+			MonitorBase mtile = (MonitorBase) world.getBlockTileEntity(x, y, z);
 			TileEntityGPU tile = mtile.gputile;
 			if (tile != null)
 			{
@@ -226,6 +227,17 @@ public class PacketHandler implements IPacketHandler {
 						break;
 					}
 				}
+			}
+		}
+		else if (packet.channel.equals("GPUTile"))
+		{
+			int x = dat.readInt();
+			int y = dat.readInt();
+			int z = dat.readInt();
+			TileEntityBigMonitor tile = (TileEntityBigMonitor) CCLights2.proxy.getClientWorld().getBlockTileEntity(x, y, z);
+			if (tile != null)
+			{
+				tile.handleUpdatePacket(dat);
 			}
 		}
 	}
