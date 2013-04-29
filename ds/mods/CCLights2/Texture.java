@@ -108,7 +108,7 @@ public class Texture {
 			}
 		}
 	}
-	public void rect(int r, int b, int g, int x, int y, int w, int h)
+	public void rect(int r, int g, int b, int x, int y, int w, int h)
 	{
 		line(r,g,b,x,y,x+w,y);
 		line(r,g,b,x+w,y,x+w,y+h);
