@@ -35,7 +35,7 @@ public class Events {
 					GL11.glTranslatef(event.resolution.getScaledWidth()/2F, event.resolution.getScaledHeight()*(.5F-(.5F/16F)), 0F);//Old position for when we get underlaying event.resolution.getScaledHeight()*(.75F+(.5F/16F))
 					GL11.glScalef(event.resolution.getScaledHeight(),event.resolution.getScaledHeight(),1F);
 					GL11.glRotatef(270F, 1F, 0F, 0F);
-					Minecraft.getMinecraft().renderEngine.bindTexture("/ds/mods/CCLights2/texture/Tablet.png");
+					Minecraft.getMinecraft().renderEngine.bindTexture("/mods/CCLights2/textures/items/Tablet.png");
 					model.draw();
 					NBTTagCompound nbt = ((ItemTablet)CCLights2.tablet).getNBT(item, Minecraft.getMinecraft().theWorld);
 					if (nbt != null)

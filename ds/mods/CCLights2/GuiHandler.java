@@ -29,7 +29,8 @@ public class GuiHandler implements IGuiHandler {
 			TileEntity tile_entity = world.getBlockTileEntity(x, y, z);
 			return new GuiMonitor(((TileEntityMonitor) tile_entity));
 		case 1:
-			System.out.println("Tablet GUI");
+			if (Config.DEBUGS){
+			System.out.println("Tablet GUI");}
 			return new GuiTablet(player.getHeldItem().getTagCompound(),world);
 		}
 		return null;

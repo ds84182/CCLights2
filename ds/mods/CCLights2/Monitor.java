@@ -19,7 +19,8 @@ public class Monitor {
 		width = w;
 		height = h;
 		tex.resize(w, h);
-		System.out.println("Resized to: "+w+","+h);
+		if (Config.DEBUGS){
+		System.out.println("Resized to: "+w+","+h);}
 	}
 	
 	public GPU getGpu() {

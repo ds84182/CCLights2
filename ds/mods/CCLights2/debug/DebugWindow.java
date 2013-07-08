@@ -4,6 +4,7 @@ import java.awt.*;
 
 import javax.swing.JPanel;
 
+import ds.mods.CCLights2.Config;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
 
 public class DebugWindow {
@@ -28,10 +29,12 @@ public class DebugWindow {
             {
                 int x = i%gpu.gpu.textures[0].getWidth();
                 int y = (i-x)/gpu.gpu.textures[0].getWidth();
-                //System.out.println(i);
-                //System.out.println(gpu.gpu.textures[0].bytedata[(i*3)]);
-                //System.out.println(gpu.gpu.textures[0].bytedata[(i*3)+1]);
-                //System.out.println(gpu.gpu.textures[0].bytedata[(i*3)+2]);
+                if (Config.DEBUGS){
+                System.out.println(i);
+                System.out.println(gpu.gpu.textures[0].bytedata[(i*3)]);
+                System.out.println(gpu.gpu.textures[0].bytedata[(i*3)+1]);
+                System.out.println(gpu.gpu.textures[0].bytedata[(i*3)+2]);
+                }
                 graph.setColor(new Color(gpu.gpu.textures[0].bytedata[(i*3)],gpu.gpu.textures[0].bytedata[(i*3)+1],gpu.gpu.textures[0].bytedata[(i*3)+2]));
                 graph.drawRect(x,y,1,1);
             }
@@ -50,10 +53,12 @@ public class DebugWindow {
             {
                 int x = i%gpu.gpu.textures[0].getWidth();
                 int y = (i-x)/gpu.gpu.textures[0].getWidth();
-                //System.out.println(i);
-                //System.out.println(gpu.gpu.textures[0].bytedata[(i*3)]);
-                //System.out.println(gpu.gpu.textures[0].bytedata[(i*3)+1]);
-                //System.out.println(gpu.gpu.textures[0].bytedata[(i*3)+2]);
+               if (Config.DEBUGS){
+                System.out.println(i);
+                System.out.println(gpu.gpu.textures[0].bytedata[(i*3)]);
+                System.out.println(gpu.gpu.textures[0].bytedata[(i*3)+1]);
+                System.out.println(gpu.gpu.textures[0].bytedata[(i*3)+2]);
+               }
                 graph.setColor(new Color(gpu.gpu.textures[0].bytedata[(i*3)],gpu.gpu.textures[0].bytedata[(i*3)+1],gpu.gpu.textures[0].bytedata[(i*3)+2]));
                 graph.drawRect(x,y,1,1);
             }

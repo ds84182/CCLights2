@@ -19,6 +19,7 @@ import cpw.mods.fml.common.network.Player;
 import dan200.computer.api.IComputerAccess;
 import dan200.computer.api.IPeripheral;
 import ds.mods.CCLights2.CCLights2;
+import ds.mods.CCLights2.Config;
 import ds.mods.CCLights2.Convert;
 import ds.mods.CCLights2.DrawCMD;
 import ds.mods.CCLights2.GPU;
@@ -139,7 +140,8 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 	{
 		if (isMonitorConnected())
 		{
-			//System.out.println("Connected already.");
+			 if (Config.DEBUGS){
+			System.out.println("Connected already.");}
 			return;
 		}
 		for (int i=0; i<ForgeDirection.VALID_DIRECTIONS.length; i++)
@@ -164,8 +166,9 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				}
 				else
 				{
-					//System.out.println(dir.name());
-					//System.out.println(ftile.toString());
+					 if (Config.DEBUGS){
+					System.out.println(dir.name());
+					System.out.println(ftile.toString());}
 				}
 			}
 		}
