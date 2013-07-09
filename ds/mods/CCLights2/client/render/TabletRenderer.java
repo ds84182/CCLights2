@@ -12,6 +12,7 @@ import net.minecraftforge.client.IItemRenderer;
 import org.lwjgl.opengl.GL11;
 
 import ds.mods.CCLights2.CCLights2;
+import ds.mods.CCLights2.Config;
 import ds.mods.CCLights2.GPU;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
 import ds.mods.CCLights2.client.ClientProxy;
@@ -37,7 +38,7 @@ public class TabletRenderer implements IItemRenderer {
 	public void renderItem(ItemRenderType type, ItemStack item, Object... data) {
 		if (re == null)
 			re = Minecraft.getMinecraft().renderEngine;
-		re.bindTexture("/ds/mods/CCLights2/texture/Tablet.png");
+		re.bindTexture("/mods/CCLights2/textures/items/Tablet.png");
 		GL11.glPushMatrix();
 		GL11.glRotatef(90F, 1, 0, 0);
 		if (type == ItemRenderType.EQUIPPED || type == ItemRenderType.ENTITY)
@@ -74,13 +75,15 @@ public class TabletRenderer implements IItemRenderer {
 		NBTTagCompound nbt = ((ItemTablet)CCLights2.tablet).getNBT(item, Minecraft.getMinecraft().theWorld);
 		if (nbt == null)
 		{
-			System.out.println("No NBT");
+			if (Config.DEBUGS){
+			System.out.println("No NBT");}
 			GL11.glPopMatrix();
 			return;
 		}
 		if (!nbt.getBoolean("canDisplay"))
 		{
-			System.out.println("No Display");
+			if (Config.DEBUGS){
+			System.out.println("No Display");}
 			GL11.glPopMatrix();
 			return;
 		}
@@ -88,7 +91,8 @@ public class TabletRenderer implements IItemRenderer {
 		GPU gpu;
 		if (tile == null)
 		{
-			System.out.println("No GPU");
+			if (Config.DEBUGS){
+			System.out.println("No GPU");}
 			GL11.glPopMatrix();
 			return;
 		}
@@ -98,7 +102,8 @@ public class TabletRenderer implements IItemRenderer {
 		}
 		if (gpu.textures[0] == null)
 		{
-			System.out.println("No Texture");
+			if (Config.DEBUGS){
+			System.out.println("No Texture");}
 			GL11.glPopMatrix();
 			return;
 		}

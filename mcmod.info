@@ -1,0 +1,15 @@
+[
+{
+  "modid" : "CCLights2",
+  "name" : "CCLights 2",
+  "version" : "0.2",
+  "url" : "",
+  "credits" : "Visit the github repo!",
+  "authors": [
+    "ds84182",
+    "Alekso56"
+  ],
+  "description": "CCLights 2 adds very advanced monitors and tablets to minecraft.",
+  "logoFile" : "mods/CCLights2/textures/items/ram.png"
+}
+]

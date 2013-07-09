@@ -12,6 +12,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
+import ds.mods.CCLights2.client.ClientProxy;
 
 public class BlockMonitor extends Block {
 	
@@ -19,7 +20,8 @@ public class BlockMonitor extends Block {
 
 	public BlockMonitor(int par1, Material par2Material) {
 		super(par1, par2Material);
-		this.setUnlocalizedName("monitor");
+		this.setUnlocalizedName("Monitor");
+		this.setCreativeTab(ClientProxy.ccltab);
 	}
 	
 	@Override
@@ -34,18 +36,6 @@ public class BlockMonitor extends Block {
 		this.blockIcon = par1IconRegister.registerIcon("CCLights2:monitor");
 		sides = par1IconRegister.registerIcon("CCLights2:blank");
 	}
-
-    /* @Override
-    public int getBlockTextureFromSideAndMetadata(int par1, int par2) {
-        if (par1 == par2)
-        {
-            return 1;
-        }
-        else
-        {
-            return 255;
-        }
-    }*/
 
     @Override
 	public boolean hasTileEntity(int meta)

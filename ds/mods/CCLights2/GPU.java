@@ -94,7 +94,8 @@ public class GPU {
 		{
 			if (texid > 0)
 			{
-				System.out.println("Freeing texture "+texid);
+				if (Config.DEBUGS){
+				System.out.println("Freeing texture "+texid);}
 				textures[texid] = null;
 				if (!tile.worldObj.isRemote)
 				{

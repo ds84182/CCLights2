@@ -1,5 +1,9 @@
 package ds.mods.CCLights2;
 
+import net.minecraft.client.renderer.texture.IconRegister;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
 public class Convert {
 	public static int to256(int r, int g, int b)
 	{
@@ -24,7 +28,8 @@ public class Convert {
 		case 2:
 		{
 			color = to16(r,g,b);
-			//System.out.println("R: "+r+" G: "+g+" B: "+b+" Color: "+color);
+            if(Config.DEBUGS){
+			System.out.println("R: "+r+" G: "+g+" B: "+b+" Color: "+color);}
 			break;
 		}
 		default:
