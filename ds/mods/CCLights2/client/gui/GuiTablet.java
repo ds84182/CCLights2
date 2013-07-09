@@ -18,6 +18,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
 import cpw.mods.fml.common.network.PacketDispatcher;
+import ds.mods.CCLights2.Config;
 import ds.mods.CCLights2.GPU;
 import ds.mods.CCLights2.Texture;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
@@ -101,7 +102,9 @@ public class GuiTablet extends GuiScreen {
 				my = par2;
 				if (mlx != mx | mly != my)
 				{
-					//System.out.println("Moused move!");
+					if (Config.DEBUGS){
+					System.out.println("Moused move!");}
+					
 					Packet250CustomPayload packet = new Packet250CustomPayload();
 					packet.channel = "GPUMouse";
 					ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
@@ -168,7 +171,8 @@ public class GuiTablet extends GuiScreen {
 		par2 = applyYOffset(par2);
 		if (par1 > -1 & par2 > -1 & par1 < gpu.textures[0].getWidth()+1 & par2 < gpu.textures[0].getHeight()+1)
 		{
-			//System.out.println("Mouse click! "+par3);
+			if (Config.DEBUGS){
+			System.out.println("Mouse click! "+par3);}
 			isMouseDown = true;
 			mouseButton = par3;
 			mlx = par1;
@@ -206,7 +210,8 @@ public class GuiTablet extends GuiScreen {
 		{
 			if (par3 == mouseButton)
 			{
-				//System.out.println("Mouse up! "+par3);
+				 if (Config.DEBUGS){
+				System.out.println("Mouse up! "+par3);}
 				isMouseDown = false;
 				Packet250CustomPayload packet = new Packet250CustomPayload();
 				packet.channel = "GPUMouse";

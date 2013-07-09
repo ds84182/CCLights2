@@ -12,6 +12,7 @@ import net.minecraft.tileentity.TileEntity;
 
 import org.lwjgl.opengl.GL11;
 
+import ds.mods.CCLights2.Config;
 import ds.mods.CCLights2.block.tileentity.TileEntityBigMonitor;
 
 public class TileEntityBigMonitorRenderer extends TileEntitySpecialRenderer {
@@ -38,7 +39,9 @@ public class TileEntityBigMonitorRenderer extends TileEntitySpecialRenderer {
 				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
 		        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 		        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGB, x*32, y*32, 0, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, bbuf[x][y]);
+		        if (Config.DEBUGS){
 		        System.out.println("Made texture "+x+","+y);
+		        }
 			}
 		}
 	}

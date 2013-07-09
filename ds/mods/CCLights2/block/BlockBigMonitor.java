@@ -1,7 +1,11 @@
 package ds.mods.CCLights2.block;
 
+import java.util.List;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.renderer.texture.IconRegister;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -9,13 +13,19 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import cpw.mods.fml.common.network.Player;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.CCLights2.CCLights2;
+import ds.mods.CCLights2.Config;
 import ds.mods.CCLights2.block.tileentity.TileEntityBigMonitor;
+import ds.mods.CCLights2.client.ClientProxy;
 
 public class BlockBigMonitor extends Block {
 
 	public BlockBigMonitor(int par1, Material par2Material) {
 		super(par1, par2Material);
+		this.setUnlocalizedName("BigMonitor");
+		this.setCreativeTab(ClientProxy.ccltab);
 	}
 	
 	@Override
@@ -31,7 +41,8 @@ public class BlockBigMonitor extends Block {
 			int par4, EntityPlayer par5EntityPlayer, int par6, float par7,
 			float par8, float par9) {
 		TileEntityBigMonitor tile = (TileEntityBigMonitor) par1World.getBlockTileEntity(par2,par3,par4);
-		System.out.println(par7+","+par8+","+par9);
+		if (Config.DEBUGS){
+		System.out.println(par7+","+par8+","+par9);}
 		float x = 0f;
 		float y = 0f;
 		switch (tile.m_dir)
@@ -54,7 +65,8 @@ public class BlockBigMonitor extends Block {
 		int py = Math.round((1-y)*31);
 		px+=(tile.m_width-tile.m_xIndex-1)*32;
 		py+=(tile.m_height-tile.m_yIndex-1)*32;
-		System.out.println(px+","+py);
+		if (Config.DEBUGS){
+		System.out.println(px+","+py);}
 		if (!par1World.isRemote)
 		{
 			//Send it to the tileentity!
@@ -93,7 +105,8 @@ public class BlockBigMonitor extends Block {
 	public void onBlockPlacedBy(World world, int i, int j, int k, EntityLiving entityliving, ItemStack item)
 	{
 		TileEntityBigMonitor tile = (TileEntityBigMonitor) world.getBlockTileEntity(i, j, k);
-		System.out.println("Placed.");
+		if (Config.DEBUGS){
+		System.out.println("Placed.");}
 		tile.contractNeighbours();
         //monitor.setDir(dir);
         tile.contract();
@@ -114,5 +127,8 @@ public class BlockBigMonitor extends Block {
 	public boolean isOpaqueCube() {
 		return false;
 	}
-
+	public void registerIcons(IconRegister par1IconRegister)
+    {
+        this.blockIcon = par1IconRegister.registerIcon("CCLights2:monitor");
+    }
 }

@@ -2,6 +2,7 @@ package ds.mods.CCLights2.item;
 
 import java.util.List;
 
+import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -11,6 +12,7 @@ import net.minecraft.world.World;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.CCLights2.CCLights2;
+import ds.mods.CCLights2.client.ClientProxy;
 
 public class ItemTablet extends Item {
 
@@ -18,6 +20,8 @@ public class ItemTablet extends Item {
 		super(par1-256);
 		this.setMaxStackSize(1);
 		this.setNoRepair();
+		this.setUnlocalizedName("Tablet");
+		this.setCreativeTab(ClientProxy.ccltab);
 	}
 
 	@Override
@@ -98,5 +102,9 @@ public class ItemTablet extends Item {
     {
 		return true;
     }
-
+	//stuff loads faster when forge is satisfied at load
+	public void registerIcons(IconRegister par1IconRegister)
+    {
+        this.itemIcon = par1IconRegister.registerIcon("CCLights2:Tablet"); // yes it errors. :P
+    }
 }

@@ -20,6 +20,7 @@ import org.lwjgl.opengl.GL11;
 
 import cpw.mods.fml.common.network.PacketDispatcher;
 
+import ds.mods.CCLights2.Config;
 import ds.mods.CCLights2.Monitor;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
 
@@ -47,7 +48,8 @@ public class GuiMonitor extends GuiScreen {
 	public void initGui()
 	{
 		texid = GLAllocation.generateTextureNames();
-		System.out.println("Created textures");
+		if (Config.DEBUGS){
+		System.out.println("Created textures");}
 		bbuf = GLAllocation.createDirectByteBuffer(mon.tex.bytedata.length);
 		for (int i=0; i<bbuf.capacity(); i++)
 		{
@@ -56,9 +58,11 @@ public class GuiMonitor extends GuiScreen {
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, texid);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-		System.out.println("Binded Texture");
+        if (Config.DEBUGS){
+        System.out.println("Binded Texture");}
 		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGB, mon.tex.getWidth(), mon.tex.getHeight(), 0, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, bbuf);
-		System.out.println("Assigned texture contents");
+		if (Config.DEBUGS){
+		System.out.println("Assigned texture contents");}
 		Keyboard.enableRepeatEvents(true);
 	}
 	
@@ -94,7 +98,8 @@ public class GuiMonitor extends GuiScreen {
 				my = par2;
 				if (mlx != mx | mly != my)
 				{
-					//System.out.println("Moused move!");
+					if (Config.DEBUGS){
+					System.out.println("Moused move!");}
 					Packet250CustomPayload packet = new Packet250CustomPayload();
 					packet.channel = "GPUMouse";
 					ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
@@ -156,7 +161,8 @@ public class GuiMonitor extends GuiScreen {
 		par2 = applyYOffset(par2);
 		if (par1 > -1 & par2 > -1 & par1 < mon.getWidth()+1 & par2 < mon.getHeight()+1)
 		{
-			//System.out.println("Mouse click! "+par3);
+			if (Config.DEBUGS){
+			System.out.println("Mouse click! "+par3);}
 			isMouseDown = true;
 			mouseButton = par3;
 			mlx = par1;
@@ -194,7 +200,8 @@ public class GuiMonitor extends GuiScreen {
 		{
 			if (par3 == mouseButton)
 			{
-				//System.out.println("Mouse up! "+par3);
+				if (Config.DEBUGS){
+				System.out.println("Mouse up! "+par3);}
 				isMouseDown = false;
 				Packet250CustomPayload packet = new Packet250CustomPayload();
 				packet.channel = "GPUMouse";
