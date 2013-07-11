@@ -100,10 +100,7 @@ public class TileEntityBigMonitor extends MonitorBase {
 	        this.m_terminal.copyFrom(copyFrom);
 	      }*/
 	      this.mon.resize(termWidth, termHeight);
-	      this.mon.setGpu(null);
-	      this.gpu = null;
-	      this.gpudir = null;
-	      this.gputile = null;
+	      this.mon.removeAllGPUs();
 	      propogateTerminal();
 	    //}
 	  }
@@ -116,7 +113,10 @@ public class TileEntityBigMonitor extends MonitorBase {
 
 	public void propogateTerminal()
 	  {
-	    Monitor originTerminal = mon;
+	    Monitor originTerminal = origin().mon;
+	    originTerminal.removeAllGPUs();
+	    originTerminal = new Monitor(m_width*32, m_height*32);
+	    origin().mon = originTerminal;
 	    for (int y = 0; y < this.m_height; y++)
 	    {
 	      for (int x = 0; x < this.m_width; x++)
@@ -129,8 +129,9 @@ public class TileEntityBigMonitor extends MonitorBase {
 	            if ((x != 0) || (y != 0))
 	            {
 	              //monitor.m_terminal.delete();
+	            	monitor.mon.removeAllGPUs();
+	            	monitor.mon = originTerminal;
 	            }
-	            monitor.mon = originTerminal;
 	          }
 	        }
 	      }
@@ -359,6 +360,7 @@ public class TileEntityBigMonitor extends MonitorBase {
 
 	  public void contractNeighbours()
 	  {
+		  this.mon.removeAllGPUs();
 	    this.m_ignoreMe = true;
 	    if (this.m_xIndex > 0) {
 	      TileEntityBigMonitor left = getNeighbour(this.m_xIndex - 1, this.m_yIndex);
@@ -419,6 +421,8 @@ public class TileEntityBigMonitor extends MonitorBase {
 	      if (below != null) {
 	        below.expand();
 	      }
+	    	  mon.removeAllGPUs();
+	    	  mon = new Monitor(32, 32);
 	      return;
 	    }
 
@@ -454,6 +458,8 @@ public class TileEntityBigMonitor extends MonitorBase {
 	              claimedTerminal = right.mon;
 	            }
 	          }
+	          if (claimedTerminal != null)
+		    	  claimedTerminal.removeAllGPUs();
 	          if (y + 1 < height) {
 	            below = origin.getNeighbour(0, y + 1);
 	            below.resize(width, height - (y + 1), claimedTerminal != null);
@@ -524,14 +530,10 @@ public class TileEntityBigMonitor extends MonitorBase {
 	  {
 		  if (dirty)
 		  {
+			  propogateTerminal();
 			  //Send update packet
 			  PacketDispatcher.sendPacketToAllInDimension(createUpdatePacket(), worldObj.provider.dimensionId);
 			  dirty = false;
-		  }
-		  if (--m_tts == 0)
-		  {
-			  m_tts = TICKS_TIL_SYNC;
-			  dirty = true;
 		  }
 	  }
 	  

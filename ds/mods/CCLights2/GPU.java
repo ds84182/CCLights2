@@ -19,7 +19,8 @@ public class GPU {
 	public int drawlisthash;
 	public Texture bindedTexture;
 	public int bindedSlot;
-	public Monitor mon;
+	public ArrayList<Monitor> monitors = new ArrayList<Monitor>();
+	public Monitor currentMonitor;
 	public TileEntityGPU tile;
 	public ArrayList<Packet> pendingPackets;
 	public int bpp = 1;
@@ -32,12 +33,38 @@ public class GPU {
 		maxmem = gfxmem;
 	}
 	
-	public Monitor getMon() {
-		return mon;
+	public Monitor getMonitor() {
+		return currentMonitor;
+	}
+	
+	public void addMonitor(Monitor mon)
+	{
+		monitors.add(mon);
+		System.out.println("Added monitor "+mon.getWidth()+"x"+mon.getHeight()+" "+mon);
+	}
+	
+	public void removeMonitor(Monitor mon)
+	{
+		monitors.remove(mon);
+		System.out.println("Rem monitor "+mon.getWidth()+"x"+mon.getHeight()+" "+mon);
+		if (currentMonitor == mon)
+		{
+			textures[0] = null;
+			bindedTexture = null;
+			currentMonitor = null;
+			for (Monitor m : monitors)
+			{
+				currentMonitor = m; break;
+			}
+		}
 	}
 
-	public void setMon(Monitor mon) {
-		this.mon = mon;
+	public void setMonitor(Monitor mon) {
+		if (!monitors.contains(mon))
+		{
+			addMonitor(mon);
+		}
+		this.currentMonitor = mon;
 		System.out.println("Monitor set!");
 		bindedTexture = mon.getTex();
 		textures[0] = bindedTexture;

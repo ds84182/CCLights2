@@ -3,7 +3,6 @@ package ds.mods.CCLights2.block.tileentity;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Stack;
@@ -17,6 +16,7 @@ import net.minecraftforge.common.ForgeDirection;
 import cpw.mods.fml.common.network.PacketDispatcher;
 import cpw.mods.fml.common.network.Player;
 import dan200.computer.api.IComputerAccess;
+import dan200.computer.api.ILuaContext;
 import dan200.computer.api.IPeripheral;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.Config;
@@ -28,8 +28,6 @@ import ds.mods.CCLights2.debug.DebugWindow;
 
 public class TileEntityGPU extends TileEntity implements IPeripheral {
 	public GPU gpu;
-	public Monitor mon;
-	public ForgeDirection mondir;
 	public boolean wait = false;
 	public boolean wait2 = false;
 	public int ticks;
@@ -120,30 +118,9 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 		playerToClickMap.remove(((EntityPlayer) player).username);
 		clickToDataMap.remove(id);
 	}
-	public boolean isMonitorConnected()
-	{
-		if (mondir == null)
-			return false;
-		TileEntity ftile = worldObj.getBlockTileEntity(xCoord+mondir.offsetX, yCoord+mondir.offsetY, zCoord+mondir.offsetZ);
-		if (ftile != null)
-		{
-			if (ftile instanceof MonitorBase)
-			{
-				MonitorBase tile = (MonitorBase) worldObj.getBlockTileEntity(xCoord+mondir.offsetX, yCoord+mondir.offsetY, zCoord+mondir.offsetZ);
-                return tile != null && tile.isGPUConnected() & tile.gpudir == mondir.getOpposite();
-            }
-		}
-		return false;
-	}
 	
 	public void connectToMonitor()
 	{
-		if (isMonitorConnected())
-		{
-			 if (Config.DEBUGS){
-			System.out.println("Connected already.");}
-			return;
-		}
 		for (int i=0; i<ForgeDirection.VALID_DIRECTIONS.length; i++)
 		{
 			ForgeDirection dir = ForgeDirection.VALID_DIRECTIONS[i];
@@ -155,12 +132,20 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 					MonitorBase tile = (MonitorBase) worldObj.getBlockTileEntity(xCoord+dir.offsetX, yCoord+dir.offsetY, zCoord+dir.offsetZ);
 					if (tile != null)
 					{
+						boolean found = false;
+						for (Monitor m : gpu.monitors)
+						{
+							if (m == tile.mon)
+							{
+								found = true;
+								break;
+							}
+						}
+						if (found) break;
 						System.out.println("Connecting!");
-						tile.connect(gpu, dir, this);
-						mon = tile.mon;
-						mondir = dir;
-						mon.tex.fill(255, 0, 0);
-						gpu.setMon(mon);
+						tile.connect(this.gpu);
+						tile.mon.tex.fill(255, 0, 0);
+						gpu.setMonitor(tile.mon);
 						return;
 					}
 				}
@@ -185,7 +170,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 	}
 
 	@Override
-	public synchronized Object[] callMethod(IComputerAccess computer, int method,
+	public synchronized Object[] callMethod(IComputerAccess computer, ILuaContext context, int method,
 			Object[] args) throws Exception {
 		if (wait)
 			this.wait();

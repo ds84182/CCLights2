@@ -52,7 +52,7 @@ public class GuiTablet extends GuiScreen {
 		if (tex == null)
 			throw new RuntimeException("OpenGL texture setup failed!");
 		nbt.setBoolean("gui", true);
-		texid = GLAllocation.generateTextureNames();
+		texid = GL11.glGenTextures();//GLAllocation.generateTextureNames();
 		System.out.println("Created textures");
 		bbuf = GLAllocation.createDirectByteBuffer(tex.bytedata.length);
 		for (int i=0; i<bbuf.capacity(); i++)
@@ -105,24 +105,24 @@ public class GuiTablet extends GuiScreen {
 					if (Config.DEBUGS){
 					System.out.println("Moused move!");}
 					
-					Packet250CustomPayload packet = new Packet250CustomPayload();
-					packet.channel = "GPUMouse";
-					ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
-			    	DataOutputStream outputStream = new DataOutputStream(bos);
-			    	try {
-						outputStream.writeInt(gpu.tile.xCoord+gpu.tile.mondir.offsetX);
-						outputStream.writeInt(gpu.tile.yCoord+gpu.tile.mondir.offsetY);
-						outputStream.writeInt(gpu.tile.zCoord+gpu.tile.mondir.offsetZ);
-						outputStream.writeInt(gpu.tile.worldObj.provider.dimensionId);
-						outputStream.writeInt(1);
-						outputStream.writeInt(mx);
-						outputStream.writeInt(my);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-			    	packet.data = bos.toByteArray();
-			    	packet.length = bos.size();
-			    	PacketDispatcher.sendPacketToServer(packet);
+//					Packet250CustomPayload packet = new Packet250CustomPayload();
+//					packet.channel = "GPUMouse";
+//					ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
+//			    	DataOutputStream outputStream = new DataOutputStream(bos);
+//			    	try {
+//						outputStream.writeInt(gpu.tile.xCoord+gpu.tile.mondir.offsetX);
+//						outputStream.writeInt(gpu.tile.yCoord+gpu.tile.mondir.offsetY);
+//						outputStream.writeInt(gpu.tile.zCoord+gpu.tile.mondir.offsetZ);
+//						outputStream.writeInt(gpu.tile.worldObj.provider.dimensionId);
+//						outputStream.writeInt(1);
+//						outputStream.writeInt(mx);
+//						outputStream.writeInt(my);
+//					} catch (IOException e) {
+//						e.printStackTrace();
+//					}
+//			    	packet.data = bos.toByteArray();
+//			    	packet.length = bos.size();
+//			    	PacketDispatcher.sendPacketToServer(packet);
 				}
 				mlx = mx;
 				mly = my;
@@ -179,26 +179,26 @@ public class GuiTablet extends GuiScreen {
 			mx = par1;
 			mly = par2;
 			my = par2;
-			Packet250CustomPayload packet = new Packet250CustomPayload();
-			packet.channel = "GPUMouse";
-			ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
-	    	DataOutputStream outputStream = new DataOutputStream(bos);
-	    	try {
-	    		outputStream.writeInt(gpu.tile.xCoord+gpu.tile.mondir.offsetX);
-				outputStream.writeInt(gpu.tile.yCoord+gpu.tile.mondir.offsetY);
-				outputStream.writeInt(gpu.tile.zCoord+gpu.tile.mondir.offsetZ);
-				outputStream.writeInt(gpu.tile.worldObj.provider.dimensionId);
-				outputStream.writeInt(0);
-				outputStream.writeInt(par3);
-				outputStream.writeInt(par1);
-				outputStream.writeInt(par2);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-	    	packet.data = bos.toByteArray();
-	    	packet.length = bos.size();
-	    	PacketDispatcher.sendPacketToServer(packet);
+//			Packet250CustomPayload packet = new Packet250CustomPayload();
+//			packet.channel = "GPUMouse";
+//			ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
+//	    	DataOutputStream outputStream = new DataOutputStream(bos);
+//	    	try {
+//	    		outputStream.writeInt(gpu.tile.xCoord+gpu.tile.mondir.offsetX);
+//				outputStream.writeInt(gpu.tile.yCoord+gpu.tile.mondir.offsetY);
+//				outputStream.writeInt(gpu.tile.zCoord+gpu.tile.mondir.offsetZ);
+//				outputStream.writeInt(gpu.tile.worldObj.provider.dimensionId);
+//				outputStream.writeInt(0);
+//				outputStream.writeInt(par3);
+//				outputStream.writeInt(par1);
+//				outputStream.writeInt(par2);
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//	    	packet.data = bos.toByteArray();
+//	    	packet.length = bos.size();
+//	    	PacketDispatcher.sendPacketToServer(packet);
 		}
     }
 	
@@ -213,72 +213,72 @@ public class GuiTablet extends GuiScreen {
 				 if (Config.DEBUGS){
 				System.out.println("Mouse up! "+par3);}
 				isMouseDown = false;
-				Packet250CustomPayload packet = new Packet250CustomPayload();
-				packet.channel = "GPUMouse";
-				ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
-		    	DataOutputStream outputStream = new DataOutputStream(bos);
-		    	try {
-		    		outputStream.writeInt(gpu.tile.xCoord+gpu.tile.mondir.offsetX);
-					outputStream.writeInt(gpu.tile.yCoord+gpu.tile.mondir.offsetY);
-					outputStream.writeInt(gpu.tile.zCoord+gpu.tile.mondir.offsetZ);
-					outputStream.writeInt(gpu.tile.worldObj.provider.dimensionId);
-					outputStream.writeInt(2);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-		    	packet.data = bos.toByteArray();
-		    	packet.length = bos.size();
-		    	PacketDispatcher.sendPacketToServer(packet);
+//				Packet250CustomPayload packet = new Packet250CustomPayload();
+//				packet.channel = "GPUMouse";
+//				ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
+//		    	DataOutputStream outputStream = new DataOutputStream(bos);
+//		    	try {
+//		    		outputStream.writeInt(gpu.tile.xCoord+gpu.tile.mondir.offsetX);
+//					outputStream.writeInt(gpu.tile.yCoord+gpu.tile.mondir.offsetY);
+//					outputStream.writeInt(gpu.tile.zCoord+gpu.tile.mondir.offsetZ);
+//					outputStream.writeInt(gpu.tile.worldObj.provider.dimensionId);
+//					outputStream.writeInt(2);
+//				} catch (IOException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//		    	packet.data = bos.toByteArray();
+//		    	packet.length = bos.size();
+//		    	PacketDispatcher.sendPacketToServer(packet);
 			}
 		}
     }
 	
 	public void sendKeyEvent(char par1 ,int par2)
 	{
-		Packet250CustomPayload packet = new Packet250CustomPayload();
-		packet.channel = "GPUEvent";
-		ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
-    	DataOutputStream outputStream = new DataOutputStream(bos);
-    	try {
-    		outputStream.writeInt(gpu.tile.xCoord+gpu.tile.mondir.offsetX);
-			outputStream.writeInt(gpu.tile.yCoord+gpu.tile.mondir.offsetY);
-			outputStream.writeInt(gpu.tile.zCoord+gpu.tile.mondir.offsetZ);
-			outputStream.writeInt(gpu.tile.worldObj.provider.dimensionId);
-			outputStream.writeUTF("key");
-			outputStream.writeInt(1);
-			outputStream.writeInt(0);
-			outputStream.writeInt(par2);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	packet.data = bos.toByteArray();
-    	packet.length = bos.size();
-    	PacketDispatcher.sendPacketToServer(packet);
+//		Packet250CustomPayload packet = new Packet250CustomPayload();
+//		packet.channel = "GPUEvent";
+//		ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
+//    	DataOutputStream outputStream = new DataOutputStream(bos);
+//    	try {
+//    		outputStream.writeInt(gpu.tile.xCoord+gpu.tile.mondir.offsetX);
+//			outputStream.writeInt(gpu.tile.yCoord+gpu.tile.mondir.offsetY);
+//			outputStream.writeInt(gpu.tile.zCoord+gpu.tile.mondir.offsetZ);
+//			outputStream.writeInt(gpu.tile.worldObj.provider.dimensionId);
+//			outputStream.writeUTF("key");
+//			outputStream.writeInt(1);
+//			outputStream.writeInt(0);
+//			outputStream.writeInt(par2);
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//    	packet.data = bos.toByteArray();
+//    	packet.length = bos.size();
+//    	PacketDispatcher.sendPacketToServer(packet);
     	
     	if (ChatAllowedCharacters.isAllowedCharacter(par1))
     	{
-	    	packet = new Packet250CustomPayload();
-			packet.channel = "GPUEvent";
-			bos = new ByteArrayOutputStream(8);
-	    	outputStream = new DataOutputStream(bos);
-	    	try {
-	    		outputStream.writeInt(gpu.tile.xCoord+gpu.tile.mondir.offsetX);
-				outputStream.writeInt(gpu.tile.yCoord+gpu.tile.mondir.offsetY);
-				outputStream.writeInt(gpu.tile.zCoord+gpu.tile.mondir.offsetZ);
-				outputStream.writeInt(gpu.tile.worldObj.provider.dimensionId);
-				outputStream.writeUTF("char");
-				outputStream.writeInt(1);
-				outputStream.writeInt(2);
-				outputStream.writeChar(par1);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-	    	packet.data = bos.toByteArray();
-	    	packet.length = bos.size();
-	    	PacketDispatcher.sendPacketToServer(packet);
+//	    	packet = new Packet250CustomPayload();
+//			packet.channel = "GPUEvent";
+//			bos = new ByteArrayOutputStream(8);
+//	    	outputStream = new DataOutputStream(bos);
+//	    	try {
+//	    		outputStream.writeInt(gpu.tile.xCoord+gpu.tile.mondir.offsetX);
+//				outputStream.writeInt(gpu.tile.yCoord+gpu.tile.mondir.offsetY);
+//				outputStream.writeInt(gpu.tile.zCoord+gpu.tile.mondir.offsetZ);
+//				outputStream.writeInt(gpu.tile.worldObj.provider.dimensionId);
+//				outputStream.writeUTF("char");
+//				outputStream.writeInt(1);
+//				outputStream.writeInt(2);
+//				outputStream.writeChar(par1);
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//	    	packet.data = bos.toByteArray();
+//	    	packet.length = bos.size();
+//	    	PacketDispatcher.sendPacketToServer(packet);
     	}
 	}
 

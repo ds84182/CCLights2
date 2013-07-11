@@ -103,39 +103,42 @@ public class PacketHandler implements IPacketHandler {
 				}
 			}
 			MonitorBase mtile = (MonitorBase) world.getBlockTileEntity(x, y, z);
-			TileEntityGPU tile = mtile.gputile;
-			if (tile != null)
+			for (GPU g : mtile.mon.gpu)
 			{
-				String event = dat.readUTF();
-				int len = dat.readInt();
-				Object[] args = new Object[len];
-				for (int i = 0; i<len; i++)
+				TileEntityGPU tile = g.tile;
+				if (tile != null)
 				{
-					int type = dat.readInt();
-					switch (type)
+					String event = dat.readUTF();
+					int len = dat.readInt();
+					Object[] args = new Object[len];
+					for (int i = 0; i<len; i++)
 					{
-						case 0:
+						int type = dat.readInt();
+						switch (type)
 						{
-							args[i] = dat.readInt();
-							break;
-						}
-						case 1:
-						{
-							args[i] = dat.readUTF();
-							break;
-						}
-						case 2:
-						{
-							args[i] = String.valueOf(dat.readChar());
-							break;
+							case 0:
+							{
+								args[i] = dat.readInt();
+								break;
+							}
+							case 1:
+							{
+								args[i] = dat.readUTF();
+								break;
+							}
+							case 2:
+							{
+								args[i] = String.valueOf(dat.readChar());
+								break;
+							}
 						}
 					}
-				}
-				for (int i = 0; i<6; i++)
-				{
-					if (tile.comp[i] != null)
+					for (int i = 0; i<6; i++)
 					{
-						tile.comp[i].queueEvent(event, args);
+						if (tile.comp[i] != null)
+						{
+							tile.comp[i].queueEvent(event, args);
+						}
 					}
 				}
 			}
@@ -197,34 +200,37 @@ public class PacketHandler implements IPacketHandler {
 				}
 			}
 			MonitorBase mtile = (MonitorBase) world.getBlockTileEntity(x, y, z);
-			TileEntityGPU tile = mtile.gputile;
-			if (tile != null)
+			for (GPU g : mtile.mon.gpu)
 			{
-				int cmd = dat.readInt();
-				switch(cmd)
+				TileEntityGPU tile = g.tile;
+				if (tile != null)
 				{
-					case 0:
+					int cmd = dat.readInt();
+					switch(cmd)
 					{
-						//MouseStart//
-						int button = dat.readInt();
-						int mx = dat.readInt();
-						int my = dat.readInt();
-						tile.startClick(player, button, mx, my);
-						break;
-					}
-					case 1:
-					{
-						//MouseMove//
-						int mx = dat.readInt();
-						int my = dat.readInt();
-						tile.moveClick(player, mx, my);
-						break;
-					}
-					case 2:
-					{
-						//MouseEnd//
-						tile.endClick(player);
-						break;
+						case 0:
+						{
+							//MouseStart//
+							int button = dat.readInt();
+							int mx = dat.readInt();
+							int my = dat.readInt();
+							tile.startClick(player, button, mx, my);
+							break;
+						}
+						case 1:
+						{
+							//MouseMove//
+							int mx = dat.readInt();
+							int my = dat.readInt();
+							tile.moveClick(player, mx, my);
+							break;
+						}
+						case 2:
+						{
+							//MouseEnd//
+							tile.endClick(player);
+							break;
+						}
 					}
 				}
 			}

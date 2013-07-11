@@ -36,7 +36,7 @@ public class ItemRAM extends Item {
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IconRegister par1IconRegister)
     {
-        this.itemIcon = par1IconRegister.registerIcon("CCLights2:ram");
+        this.itemIcon = par1IconRegister.registerIcon("cclights:ram");
     }
 
 }

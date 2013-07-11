@@ -3,7 +3,7 @@ package ds.mods.CCLights2.client.render;
 import java.nio.ByteBuffer;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderEngine;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -21,7 +21,7 @@ import ds.mods.CCLights2.item.ItemTablet;
 public class TabletRenderer implements IItemRenderer {
 	
 	ModelTablet model = new ModelTablet();
-	RenderEngine re;
+	TextureManager re;
 
 	@Override
 	public boolean handleRenderType(ItemStack item, ItemRenderType type) {
@@ -38,7 +38,7 @@ public class TabletRenderer implements IItemRenderer {
 	public void renderItem(ItemRenderType type, ItemStack item, Object... data) {
 		if (re == null)
 			re = Minecraft.getMinecraft().renderEngine;
-		re.bindTexture("/mods/CCLights2/textures/items/Tablet.png");
+		//re.bindTexture("/mods/CCLights2/textures/items/Tablet.png");
 		GL11.glPushMatrix();
 		GL11.glRotatef(90F, 1, 0, 0);
 		if (type == ItemRenderType.EQUIPPED || type == ItemRenderType.ENTITY)

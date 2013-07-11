@@ -47,7 +47,7 @@ public class GuiMonitor extends GuiScreen {
 	
 	public void initGui()
 	{
-		texid = GLAllocation.generateTextureNames();
+		texid = GL11.glGenTextures();//GLAllocation.generateTextureNames();
 		if (Config.DEBUGS){
 		System.out.println("Created textures");}
 		bbuf = GLAllocation.createDirectByteBuffer(mon.tex.bytedata.length);

@@ -33,8 +33,8 @@ public class BlockMonitor extends Block {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IconRegister par1IconRegister) {
-		this.blockIcon = par1IconRegister.registerIcon("CCLights2:monitor");
-		sides = par1IconRegister.registerIcon("CCLights2:blank");
+		this.blockIcon = par1IconRegister.registerIcon("cclights:monitor");
+		sides = par1IconRegister.registerIcon("cclights:blank");
 	}
 
     @Override

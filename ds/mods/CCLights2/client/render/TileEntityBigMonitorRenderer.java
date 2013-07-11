@@ -5,7 +5,7 @@ import java.nio.IntBuffer;
 
 import net.minecraft.client.model.ModelBox;
 import net.minecraft.client.renderer.GLAllocation;
-import net.minecraft.client.renderer.RenderEngine;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
@@ -21,7 +21,7 @@ public class TileEntityBigMonitorRenderer extends TileEntitySpecialRenderer {
 	
 	public int[][] textures = new int[17][10];
 	
-	RenderEngine re;
+	TextureManager re;
 	
 	public ByteBuffer[][] bbuf = new ByteBuffer[17][10];//It only allocates this much to use less math when rendering
 	
@@ -33,7 +33,7 @@ public class TileEntityBigMonitorRenderer extends TileEntitySpecialRenderer {
 		{
 			for (int y = 1; y<10; y++)
 			{
-				textures[x][y] = GLAllocation.generateTextureNames();
+				textures[x][y] = GL11.glGenTextures();
 				bbuf[x][y] = GLAllocation.createDirectByteBuffer(3*x*32*y*32);
 				GL11.glBindTexture(GL11.GL_TEXTURE_2D, textures[x][y]);
 				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);

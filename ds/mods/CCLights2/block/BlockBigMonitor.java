@@ -1,22 +1,18 @@
 package ds.mods.CCLights2.block;
 
-import java.util.List;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IconRegister;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import cpw.mods.fml.common.network.Player;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.Config;
+import ds.mods.CCLights2.GPU;
 import ds.mods.CCLights2.block.tileentity.TileEntityBigMonitor;
 import ds.mods.CCLights2.client.ClientProxy;
 
@@ -70,24 +66,27 @@ public class BlockBigMonitor extends Block {
 		if (!par1World.isRemote)
 		{
 			//Send it to the tileentity!
-			if (tile.mon != null && tile.mon.gpu != null && tile.mon.gpu.tile != null)
+			if (tile.mon != null && tile.mon.gpu != null)
 			{
-				tile.mon.gpu.tile.startClick((Player) par5EntityPlayer, 0, px, py);
-				tile.mon.gpu.tile.endClick((Player) par5EntityPlayer);
+				for (GPU g : tile.mon.gpu)
+				{
+					g.tile.startClick((Player) par5EntityPlayer, 0, px, py);
+					g.tile.endClick((Player) par5EntityPlayer);
+				}
 			}
 		}
 		return true;
 	}
 
-	@Override
-	public void setBlockBoundsBasedOnState(IBlockAccess par1iBlockAccess,
-			int par2, int par3, int par4) {
-		TileEntityBigMonitor tile = (TileEntityBigMonitor) par1iBlockAccess.getBlockTileEntity(par2, par3, par4);
-		this.minX = -Math.abs(tile.m_xIndex-tile.m_width)+1D;
-		this.minY = -tile.m_yIndex;
-		this.maxX = 1D+tile.m_xIndex;
-		this.maxY = 1D+(tile.m_height-tile.m_yIndex-1);
-	}
+//	@Override
+//	public void setBlockBoundsBasedOnState(IBlockAccess par1iBlockAccess,
+//			int par2, int par3, int par4) {
+//		TileEntityBigMonitor tile = (TileEntityBigMonitor) par1iBlockAccess.getBlockTileEntity(par2, par3, par4);
+//		this.minX = -Math.abs(tile.m_xIndex-tile.m_width)+1D;
+//		this.minY = -tile.m_yIndex;
+//		this.maxX = 1D+tile.m_xIndex;
+//		this.maxY = 1D+(tile.m_height-tile.m_yIndex-1);
+//	}
 
 	@Override
 	public boolean hasTileEntity(int meta)
@@ -102,7 +101,7 @@ public class BlockBigMonitor extends Block {
 	}
 	
 	@Override
-	public void onBlockPlacedBy(World world, int i, int j, int k, EntityLiving entityliving, ItemStack item)
+	public void onBlockPlacedBy(World world, int i, int j, int k, EntityLivingBase entityliving, ItemStack item)
 	{
 		TileEntityBigMonitor tile = (TileEntityBigMonitor) world.getBlockTileEntity(i, j, k);
 		if (Config.DEBUGS){
@@ -129,6 +128,6 @@ public class BlockBigMonitor extends Block {
 	}
 	public void registerIcons(IconRegister par1IconRegister)
     {
-        this.blockIcon = par1IconRegister.registerIcon("CCLights2:monitor");
+        this.blockIcon = par1IconRegister.registerIcon("cclights:monitor");
     }
 }
