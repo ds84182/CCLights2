@@ -251,4 +251,10 @@ public class Texture {
 		//graphics.setColor(new Color(col[0],col[1],col[2]));
 		//graphics.drawRect(0, 0, width, height);
 	}
+
+	public int[] getRGB(int x, int y) {
+		x = x%width;
+		y = y%height;
+		return Convert.toColorDepth(texture[(y*width)+x], bpp);
+	}
 }

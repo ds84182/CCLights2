@@ -115,39 +115,6 @@ public class GPU {
 		bindedSlot = texid;
 	}
 	
-	public void freeTexture(int texid)
-	{
-		if (bindedSlot != texid)
-		{
-			if (texid > 0)
-			{
-				if (Config.DEBUGS){
-				System.out.println("Freeing texture "+texid);}
-				textures[texid] = null;
-				if (!tile.worldObj.isRemote)
-				{
-					Packet250CustomPayload packet = new Packet250CustomPayload();
-					packet.channel = "GPUTexture";
-					ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
-			    	DataOutputStream outputStream = new DataOutputStream(bos);
-			    	try {
-						outputStream.writeInt(tile.xCoord);
-						outputStream.writeInt(tile.yCoord);
-						outputStream.writeInt(tile.zCoord);
-						outputStream.writeInt(1);
-						outputStream.writeInt(texid);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-			    	packet.data = bos.toByteArray();
-			    	packet.length = bos.size();
-			    	sendPacketToClient(packet);
-				}
-			}
-		}
-	}
-	
 	public int newTexture(int w, int h)
 	{
 		if (getFreeMemory()-(w*h)<0)
@@ -294,7 +261,7 @@ public class GPU {
 					{
 						for (int x = 0; x<cmd.args[1]; x++)
 						{
-							bindedTexture.plot(cmd.args[i++], cmd.args[i++], cmd.args[i++], x+cmd.args[3], y+cmd.args[2]);
+							bindedTexture.plot(cmd.args[i++], cmd.args[i++], cmd.args[i++], x+cmd.args[3], y+cmd.args[4]);
 						}
 					}
 				}
