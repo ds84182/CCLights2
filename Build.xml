@@ -16,9 +16,9 @@
 
 	<property name="mcpsrc.dir"          value="${mcp.dir}/src/minecraft"/>
 
-	<property name="mc.version"          value="1.5.2"/>
-	<property name="forge.version"       value="7.8.1.738"/>
-	<property name="mod.version"         value="0.2"/>
+	<property name="mc.version"          value="1.6.2"/>
+	<property name="forge.version"       value="9.10.0.801"/>
+	<property name="mod.version"         value="0.3.0"/>
 	<property name="mod.name"	     value="CCLights2"/>
 
 	<property name="forge.name"          value="minecraftforge-src-${mc.version}-${forge.version}.zip"/>
@@ -59,8 +59,8 @@
 	<!-- Setup mcp and forge -->
 	<target name="setup" depends="download-files" if="out-of-date">
 
-		<delete dir="${mcp.dir}"/>
-		<delete dir="${forge.dir}"/>
+		<delete includeemptydirs="true" dir="${mcp.dir}"/>
+		<delete includeemptydirs="true" dir="${forge.dir}"/>
 
 		<!-- Unzip them -->
 		<unzip dest="${build.dir}" src="${download.dir}/${forge.name}"/>
@@ -78,7 +78,7 @@
 
 	<target name="compile" depends="initialize-version,setup">
 
-		<delete dir="${classes.dir}"/>
+		<delete  includeemptydirs="true" dir="${classes.dir}"/>
 		<mkdir dir="${classes.dir}"/>
 
 		<copy todir="${mcpsrc.dir}">
@@ -107,13 +107,13 @@
 		</exec>
 
 		<!-- Copy classes -->
-		<copy todir="${classes.dir}/CCLights2">
-			<fileset dir="${mcp.dir}/reobf/minecraft/CCLights2" />
+		<copy todir="${classes.dir}/ds">
+			<fileset dir="${mcp.dir}/reobf/minecraft/ds" />
 		</copy>
 
 		<!-- Copy resources -->
-		<copy todir="${classes.dir}/mods/CCLights2">
-			<fileset dir="mods/CCLights2" />
+		<copy todir="${classes.dir}/assets">
+			<fileset dir="assets" />
 		</copy>
 
 		<!-- Copy resources -->
@@ -125,14 +125,15 @@
 		</copy>
 
 		<!-- Reset src dir to post-forge-install state -->
-		<delete dir="${mcpsrc.dir}/CCLights2"/>
+		<delete  includeemptydirs="true" dir="${mcpsrc.dir}/ds"/>
+		<delete  includeemptydirs="true" dir="${mcpsrc.dir}/dan200"/>
 
 	</target>
 
 	<!-- Package the compiled files -->
 	<target name="package" depends="compile">
 
-		<delete dir="${jar.dir}"/>
+		<delete  includeemptydirs="true" dir="${jar.dir}"/>
 		<mkdir dir="${jar.dir}"/>
 		<jar destfile="${jar.dir}/${mod.name}-${mod.version}.jar" basedir="${classes.dir}"/>
 
