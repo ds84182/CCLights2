@@ -14,7 +14,6 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
-import ds.mods.CCLights2.client.ClientProxy;
 import ds.mods.CCLights2.utils.TabMesg;
 import ds.mods.CCLights2.utils.TabMesg.Message;
 
@@ -25,7 +24,7 @@ public class ItemTablet extends Item {
 		this.setMaxStackSize(1);
 		this.setNoRepair();
 		this.setUnlocalizedName("Tablet");
-		this.setCreativeTab(ClientProxy.ccltab);
+		this.setCreativeTab(CCLights2.ccltab);
 	}
 
 	@Override

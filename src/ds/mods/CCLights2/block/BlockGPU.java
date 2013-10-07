@@ -2,9 +2,6 @@ package ds.mods.CCLights2.block;
 
 import java.util.Random;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IconRegister;
@@ -12,12 +9,11 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Icon;
 import net.minecraft.world.World;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
-import ds.mods.CCLights2.client.ClientProxy;
-import ds.mods.CCLights2.debug.DebugWindow;
 import ds.mods.CCLights2.item.ItemRAM;
 
 public class BlockGPU extends Block {
@@ -25,7 +21,7 @@ public class BlockGPU extends Block {
 	public BlockGPU(int par1, Material par2Material) {
 		super(par1, par2Material);
 		this.setUnlocalizedName("GPU");
-		this.setCreativeTab(ClientProxy.ccltab);
+		this.setCreativeTab(CCLights2.ccltab);
 	}
 	
 	public boolean onBlockActivated(World par1World, int par2, int par3, int par4, EntityPlayer par5EntityPlayer, int par6, float par7, float par8, float par9)

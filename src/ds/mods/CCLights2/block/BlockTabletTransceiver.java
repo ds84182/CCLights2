@@ -1,5 +1,6 @@
 package ds.mods.CCLights2.block;
 
+import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -10,6 +11,7 @@ public class BlockTabletTransceiver extends Block {
 
 	public BlockTabletTransceiver(int par1, Material par2Material) {
 		super(par1, par2Material);
+		this.setCreativeTab(CCLights2.ccltab);
 	}
 
 	@Override

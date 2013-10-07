@@ -2,6 +2,7 @@ package ds.mods.CCLights2;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.Configuration;
@@ -44,6 +45,15 @@ public class CCLights2 {
 	public static Item ram;
 	public static Item tablet;
 	protected static Configuration config;
+	
+	public static CreativeTabs ccltab = new CreativeTabs("CClights2")
+	 {
+		 @Override
+	  public ItemStack getIconItemStack()
+	  {
+	   return new ItemStack(Config.Tablet, 1, 0);
+	  }
+	 };
 
 	// end variables
 

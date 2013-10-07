@@ -7,7 +7,6 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import cpw.mods.fml.common.network.Player;
 import ds.mods.CCLights2.CCLights2;
@@ -21,7 +20,7 @@ public class BlockBigMonitor extends Block {
 	public BlockBigMonitor(int par1, Material par2Material) {
 		super(par1, par2Material);
 		this.setUnlocalizedName("BigMonitor");
-		this.setCreativeTab(ClientProxy.ccltab);
+		this.setCreativeTab(CCLights2.ccltab);
 	}
 	
 	@Override

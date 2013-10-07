@@ -1,7 +1,5 @@
 package ds.mods.CCLights2.block;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IconRegister;
@@ -10,9 +8,10 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Icon;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
-import ds.mods.CCLights2.client.ClientProxy;
 
 public class BlockMonitor extends Block {
 	
@@ -21,7 +20,7 @@ public class BlockMonitor extends Block {
 	public BlockMonitor(int par1, Material par2Material) {
 		super(par1, par2Material);
 		this.setUnlocalizedName("Monitor");
-		this.setCreativeTab(ClientProxy.ccltab);
+		this.setCreativeTab(CCLights2.ccltab);
 	}
 	
 	@Override

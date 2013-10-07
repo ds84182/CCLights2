@@ -37,13 +37,6 @@ public class ClientProxy extends CommonProxy {
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityBigMonitor.class, new TileEntityBigMonitorRenderer());
 		MinecraftForgeClient.registerItemRenderer(CCLights2.tablet.itemID,new TabletRenderer());
 		MinecraftForge.EVENT_BUS.register(new Events());
+		
 	}
-	 public static CreativeTabs ccltab = new CreativeTabs("CClights2")
-	 {
-		 @Override
-	  public ItemStack getIconItemStack()
-	  {
-	   return new ItemStack(Config.Tablet, 1, 0);
-	  }
-	 };
 }
