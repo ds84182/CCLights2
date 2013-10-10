@@ -19,10 +19,14 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import cpw.mods.fml.common.network.PacketDispatcher;
-
+import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.Config;
+import ds.mods.CCLights2.Convert;
 import ds.mods.CCLights2.Monitor;
+import ds.mods.CCLights2.Texture;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
+import ds.mods.CCLights2.client.ClientProxy;
+import ds.mods.CCLights2.client.render.TabletRenderer;
 
 
 //DONE: Don't fire events when mouse is outside area, and apply correct offsets.
@@ -46,19 +50,21 @@ public class GuiMonitor extends GuiScreen {
 	
 	public void initGui()
 	{
-		texid = GL11.glGenTextures();//GLAllocation.generateTextureNames();
-		if (Config.DEBUGS){
-		System.out.println("Created textures");}
-		bbuf = GLAllocation.createDirectIntBuffer(mon.tex.bytedata.length);
-		bbuf.put(mon.tex.bytedata);
+		Texture tex = mon.tex;
+		if (tex == null)
+			throw new RuntimeException("OpenGL texture setup failed!");
+		System.out.println("Created textures");
+		for (int x = 0; x<tex.getWidth(); x++)
+		{
+			for (int y = 0; y<tex.getHeight(); y++)
+			{
+				int[] rgb = Convert.toColorDepth(mon.tex.texture[(y*mon.getWidth())+x],mon.tex.bpp);
+				TabletRenderer.dyntex_data[(y*(16*32))+x] = 0xFF<<24 | rgb[0]<<16 | rgb[1]<<8 | rgb[2];
+			}
+		}
+		texid = ((ClientProxy)CCLights2.proxy).SBMRH.tileRender.textures[16][9];
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, texid);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-        if (Config.DEBUGS){
-        System.out.println("Binded Texture");}
-		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGB, mon.tex.getWidth(), mon.tex.getHeight(), 0, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, bbuf);
-		if (Config.DEBUGS){
-		System.out.println("Assigned texture contents");}
+		TabletRenderer.dyntex.updateDynamicTexture();
 		Keyboard.enableRepeatEvents(true);
 	}
 	
@@ -124,11 +130,17 @@ public class GuiMonitor extends GuiScreen {
 			}
 		}
 		drawWorldBackground(0);
+		for (int x = 0; x<mon.getWidth(); x++)
+		{
+			for (int y = 0; y<mon.getHeight(); y++)
+			{
+				int[] rgb = Convert.toColorDepth(mon.tex.texture[(y*mon.getWidth())+x],mon.tex.bpp);
+				TabletRenderer.dyntex_data[(y*(16*32))+x] = 0xFF<<24 | rgb[0]<<16 | rgb[1]<<8 | rgb[2];
+			}
+		}
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, texid);
-		bbuf.put(mon.tex.bytedata);
-        GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, 0, 0, mon.tex.getWidth(), mon.tex.getHeight(), GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, bbuf);
-		GL11.glEnable(GL11.GL_TEXTURE_2D);
-		this.drawTexturedModalRect((width/2)-mon.tex.getWidth()/2, (height/2)-mon.tex.getHeight()/2, mon.tex.getWidth(), mon.tex.getHeight());
+		TabletRenderer.dyntex.updateDynamicTexture();
+		this.drawTexturedModalRect((width/2)-mon.getWidth()/4, (height/2)-mon.getHeight()/4, mon.getWidth(), mon.getHeight());
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
     }
 	
