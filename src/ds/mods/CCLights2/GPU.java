@@ -9,8 +9,9 @@ import java.util.UUID;
 
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet250CustomPayload;
-import cpw.mods.fml.common.network.PacketDispatcher;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
+import ds.mods.CCLights2.network.PacketHandler;
+import ds.mods.CCLights2.network.PacketSplitter;
 
 public class GPU {
 	public Texture[] textures;
@@ -94,9 +95,6 @@ public class GPU {
 	{
 		if (depth != 1 & depth != 2 & depth != 4)
 			return false;
-		int raw = getUsedMemory()/bpp;
-		if (raw*depth > maxmem)
-			return false;
 		for (int i=0; i<textures.length; i++)
 		{
 			if (textures[i]!=null)
@@ -147,10 +145,10 @@ public class GPU {
 	{
 		if (tile == null)
 			throw new IllegalArgumentException("GPU cannot send packet without Tile Entity!");
-		PacketDispatcher.sendPacketToAllInDimension(packet, tile.worldObj.provider.dimensionId);
+		PacketSplitter.sendPacketToAllInDimension((Packet250CustomPayload) packet, tile.worldObj.provider.dimensionId);
 	}
 	
-	public Object[] processCommand(DrawCMD cmd)
+	public Object[] processCommand(DrawCMD cmd) throws Exception
 	{
 		if (bindedTexture == null)
 		{
@@ -271,6 +269,36 @@ public class GPU {
 			case 13:
 			{
 				textures[cmd.args[0]].flipV();
+				break;
+			}
+			case 14:
+			{
+				int id = newTexture(cmd.args[0],cmd.args[1]);
+				if (id == -1) {
+					throw new Exception("Not enough memory for texture");
+				} else if (id == -2) {
+					throw new Exception("Not enough texture slots");
+				}
+				Texture tex = textures[id];
+				int i = 2;
+				for (int x = 0; x<cmd.args[0]; x++)
+				{
+					for (int y = 0; y<cmd.args[1]; y++)
+					{
+						tex.plot(cmd.args[i++], cmd.args[i++], cmd.args[i++], x, y);
+					}
+				}
+				return new Object[]{id};
+			}
+			case 15:
+			{
+				String str = "";
+				for (int i = 0; i<cmd.args.length-5; i++)
+				{
+					str = str+String.valueOf((char)cmd.args[5+i]);
+				}
+				bindedTexture.drawText(str, cmd.args[0], cmd.args[1], cmd.args[2], cmd.args[3], cmd.args[4]);
+				break;
 			}
 		}
 		return null;
@@ -284,10 +312,11 @@ public class GPU {
 			if (!tile.worldObj.isRemote)
 			{
 				Packet250CustomPayload packet = new Packet250CustomPayload();
-				packet.channel = "GPUDrawlist";
+				packet.channel = "CCLights2";
 				ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
 		    	DataOutputStream outputStream = new DataOutputStream(bos);
 		    	try {
+		    		outputStream.writeByte(PacketHandler.NET_GPUDRAWLIST);
 					outputStream.writeInt(tile.xCoord);
 					outputStream.writeInt(tile.yCoord);
 					outputStream.writeInt(tile.zCoord);

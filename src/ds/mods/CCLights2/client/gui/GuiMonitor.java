@@ -1,21 +1,17 @@
 package ds.mods.CCLights2.client.gui;
 
-import java.awt.event.KeyListener;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.Random;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.util.ChatAllowedCharacters;
 
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import cpw.mods.fml.common.network.PacketDispatcher;
@@ -27,6 +23,7 @@ import ds.mods.CCLights2.Texture;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
 import ds.mods.CCLights2.client.ClientProxy;
 import ds.mods.CCLights2.client.render.TabletRenderer;
+import ds.mods.CCLights2.network.PacketHandler;
 
 
 //DONE: Don't fire events when mouse is outside area, and apply correct offsets.
@@ -70,22 +67,22 @@ public class GuiMonitor extends GuiScreen {
 	
 	public int applyXOffset(int x)
 	{
-		return x-((width/2)-mon.tex.getWidth()/2);
+		return x-((width/4)-mon.getWidth()/4)*2;
 	}
 	
 	public int applyYOffset(int y)
 	{
-		return y-((height/2)-mon.tex.getHeight()/2);
+		return y-((height/4)-mon.getHeight()/4)*2;
 	}
 	
 	public int unapplyXOffset(int x)
 	{
-		return x+((width/2)-mon.tex.getWidth()/2);
+		return x+((width/4)-mon.getWidth()/4)*2;
 	}
 	
 	public int unapplyYOffset(int y)
 	{
-		return y+((height/2)-mon.tex.getHeight()/2);
+		return y+((height/4)-mon.getHeight()/4)*2;
 	}
 	
 	public void drawScreen(int par1, int par2, float par3)
@@ -103,10 +100,11 @@ public class GuiMonitor extends GuiScreen {
 					if (Config.DEBUGS){
 					System.out.println("Moused move!");}
 					Packet250CustomPayload packet = new Packet250CustomPayload();
-					packet.channel = "GPUMouse";
+					packet.channel = "CCLights2";
 					ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
 			    	DataOutputStream outputStream = new DataOutputStream(bos);
 			    	try {
+			    		outputStream.writeByte(PacketHandler.NET_GPUMOUSE);
 						outputStream.writeInt(tile.xCoord);
 						outputStream.writeInt(tile.yCoord);
 						outputStream.writeInt(tile.zCoord);
@@ -126,7 +124,7 @@ public class GuiMonitor extends GuiScreen {
 			}
 			else
 			{
-				mouseMovedOrUp(unapplyXOffset(Math.min(mon.tex.getWidth(),par1)), unapplyYOffset(Math.min(mon.tex.getHeight(),par2)), mouseButton);
+				mouseMovedOrUp(unapplyXOffset(par1)/2, unapplyYOffset(par2)/2, mouseButton);
 			}
 		}
 		drawWorldBackground(0);
@@ -140,7 +138,7 @@ public class GuiMonitor extends GuiScreen {
 		}
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, texid);
 		TabletRenderer.dyntex.updateDynamicTexture();
-		this.drawTexturedModalRect((width/2)-mon.getWidth()/4, (height/2)-mon.getHeight()/4, mon.getWidth(), mon.getHeight());
+		this.drawTexturedModalRect(unapplyXOffset(0)/2, unapplyYOffset(0)/2, mon.getWidth(), mon.getHeight());
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
     }
 	
@@ -151,13 +149,16 @@ public class GuiMonitor extends GuiScreen {
         Tessellator var2 = Tessellator.instance;
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         float var3 = 256.0F;
+        GL11.glPushMatrix();
+        GL11.glScaled(2D, 2D, 1D);
         var2.startDrawingQuads();
         //var2.setColorOpaque_I(4210752);
+        var2.addVertexWithUV((double) x, (double) y, this.zLevel, 0.0D, 0D);
         var2.addVertexWithUV(x, (double)h+y, this.zLevel, 0.0D, 1D);
         var2.addVertexWithUV((double)w+x, (double)h+y, this.zLevel, 1D, 1D);
         var2.addVertexWithUV((double)w+x, y, this.zLevel, 1D, 0D);
-        var2.addVertexWithUV((double) x, (double) y, this.zLevel, 0.0D, 0D);
         var2.draw();
+        GL11.glPopMatrix();
     }
 	
 	protected void mouseClicked(int par1, int par2, int par3)
@@ -175,10 +176,11 @@ public class GuiMonitor extends GuiScreen {
 			mly = par2;
 			my = par2;
 			Packet250CustomPayload packet = new Packet250CustomPayload();
-			packet.channel = "GPUMouse";
+			packet.channel = "CCLights2";
 			ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
 	    	DataOutputStream outputStream = new DataOutputStream(bos);
 	    	try {
+	    		outputStream.writeByte(PacketHandler.NET_GPUMOUSE);
 				outputStream.writeInt(tile.xCoord);
 				outputStream.writeInt(tile.yCoord);
 				outputStream.writeInt(tile.zCoord);
@@ -209,10 +211,11 @@ public class GuiMonitor extends GuiScreen {
 				System.out.println("Mouse up! "+par3);}
 				isMouseDown = false;
 				Packet250CustomPayload packet = new Packet250CustomPayload();
-				packet.channel = "GPUMouse";
+				packet.channel = "CCLights2";
 				ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
 		    	DataOutputStream outputStream = new DataOutputStream(bos);
 		    	try {
+		    		outputStream.writeByte(PacketHandler.NET_GPUMOUSE);
 					outputStream.writeInt(tile.xCoord);
 					outputStream.writeInt(tile.yCoord);
 					outputStream.writeInt(tile.zCoord);
@@ -232,10 +235,11 @@ public class GuiMonitor extends GuiScreen {
 	public void sendKeyEvent(char par1 ,int par2)
 	{
 		Packet250CustomPayload packet = new Packet250CustomPayload();
-		packet.channel = "GPUEvent";
+		packet.channel = "CCLights2";
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
     	DataOutputStream outputStream = new DataOutputStream(bos);
     	try {
+    		outputStream.writeByte(PacketHandler.NET_GPUEVENT);
 			outputStream.writeInt(tile.xCoord);
 			outputStream.writeInt(tile.yCoord);
 			outputStream.writeInt(tile.zCoord);
@@ -255,10 +259,11 @@ public class GuiMonitor extends GuiScreen {
     	if (ChatAllowedCharacters.isAllowedCharacter(par1))
     	{
 	    	packet = new Packet250CustomPayload();
-			packet.channel = "GPUEvent";
+			packet.channel = "CCLights2";
 			bos = new ByteArrayOutputStream(8);
 	    	outputStream = new DataOutputStream(bos);
 	    	try {
+	    		outputStream.writeByte(PacketHandler.NET_GPUEVENT);
 				outputStream.writeInt(tile.xCoord);
 				outputStream.writeInt(tile.yCoord);
 				outputStream.writeInt(tile.zCoord);
@@ -288,8 +293,6 @@ public class GuiMonitor extends GuiScreen {
 	
 	public void onGuiClosed()
 	{
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
-		GL11.glDeleteTextures(texid);
 		Keyboard.enableRepeatEvents(false);
 	}
 	

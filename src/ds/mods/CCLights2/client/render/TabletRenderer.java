@@ -22,6 +22,7 @@ import ds.mods.CCLights2.Convert;
 import ds.mods.CCLights2.Monitor;
 import ds.mods.CCLights2.Texture;
 import ds.mods.CCLights2.block.tileentity.MonitorBase;
+import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
 import ds.mods.CCLights2.client.ClientProxy;
 import ds.mods.CCLights2.item.ItemTablet;
 import ds.mods.CCLights2.utils.TabMesg;
@@ -119,7 +120,7 @@ public class TabletRenderer implements IItemRenderer {
 							(Integer)TabMesg.getTabVar(trans, "x"),
 							(Integer)TabMesg.getTabVar(trans, "y"),
 							(Integer)TabMesg.getTabVar(trans, "z"));
-			if (noncast == null){GL11.glPopMatrix(); return;}
+			if (noncast == null || !(noncast instanceof TileEntityTTrans)){nbt.setBoolean("canDisplay", false); GL11.glPopMatrix(); return;}
 			MonitorBase tile = (MonitorBase) noncast;
 			Monitor mon;
 			mon = tile.mon;

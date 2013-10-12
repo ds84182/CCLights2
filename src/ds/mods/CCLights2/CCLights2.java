@@ -25,13 +25,14 @@ import ds.mods.CCLights2.block.tileentity.TileEntityBigMonitor;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
 import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
+import ds.mods.CCLights2.gpu.imageLoader.GeneralImageLoader;
+import ds.mods.CCLights2.gpu.imageLoader.ImageLoader;
 import ds.mods.CCLights2.item.ItemRAM;
 import ds.mods.CCLights2.item.ItemTablet;
+import ds.mods.CCLights2.network.PacketHandler;
 
 @Mod(modid = "CCLights2", name = "CCLights2", version = "0.2")
-@NetworkMod(clientSideRequired = true, serverSideRequired = true, channels = {
-		"GPUDrawlist", "GPUEvent", "GPUDownload", "GPUMouse", "GPUKey",
-		"GPUTile", "NetMethod" }, packetHandler = PacketHandler.class)
+@NetworkMod(clientSideRequired = true, serverSideRequired = true, channels = {"CCLights2"}, packetHandler = PacketHandler.class)
 public class CCLights2 {
 	@Instance("CCLights2")
 	public static CCLights2 instance;
@@ -114,6 +115,8 @@ public class CCLights2 {
 		GameRegistry.addRecipe(new ItemStack(tablet, 2), new Object[] { "GIG",
 				"RMR", "GIG", 'I', Item.ingotIron, 'R', Item.redstone, 'G',
 				Item.ingotGold, 'M', monitorBig });
+		
+		ImageLoader.register(new GeneralImageLoader());
 	}
 
 	@EventHandler

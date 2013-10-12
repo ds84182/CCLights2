@@ -18,7 +18,7 @@
 
 	<property name="mc.version"          value="1.6.4"/>
 	<property name="forge.version"       value="9.11.1.917"/>
-	<property name="mod.version"         value="0.4.0"/>
+	<property name="mod.version"         value="0.4.1"/>
 	<property name="mod.name"	     value="CCLights2"/>
 
 	<property name="forge.name"          value="minecraftforge-src-${mc.version}-${forge.version}.zip"/>
@@ -122,6 +122,10 @@
 			<filterset>
 				<filter token="VERSION" value="${mod.version}"/>
 			</filterset>
+		</copy>
+		
+		<copy todir="${classes.dir}/ds/mods/CCLights2">
+			<fileset dir="${src.dir}/ds/mods/CCLights2" includes="ascii.png" />
 		</copy>
 
 		<!-- Reset src dir to post-forge-install state -->

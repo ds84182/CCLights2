@@ -36,7 +36,5 @@ public class ClientProxy extends CommonProxy {
 		RenderingRegistry.registerBlockHandler(SBMRH);
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityBigMonitor.class, new TileEntityBigMonitorRenderer());
 		MinecraftForgeClient.registerItemRenderer(CCLights2.tablet.itemID,new TabletRenderer());
-		MinecraftForge.EVENT_BUS.register(new Events());
-		
 	}
 }

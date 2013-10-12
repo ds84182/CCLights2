@@ -135,7 +135,7 @@ public class GuiTablet extends GuiScreen {
 		}
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, texid);
 		TabletRenderer.dyntex.updateDynamicTexture();
-		this.drawTexturedModalRect((width/2)-mon.getWidth()/4, (height/2)-mon.getHeight()/4, mon.getWidth(), mon.getHeight());
+		this.drawTexturedModalRect((width/2)-mon.getWidth()/2, (height/2)-mon.getHeight()/2, mon.getWidth(), mon.getHeight());
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
     }
 	
@@ -146,13 +146,16 @@ public class GuiTablet extends GuiScreen {
         Tessellator var2 = Tessellator.instance;
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         float var3 = 256.0F;
+        GL11.glPushMatrix();
+        GL11.glScaled(2D, 2D, 1D);
         var2.startDrawingQuads();
         //var2.setColorOpaque_I(4210752);
+        var2.addVertexWithUV((double) x, (double) y, this.zLevel, 0.0D, 0D);
         var2.addVertexWithUV(x, (double)h+y, this.zLevel, 0.0D, 1D);
         var2.addVertexWithUV((double)w+x, (double)h+y, this.zLevel, 1D, 1D);
         var2.addVertexWithUV((double)w+x, y, this.zLevel, 1D, 0D);
-        var2.addVertexWithUV((double) x, (double) y, this.zLevel, 0.0D, 0D);
         var2.draw();
+        GL11.glPopMatrix();
     }
 	
 	protected void mouseClicked(int par1, int par2, int par3)

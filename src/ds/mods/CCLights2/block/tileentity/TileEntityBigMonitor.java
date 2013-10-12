@@ -16,6 +16,7 @@ import cpw.mods.fml.common.network.PacketDispatcher;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.CCLights2.Monitor;
+import ds.mods.CCLights2.network.PacketHandler;
 
 public class TileEntityBigMonitor extends MonitorBase {
 	public static final int MAX_WIDTH = 16;
@@ -551,10 +552,11 @@ public class TileEntityBigMonitor extends MonitorBase {
 	  public Packet createUpdatePacket()
 	  {
 		  	Packet250CustomPayload packet = new Packet250CustomPayload();
-			packet.channel = "GPUTile";
+			packet.channel = "CCLights2";
 			ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
 	    	DataOutputStream outputStream = new DataOutputStream(bos);
 	    	try {
+	    		outputStream.writeByte(PacketHandler.NET_GPUTILE);
 				outputStream.writeInt(xCoord);
 				outputStream.writeInt(yCoord);
 				outputStream.writeInt(zCoord);
