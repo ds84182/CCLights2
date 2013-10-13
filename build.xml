@@ -3,10 +3,10 @@
 	<property environment="env"/>
 	<!-- Properties -->
 
-	<property name="build.dir"           value="build"/>
+	<property name="build.dir"           value="../build"/>
 	<property name="src.dir"             value="src"/>
 
-	<property name="download.dir"        value="download"/>
+	<property name="download.dir"        value="../download"/>
 
 	<property name="classes.dir"         value="${build.dir}/classes"/>
 	<property name="jar.dir"             value="${build.dir}/dist"/>
