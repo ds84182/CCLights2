@@ -9,7 +9,7 @@
 	<property name="download.dir"        value="../download"/>
 
 	<property name="classes.dir"         value="${build.dir}/classes"/>
-	<property name="jar.dir"             value="${build.dir}/dist"/>
+	<property name="jar.dir"             value="dist"/>
 
 	<property name="forge.dir"           value="${build.dir}/forge"/>
 	<property name="mcp.dir"             value="${forge.dir}/mcp"/>
