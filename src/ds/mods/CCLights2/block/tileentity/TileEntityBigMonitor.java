@@ -63,7 +63,7 @@ public class TileEntityBigMonitor extends MonitorBase {
 		public AxisAlignedBB getRenderBoundingBox() {
 		  	if (m_xIndex == 0 && m_yIndex == 0)
 		  	{
-		  		return AxisAlignedBB.getBoundingBox(xCoord-m_width, yCoord+m_height, zCoord+2, xCoord, yCoord, zCoord-2);
+		  		return AxisAlignedBB.getBoundingBox(xCoord-m_width, yCoord+m_height, zCoord+2, xCoord+m_width, yCoord-m_height, zCoord-2);
 		  	}
 			return AxisAlignedBB.getBoundingBox(xCoord, yCoord, zCoord, xCoord, yCoord, zCoord);
 		}

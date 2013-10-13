@@ -160,7 +160,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				"getSize", "getTextureSize", "setTransparent",
 				"setTransparencyColor", "getColorRGB", "getPixel", "rectangle",
 				"filledRectangle", "setBPP", "getBindedTexture", "getBPP",
-				"getNativePixel", "setPixels", "setPixelsYX", "flipTextureV", "import", "export", "drawText" };
+				"getNativePixel", "setPixels", "setPixelsYX", "flipTextureV", "import", "export", "drawText", "getTextWidth" };
 	}
 
 	@Override
@@ -596,6 +596,14 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				Object[] ret = gpu.processCommand(cmd);
 				newarr.add(cmd);
 				return ret;
+			}
+		}
+		case 29:
+		{
+			if (args.length > 0)
+			{
+				String str = ConvertString.convert(args[0]);
+				return new Object[]{Texture.getStringWidth(str)};
 			}
 		}
 		}
