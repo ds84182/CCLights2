@@ -7,13 +7,13 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import cpw.mods.fml.common.network.Player;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.Config;
 import ds.mods.CCLights2.GPU;
 import ds.mods.CCLights2.block.tileentity.TileEntityBigMonitor;
-import ds.mods.CCLights2.client.ClientProxy;
 
 public class BlockBigMonitor extends Block {
 
@@ -77,15 +77,11 @@ public class BlockBigMonitor extends Block {
 		return true;
 	}
 
-//	@Override
-//	public void setBlockBoundsBasedOnState(IBlockAccess par1iBlockAccess,
-//			int par2, int par3, int par4) {
-//		TileEntityBigMonitor tile = (TileEntityBigMonitor) par1iBlockAccess.getBlockTileEntity(par2, par3, par4);
-//		this.minX = -Math.abs(tile.m_xIndex-tile.m_width)+1D;
-//		this.minY = -tile.m_yIndex;
-//		this.maxX = 1D+tile.m_xIndex;
-//		this.maxY = 1D+(tile.m_height-tile.m_yIndex-1);
-//	}
+	@Override
+	public void setBlockBoundsBasedOnState(IBlockAccess par1iBlockAccess,
+			int par2, int par3, int par4) {
+		setBlockBounds(0.0F, 0.125F, 0.125F, 0.1875F, 0.875F, 0.875F);
+	}
 
 	@Override
 	public boolean hasTileEntity(int meta)
