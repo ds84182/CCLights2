@@ -80,7 +80,7 @@ public class BlockBigMonitor extends Block {
 	@Override
 	public void setBlockBoundsBasedOnState(IBlockAccess par1iBlockAccess,
 			int par2, int par3, int par4) {
-		setBlockBounds(0.0F, 0.125F, 0.125F, 0.1875F, 0.875F, 0.875F);
+		setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
 	}
 
 	@Override
