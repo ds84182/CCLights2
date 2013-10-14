@@ -4,4 +4,3 @@ TODO:
 -  Make Network code more efficent (Note: This should never be checked off, because the network code always needs to be more efficent)
 -  Add border to Monitor GUI (Both Tablet and Regular Monitor)
 -  Add texture to external monitors
--  Make Tablet disappear when opened as a Gui.
