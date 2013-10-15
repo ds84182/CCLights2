@@ -189,30 +189,6 @@ public class Methods {
 		return new Object[]{gpu.bindedTexture.getWidth(),gpu.bindedTexture.getHeight()};
 	}
 	
-	@LuaMethod(name = "setTransparent", ret = Type.NULL, args = {Type.INT,Type.BOOLEAN}, networked = true)
-	public static void setTransparent(GPU gpu, int texid, boolean transparent) throws Exception
-	{
-		if (texid < 0 || texid > gpu.textures.length)
-		{
-			throw new Exception("Texture "+texid+" doesn't exist");
-		}
-		if (gpu.textures[texid] == null)
-			throw new Exception("Texture "+texid+" doesn't exist");
-		gpu.textures[texid].setTransparent(transparent);
-	}
-	
-	@LuaMethod(name = "setTransparencyColor", ret = Type.NULL, args = {Type.INT,Type.INT,Type.INT,Type.INT}, networked = true)
-	public static void setTransparencyColor(GPU gpu, int texid, int r, int g, int b) throws Exception
-	{
-		if (texid < 0 || texid > gpu.textures.length)
-		{
-			throw new Exception("Texture "+texid+" doesn't exist");
-		}
-		if (gpu.textures[texid] == null)
-			throw new Exception("Texture "+texid+" doesn't exist");
-		gpu.textures[texid].setTransparencyColor(r, g, b);
-	}
-	
 	@LuaMethod(name = "getColorRGB", ret = Type.OBJECTS, args = {Type.INT,Type.INT})
 	public static Object[] getColorRGB(GPU gpu, int x, int y)
 	{
@@ -250,7 +226,7 @@ public class Methods {
 	@LuaMethod(name = "setBPP", ret = Type.NULL, args = {Type.INT}, networked = true)
 	public static void setBPP(GPU gpu, int bpp)
 	{
-		gpu.changeBitDepth(bpp);
+		//gpu.changeBitDepth(bpp);
 	}
 	
 	@LuaMethod(name = "getBindedTexture", ret = Type.INT)
@@ -262,7 +238,8 @@ public class Methods {
 	@LuaMethod(name = "getBPP", ret = Type.INT)
 	public static int getBPP(GPU gpu)
 	{
-		return gpu.bpp;
+		//return gpu.bpp;
+		return 0;
 	}
 	
 	@LuaMethod(name = "getPixelNative", ret = Type.INT, args = {Type.INT,Type.INT})

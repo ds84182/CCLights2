@@ -30,8 +30,6 @@ import ds.mods.CCLights2.network.PacketHandler;
 public class GuiMonitor extends GuiScreen {
 	public Monitor mon;
 	public TileEntityMonitor tile;
-	public int texid;
-	public IntBuffer bbuf;
 	public boolean isMouseDown = false;
 	public int mouseButton = 0;
 	public int mlx;
@@ -51,16 +49,7 @@ public class GuiMonitor extends GuiScreen {
 		if (tex == null)
 			throw new RuntimeException("OpenGL texture setup failed!");
 		System.out.println("Created textures");
-		for (int x = 0; x<tex.getWidth(); x++)
-		{
-			for (int y = 0; y<tex.getHeight(); y++)
-			{
-				int[] rgb = Convert.toColorDepth(mon.tex.texture[(y*mon.getWidth())+x],mon.tex.bpp);
-				TabletRenderer.dyntex_data[(y*(16*32))+x] = 0xFF<<24 | rgb[0]<<16 | rgb[1]<<8 | rgb[2];
-			}
-		}
-		texid = ((ClientProxy)CCLights2.proxy).SBMRH.tileRender.textures[16][9];
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, texid);
+		tex.img.getRGB(0, 0, tex.getWidth(), tex.getHeight(), TabletRenderer.dyntex_data, 0, 16*32);
 		TabletRenderer.dyntex.updateDynamicTexture();
 		Keyboard.enableRepeatEvents(true);
 	}
@@ -128,17 +117,10 @@ public class GuiMonitor extends GuiScreen {
 			}
 		}
 		drawWorldBackground(0);
-		for (int x = 0; x<mon.getWidth(); x++)
-		{
-			for (int y = 0; y<mon.getHeight(); y++)
-			{
-				int[] rgb = Convert.toColorDepth(mon.tex.texture[(y*mon.getWidth())+x],mon.tex.bpp);
-				TabletRenderer.dyntex_data[(y*(16*32))+x] = 0xFF<<24 | rgb[0]<<16 | rgb[1]<<8 | rgb[2];
-			}
-		}
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, texid);
+		Texture tex = mon.tex;
+		tex.img.getRGB(0, 0, tex.getWidth(), tex.getHeight(), TabletRenderer.dyntex_data, 0, 16*32);
 		TabletRenderer.dyntex.updateDynamicTexture();
-		this.drawTexturedModalRect(unapplyXOffset(0)/2, unapplyYOffset(0)/2, mon.getWidth(), mon.getHeight());
+		this.drawTexturedModalRect(unapplyXOffset(0), unapplyYOffset(0), mon.getWidth(), mon.getHeight());
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
     }
 	
@@ -150,13 +132,13 @@ public class GuiMonitor extends GuiScreen {
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         float var3 = 256.0F;
         GL11.glPushMatrix();
-        GL11.glScaled(2D, 2D, 1D);
+        GL11.glScaled(1D, 1D, 1D);
         var2.startDrawingQuads();
         //var2.setColorOpaque_I(4210752);
         var2.addVertexWithUV((double) x, (double) y, this.zLevel, 0.0D, 0D);
-        var2.addVertexWithUV(x, (double)h+y, this.zLevel, 0.0D, 1D);
-        var2.addVertexWithUV((double)w+x, (double)h+y, this.zLevel, 1D, 1D);
-        var2.addVertexWithUV((double)w+x, y, this.zLevel, 1D, 0D);
+        var2.addVertexWithUV(x, (double)h+y, this.zLevel, 0.0D, h/(9*32D));
+        var2.addVertexWithUV((double)w+x, (double)h+y, this.zLevel, w/(16*32D), h/(9*32D));
+        var2.addVertexWithUV((double)w+x, y, this.zLevel, w/(16*32D), 0D);
         var2.draw();
         GL11.glPopMatrix();
     }

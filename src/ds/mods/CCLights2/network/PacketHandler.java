@@ -269,95 +269,48 @@ public class PacketHandler implements IPacketHandler {
 	{
 		GPU gpu = tile.gpu;
 		int id = dat.readInt();
-		int y = dat.readInt();
 		int w = dat.readInt();
 		int h = dat.readInt();
-		int bpp = dat.readInt();
 		if (gpu.textures[id] == null)
 		{
 			gpu.textures[id] = new Texture(w, h);
-			gpu.textures[id].setBPP(bpp);
 		}
 		Texture tex = gpu.textures[id];
-		tex.setTransparent(dat.readBoolean());
-		tex.transparentColor = dat.readInt();
-		
-		for (int x = 0; x<w; x++)
+		int[] arr = new int[dat.readInt()];
+		for (int i=0; i<arr.length; i++)
 		{
-			switch (bpp)
-			{
-			case 1:
-			{
-				tex.plot(dat.readByte(), x, y);
-				break;
-			}
-			case 2:
-			{
-				tex.plot(dat.readByte() | (dat.readByte()<<8), x, y);
-				break;
-			}
-			case 4:
-			{
-				tex.plot(dat.readByte() | (dat.readByte()<<8) | (dat.readByte()<<16), x, y);
-				break;
-			}
-			}
+			arr[i] = dat.readInt();
 		}
+		tex.img.setRGB(0, 0, w, h, arr, 0, w);
 	}
 	
 	public void sendTextures(Player whom, Texture tex, int id, int x, int y, int z)
 	{
-		for (int line = 0; line<tex.getHeight(); line++)
-		{
-			Packet250CustomPayload packet = new Packet250CustomPayload();
-			packet.channel = "CCLights2";
-			ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
-	    	DataOutputStream outputStream = new DataOutputStream(bos);
-	    	try {
-	    		outputStream.writeByte(NET_GPUDOWNLOAD);
-				outputStream.writeInt(x);
-				outputStream.writeInt(y);
-				outputStream.writeInt(z);
-				outputStream.writeInt(id);
-				outputStream.writeInt(line);
-				outputStream.writeInt(tex.getWidth());
-				outputStream.writeInt(tex.getHeight());
-				outputStream.writeInt(tex.bpp);
-				outputStream.writeBoolean(tex.isTransparent);
-				outputStream.writeInt(tex.transparentColor);
-				for (int col = 0; col < tex.getWidth(); col++)
-				{
-					int i = (line*tex.getWidth())+col;
-					int data = tex.texture[i];
-					switch (tex.bpp)
-					{
-					case 1:
-					{
-						outputStream.writeByte(data);
-						break;
-					}
-					case 2:
-					{
-						outputStream.writeByte(data&0xFF);
-						outputStream.writeByte((data>>8)&0xFF);
-						break;
-					}
-					case 4:
-					{
-						outputStream.writeByte(data&0xFF);
-						outputStream.writeByte((data>>8)&0xFF);
-						outputStream.writeByte((data>>16)&0xFF);
-						break;
-					}
-					}
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
+		Packet250CustomPayload packet = new Packet250CustomPayload();
+		packet.channel = "CCLights2";
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
+    	DataOutputStream outputStream = new DataOutputStream(bos);
+    	try {
+    		outputStream.writeByte(NET_GPUDOWNLOAD);
+			outputStream.writeInt(x);
+			outputStream.writeInt(y);
+			outputStream.writeInt(z);
+			outputStream.writeInt(id);
+			outputStream.writeInt(tex.getWidth());
+			outputStream.writeInt(tex.getHeight());
+			int[] arr = new int[tex.getWidth()*tex.getHeight()*4];
+			tex.img.getRGB(0, 0, tex.getWidth(), tex.getHeight(), arr, 0, tex.getWidth());
+			outputStream.writeInt(arr.length);
+			for (int i=0; i<arr.length; i++)
+			{
+				outputStream.writeInt(arr[i]);
 			}
-	    	packet.data = bos.toByteArray();
-	    	packet.length = bos.size();
-	    	//System.out.println(packet.length);
-	    	PacketSplitter.sendPacketToPlayer(packet, whom);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
+    	packet.data = bos.toByteArray();
+    	packet.length = bos.size();
+    	//System.out.println(packet.length);
+    	PacketSplitter.sendPacketToPlayer(packet, whom);
 	}
 }

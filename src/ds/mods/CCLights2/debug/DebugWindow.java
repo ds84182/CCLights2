@@ -23,49 +23,11 @@ public class DebugWindow {
 		debug.add(panel);
         debug.setSize(gpu.gpu.textures[0].getWidth(),gpu.gpu.textures[0].getHeight());
         graph = panel.getGraphics();
-        try
-        {
-            for (int i = 0; i < gpu.gpu.textures[0].texture.length; i++)
-            {
-                int x = i%gpu.gpu.textures[0].getWidth();
-                int y = (i-x)/gpu.gpu.textures[0].getWidth();
-                if (Config.DEBUGS){
-                System.out.println(i);
-                System.out.println(gpu.gpu.textures[0].bytedata[(i*3)]);
-                System.out.println(gpu.gpu.textures[0].bytedata[(i*3)+1]);
-                System.out.println(gpu.gpu.textures[0].bytedata[(i*3)+2]);
-                }
-                graph.setColor(new Color(gpu.gpu.textures[0].bytedata[(i*3)],gpu.gpu.textures[0].bytedata[(i*3)+1],gpu.gpu.textures[0].bytedata[(i*3)+2]));
-                graph.drawRect(x,y,1,1);
-            }
-        }
-        catch (Exception e)
-        {
-              e.printStackTrace();
-        }
+        graph.drawImage(gpu.gpu.textures[0].img, 0, 0, null);
 	}
 
     public void update()
     {
-        try
-        {
-            for (int i = 0; i < gpu.gpu.textures[0].texture.length; i++)
-            {
-                int x = i%gpu.gpu.textures[0].getWidth();
-                int y = (i-x)/gpu.gpu.textures[0].getWidth();
-               if (Config.DEBUGS){
-                System.out.println(i);
-                System.out.println(gpu.gpu.textures[0].bytedata[(i*3)]);
-                System.out.println(gpu.gpu.textures[0].bytedata[(i*3)+1]);
-                System.out.println(gpu.gpu.textures[0].bytedata[(i*3)+2]);
-               }
-                graph.setColor(new Color(gpu.gpu.textures[0].bytedata[(i*3)],gpu.gpu.textures[0].bytedata[(i*3)+1],gpu.gpu.textures[0].bytedata[(i*3)+2]));
-                graph.drawRect(x,y,1,1);
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+    	graph.drawImage(gpu.gpu.textures[0].img, 0, 0, null);
     }
 }

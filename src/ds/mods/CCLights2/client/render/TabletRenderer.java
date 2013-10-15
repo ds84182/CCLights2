@@ -133,18 +133,8 @@ public class TabletRenderer implements IItemRenderer {
 			}
 			Texture tex = mon.tex;
 			GL11.glTranslatef(0F, -0.0001F, 0F);
-			GL11.glBindTexture(GL11.GL_TEXTURE_2D, ((ClientProxy)CCLights2.proxy).SBMRH.tileRender.textures[16][9]);
-			//ByteBuffer img = ((ClientProxy)CCLights2.proxy).SBMRH.tileRender.bbuf[16][9];
-			for (int x = 0; x<tex.getWidth(); x++)
-			{
-				for (int y = 0; y<tex.getHeight(); y++)
-				{
-					int[] rgb = Convert.toColorDepth(tex.texture[(y*tex.getWidth())+x],tex.bpp);
-					dyntex_data[(y*(16*32))+x] = 0xFF<<24 | rgb[0]<<16 | rgb[1]<<8 | rgb[2];
-				}
-			}
+			tex.img.getRGB(0, 0, tex.getWidth(), tex.getHeight(), dyntex_data, 0, tex.getWidth());
 			dyntex.updateDynamicTexture();
-			//GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, 0, 0, 16*32, 9*32, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, img);
 			Tessellator tess = Tessellator.instance;
 			tess.startDrawingQuads();
 			GL11.glDisable(GL11.GL_LIGHTING);

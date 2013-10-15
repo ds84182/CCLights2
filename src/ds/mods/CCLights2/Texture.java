@@ -1,28 +1,22 @@
 package ds.mods.CCLights2;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
-import javax.xml.bind.DatatypeConverter;
 
 import net.minecraft.util.ChatAllowedCharacters;
 
 
 public class Texture {
-	//public BufferedImage img;
-	//public Graphics graphics;
-	public int[] texture;
-	public int[] bytedata;
-	public int bpp = 1;
+	public BufferedImage img;
+	public Graphics2D graphics;
 	
 	private int width;
 	private int height;
-	
-	public boolean isTransparent = false;
-	public int transparentColor = 0;
 	
 	public static BufferedImage font;
 	
@@ -32,12 +26,10 @@ public class Texture {
 	
 	public Texture(int w, int h)
 	{
-		//img = new BufferedImage(w,h,BufferedImage.TYPE_INT_RGB);
-		//graphics = img.createGraphics();
+		img = new BufferedImage(w,h,2);
+		graphics = img.createGraphics();
 		width = w;
 		height = h;
-		texture = new int[w*h];
-		bytedata = new int[3*w*h];
 		
 		if (font == null)
 		{
@@ -101,72 +93,25 @@ public class Texture {
 		}
 	}
 	
-	public void setBPP(int n)
-	{
-		int old = bpp;
-		bpp = n;
-		System.out.println("Set BPP to "+bpp);
-		texture = new int[width*height];
-		bytedata = new int[3*width*height];
-		fill(0,0,0);
-		transparentColor = 0;
-		isTransparent = false;
-	}
 	public int getWidth() {
 		return width;
 	}
+	
 	public int getHeight() {
 		return height;
 	}
+	
 	public int getMemoryUse()
 	{
 		return width*height/16;
 	}
-	public void setTransparent(boolean is)
-	{
-		isTransparent = true;
-	}
-	public void setTransparencyColor(int r, int g, int b)
-	{
-		int conv = Convert.toColorDepth(r, g, b, bpp);
-		transparentColor = conv;
-	}
-	public void resize(int w, int h)
-	{
-		width = w;
-		height = h;
-		texture = new int[w*h];
-		bytedata = new int[3*w*h];
-	}
+	
 	public void plot(int r, int g, int b, int x, int y)
 	{
-		if (r<0 || g<0 || b<0)
-		{
-			return;
-		}
-		int conv = Convert.toColorDepth(r, g, b, bpp);
-		int i = (y*width)+x;
-		if (i<texture.length & x>-1 & y>-1 & x<width & y<height)
-		{
-			texture[i] = conv;
-			int[] col = Convert.toColorDepth(conv,bpp);
-			bytedata[i*3] = (col[0]);
-			bytedata[i*3+1] = (col[1]);
-			bytedata[i*3+2] = (col[2]);
-		}
+		graphics.setColor(new Color(r,g,b));
+		graphics.fillRect(x, y, 1, 1);
 	}
-	public void plot(int conv, int x, int y)
-	{
-		int i = (y*width)+x;
-		if (i<texture.length & x>-1 & y>-1 & x<width & y<height)
-		{
-			texture[i] = conv;
-			int[] col = Convert.toColorDepth(conv,bpp);
-			bytedata[i*3] = (col[0]);
-			bytedata[i*3+1] = (col[1]);
-			bytedata[i*3+2] = (col[2]);
-		}
-	}
+	
 	public void filledRect(int r, int g, int b, int x, int y, int w, int h)
 	{
 		for (int nx = 0; nx<w; nx++)
@@ -224,54 +169,9 @@ public class Texture {
 	}
 	public void flipV()
 	{
-		if (height%2 == 0)
-		{
-			Texture tmp = new Texture(width,height/2);
-			tmp.setBPP(bpp);
-			//Render the bottom half flipped to a texture
-			for (int y=(height/2); y<height; y++)
-			{
-				int co = height-y-1;
-				for (int x = 0; x<width; x++)
-				{
-					tmp.plot(texture[(y*width)+x], x, co);
-				}
-				//tmp.drawTexture(this, 0, co, 0, y, width, 1, 255, 255, 255);
-			}
-			//Render me to the bottom half to me
-			for (int y=0; y<(height/2); y++)
-			{
-				int co = height-y-1;
-				for (int x = 0; x<width; x++)
-				{
-					plot(texture[(y*width)+x], x, co);
-				}
-				//tmp.drawTexture(this, 0, co, 0, y, width, 1, 255, 255, 255);
-			}
-			//Render tmp to the top half of me
-			drawTexture(tmp,0,0);
-		}
-		else
-		{
-			//I hate odd numbers
-			int rh = height-1;
-			Texture tmp = new Texture(width,rh/2);
-			tmp.setBPP(bpp);
-			//Render the bottom half flipped to a texture
-			for (int y=height-(rh/2); y<height; y++)
-			{
-				int co = y-height;
-				tmp.drawTexture(this, 0, co, 0, y, width, 1, 255, 255, 255);
-			}
-			//Render me to the bottom half to me
-			for (int y=0; y<(rh/2)-1; y++)
-			{
-				int co = y+(rh/2)+1;
-				drawTexture(this, 0, co, 0, y, width, 1, 255, 255, 255);
-			}
-			//Render tmp to the top half of me
-			drawTexture(tmp,0,(rh/2)+1);
-		}
+		AffineTransform trans = new AffineTransform();
+		trans.scale(1, -1);
+		graphics.drawImage(img, trans, null);
 	}
 	public void drawTexture(Texture tex, int x, int y)
 	{
@@ -289,42 +189,20 @@ public class Texture {
 			System.out.println("Texture to draw is null.");
 			return;
 		}
-		for (int nx = 0; nx<w; nx++)
-		{
-			for (int ny = 0; ny<h; ny++)
-			{
-				int i = ((ny+ty)*tex.width)+(nx+tx);
-				if (i >= 0 && (!tex.isTransparent || tex.texture[i] != tex.transparentColor))
-				{
-					plot(
-					(int)(tex.bytedata[i*3]*(r/255F)),
-					(int)(tex.bytedata[i*3+1]*(g/255F)),
-					(int)(tex.bytedata[i*3+2]*(b/255F)),
-					nx+x,
-					ny+y);
-				}
-			}
-		}
+		graphics.clipRect(x+tx, x+ty, w, h);
+		graphics.setColor(new Color(r,g,b));
+		graphics.drawImage(tex.img, x, y, null);
 	}
 	public void fill(int r, int g, int b)
 	{
-		int conv = Convert.toColorDepth(r, g, b, bpp);
-		int[] col = Convert.toColorDepth(conv, bpp);
-		for (int i = 0; i < texture.length; i++)
-		{
-			texture[i] = conv;
-			bytedata[i*3] = (col[0]);
-			bytedata[i*3+1] = (col[1]);
-			bytedata[i*3+2] = (col[2]);
-		}
-		//graphics.setColor(new Color(col[0],col[1],col[2]));
-		//graphics.drawRect(0, 0, width, height);
+		graphics.setColor(new Color(r,g,b));
+		graphics.fillRect(0, 0, width, height);
 	}
 
 	public int[] getRGB(int x, int y) {
 		x = x%width;
 		y = y%height;
-		return Convert.toColorDepth(texture[(y*width)+x], bpp);
+		return img.getData().getPixel(x, y, new int[4]);
 	}
 	
 	public static int getCharWidth(char par1)
@@ -412,7 +290,6 @@ public class Texture {
 			cy*=8;
 			cy+=16;
 			cx*=8;
-			//System.out.printf("Position of %s: %d, %d\n",text.substring(i, i+1),cx,cy);
 			for (int fx = 0; fx<6; fx++)
 			{
 				for (int fy = 0; fy<8; fy++)
@@ -426,5 +303,20 @@ public class Texture {
 			}
 			x+=getCharWidth(text.charAt(i));
 		}
+	}
+
+	public void resize(int w, int h) {
+		dispose();
+		img = new BufferedImage(w,h,2);
+		graphics = img.createGraphics();
+		width = w;
+		height = h;
+	}
+	
+	public void dispose()
+	{
+		graphics.dispose();
+		graphics = null;
+		img = null;
 	}
 }

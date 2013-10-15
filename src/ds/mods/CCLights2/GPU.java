@@ -24,7 +24,6 @@ public class GPU {
 	public Monitor currentMonitor;
 	public TileEntityGPU tile;
 	public ArrayList<Packet> pendingPackets;
-	public int bpp = 1;
 	public UUID uuid;
 
 	public GPU(int gfxmem)
@@ -91,21 +90,6 @@ public class GPU {
 		return maxmem-getUsedMemory();
 	}
 	
-	public boolean changeBitDepth(int depth)
-	{
-		if (depth != 1 & depth != 2 & depth != 4)
-			return false;
-		for (int i=0; i<textures.length; i++)
-		{
-			if (textures[i]!=null)
-			{
-				textures[i].setBPP(depth);
-			}
-		}
-		bpp = depth;
-		return true;
-	}
-	
 	public void bindTexture(int texid) throws Exception
 	{
 		if (textures[texid] == null)
@@ -127,7 +111,6 @@ public class GPU {
 				if (textures[i]==null)
 				{
 					textures[i] = new Texture(w, h);
-					textures[i].setBPP(bpp);
 					return i;
 				}
 			}
@@ -195,13 +178,11 @@ public class GPU {
 			}
 			case 4:
 			{
-				textures[cmd.args[0]].setTransparent(cmd.args[1] == 1);
-				break;
+				throw new Exception("Transparency is depreciated.");
 			}
 			case 5:
 			{
-				textures[cmd.args[0]].setTransparencyColor(cmd.args[1],cmd.args[2],cmd.args[3]);
-				break;
+				throw new Exception("Transparency is depreciated.");
 			}
 			case 6:
 			{
@@ -238,7 +219,7 @@ public class GPU {
 			}
 			case 11:
 			{
-				return new Object[]{changeBitDepth(cmd.args[0])};
+				throw new Exception("Bit Depths are depricated.");
 			}
 			case 12:
 			{

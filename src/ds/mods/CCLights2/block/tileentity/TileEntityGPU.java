@@ -351,12 +351,10 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 		case 15:
 		case 16: {
 			if (args.length == 2) {
-				int i = (Convert.toInt(args[1]) * gpu.bindedTexture.getWidth())
-						+ Convert.toInt(args[0]);
-				int r = gpu.bindedTexture.bytedata[i * 3];
-				int g = gpu.bindedTexture.bytedata[i * 3 + 1];
-				int b = gpu.bindedTexture.bytedata[i * 3 + 2];
-				return new Object[] { r & 0xFF, g & 0xFF, b & 0xFF };
+				int x = Convert.toInt(args[0]);
+				int y = Convert.toInt(args[1]);
+				int[] dat = gpu.bindedTexture.getRGB(x, y);
+				return new Object[] { dat[0] & 0xFF, dat[1] & 0xFF, dat[2] & 0xFF };
 			}
 			break;
 		}
@@ -409,17 +407,10 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			return new Object[] { gpu.bindedSlot };
 		}
 		case 21: {
-			return new Object[] { gpu.bpp };
+			throw new Exception("Bit Depths are depeciated.");
 		}
 		case 22: {
-			int i = (Convert.toInt(args[1]) * gpu.bindedTexture.getWidth())
-					+ Convert.toInt(args[0]);
-			int bit = gpu.bindedTexture.texture[i];
-			Object[] ret = new Object[gpu.bpp];
-			for (int at = 0; at < ret.length; at++) {
-				ret[at] = (bit >> (at * 8)) & 255;
-			}
-			return ret;
+			throw new Exception("getPixelNative is disfunctional.");
 		}
 		case 23: {
 			if (args.length < 4) {
