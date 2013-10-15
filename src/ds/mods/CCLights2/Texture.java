@@ -114,65 +114,28 @@ public class Texture {
 	
 	public void filledRect(int r, int g, int b, int x, int y, int w, int h)
 	{
-		for (int nx = 0; nx<w; nx++)
-		{
-			for (int ny = 0; ny<h; ny++)
-			{
-				plot(r,g,b,x+nx,y+ny);
-			}
-		}
+		graphics.setColor(new Color(r,g,b));
+		graphics.fillRect(x, y, w, h);
 	}
+	
 	public void rect(int r, int g, int b, int x, int y, int w, int h)
 	{
-		line(r,g,b,x,y,x+w,y);
-		line(r,g,b,x+w,y,x+w,y+h);
-		line(r,g,b,x+w,y+h,x,h+y);
-		line(r,g,b,x,h+y,x,y);
+		graphics.setColor(new Color(r,g,b));
+		graphics.drawRect(x, y, w, h);
 	}
 	// draw a line from point x1,y1 into x2,y2
 	public void line(int r, int g, int b, int x1, int y1, int x2, int y2) { 
-		// if point x1, y1 is on the right side of point x2, y2, change them
-		if ((x1 - x2) > 0) {line(r, g, b, x2, y2, x1, y1); return;}
-		// test inclination of line
-		// function Math.abs(y) defines absolute value y
-		if (Math.abs(y2 - y1) > Math.abs(x2 - x1)) {
-			// line and y axis angle is less then 45 degrees
-			// that swhy go on the next procedure
-			bresteepline(r, g, b, y1, x1, y2, x2); return; 
-		}
-		// line and x axis angle is less then 45 degrees, so x is guiding
-		// auxiliary variables
-		int x = x1, y = y1, sum = x2 - x1, Dx = 2 * (x2 - x1), Dy = Math.abs(2 * (y2 - y1));
-		int prirastokDy = ((y2 - y1) > 0) ? 1 : -1;
-		// draw line
-		for (int i = 0; i <= x2 -x1; i++) {
-			plot(r, g, b, x, y);
-			x++;
-			sum -= Dy;
-			if (sum < 0) {y = y + prirastokDy; sum += Dx;}
-		}
+		graphics.setColor(new Color(r,g,b));
+		graphics.drawLine(x1, y1, x2, y2);
 	}
-
-	public void bresteepline(int r, int g, int b, int x3, int y3, int x4, int y4) {
-		// if point x3, y3 is on the right side of point x4, y4, change them
-		if ((x3 - x4) > 0) {bresteepline(r, g, b, x4, y4, x3, y3); return;}
-
-		int x = x3, y = y3, sum = x4 - x3,	Dx = 2 * (x4 - x3), Dy = Math.abs(2 * (y4 - y3));
-		int prirastokDy = ((y4 - y3) > 0) ? 1 : -1;
-
-		for (int i = 0; i <= x4 -x3; i++) {
-			plot(r, g, b, y, x);
-			x++;
-				sum -= Dy;
-			if (sum < 0) {y = y + prirastokDy; sum += Dx;}
-		}
-	}
+	
 	public void flipV()
 	{
 		AffineTransform trans = new AffineTransform();
 		trans.scale(1, -1);
 		graphics.drawImage(img, trans, null);
 	}
+	
 	public void drawTexture(Texture tex, int x, int y)
 	{
 		if (tex == null)
@@ -182,6 +145,7 @@ public class Texture {
 		}
 		drawTexture(tex,x,y,0,0,tex.width,tex.height, 255, 255, 255);
 	}
+	
 	public void drawTexture(Texture tex, int x, int y, int tx, int ty, int w, int h, int r, int g, int b)
 	{
 		if (tex == null)
@@ -193,6 +157,7 @@ public class Texture {
 		graphics.setColor(new Color(r,g,b));
 		graphics.drawImage(tex.img, x, y, null);
 	}
+	
 	public void fill(int r, int g, int b)
 	{
 		graphics.setColor(new Color(r,g,b));
