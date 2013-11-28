@@ -12,18 +12,22 @@ import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.util.ChatAllowedCharacters;
 
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
+
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 
 import cpw.mods.fml.common.network.PacketDispatcher;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.Config;
-import ds.mods.CCLights2.Convert;
-import ds.mods.CCLights2.Monitor;
-import ds.mods.CCLights2.Texture;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
 import ds.mods.CCLights2.client.ClientProxy;
 import ds.mods.CCLights2.client.render.TabletRenderer;
+import ds.mods.CCLights2.gpu.Monitor;
+import ds.mods.CCLights2.gpu.Texture;
 import ds.mods.CCLights2.network.PacketHandler;
+import ds.mods.CCLights2.utils.Convert;
 
 
 //DONE: Don't fire events when mouse is outside area, and apply correct offsets.
@@ -78,6 +82,36 @@ public class GuiMonitor extends GuiScreen {
     {
 		par1 = applyXOffset(par1);
 		par2 = applyYOffset(par2);
+		
+		int wheel = Mouse.getDWheel();
+		if (wheel != 0)
+		{
+			System.out.println(wheel/120);
+			Packet250CustomPayload packet = new Packet250CustomPayload();
+			packet.channel = "CCLights2";
+	    	ByteArrayDataOutput out = ByteStreams.newDataOutput();
+	    	
+    		out.writeByte(PacketHandler.NET_GPUEVENT);
+			out.writeInt(tile.xCoord);
+			out.writeInt(tile.yCoord);
+			out.writeInt(tile.zCoord);
+			out.writeInt(tile.worldObj.provider.dimensionId);
+			out.writeUTF("monitor_scroll");
+			out.writeInt(3);
+			
+			out.writeInt(0);
+			out.writeInt(par1);
+			
+			out.writeInt(0);
+			out.writeInt(par2);
+			
+			out.writeInt(0);
+			out.writeInt(wheel/120);
+				
+	    	packet.data = out.toByteArray();
+	    	packet.length = packet.data.length;
+	    	PacketDispatcher.sendPacketToServer(packet);
+		}
 		if (isMouseDown)
 		{
 			if (par1 > -1 & par2 > -1 & par1 < mon.getWidth()+1 & par2 < mon.getHeight()+1)
@@ -118,7 +152,15 @@ public class GuiMonitor extends GuiScreen {
 		}
 		drawWorldBackground(0);
 		Texture tex = mon.tex;
-		tex.img.getRGB(0, 0, tex.getWidth(), tex.getHeight(), TabletRenderer.dyntex_data, 0, 16*32);
+		synchronized (tex)
+		{
+			try {
+				if (tex.renderLock) tex.wait(1L);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			tex.img.getRGB(0, 0, tex.getWidth(), tex.getHeight(), TabletRenderer.dyntex_data, 0, 16*32);
+		}
 		TabletRenderer.dyntex.updateDynamicTexture();
 		this.drawTexturedModalRect(unapplyXOffset(0), unapplyYOffset(0), mon.getWidth(), mon.getHeight());
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
@@ -172,7 +214,6 @@ public class GuiMonitor extends GuiScreen {
 				outputStream.writeInt(par1);
 				outputStream.writeInt(par2);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 	    	packet.data = bos.toByteArray();
@@ -204,7 +245,6 @@ public class GuiMonitor extends GuiScreen {
 					outputStream.writeInt(tile.worldObj.provider.dimensionId);
 					outputStream.writeInt(2);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 		    	packet.data = bos.toByteArray();
@@ -231,7 +271,6 @@ public class GuiMonitor extends GuiScreen {
 			outputStream.writeInt(0);
 			outputStream.writeInt(par2);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     	packet.data = bos.toByteArray();
@@ -255,7 +294,6 @@ public class GuiMonitor extends GuiScreen {
 				outputStream.writeInt(2);
 				outputStream.writeChar(par1);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 	    	packet.data = bos.toByteArray();

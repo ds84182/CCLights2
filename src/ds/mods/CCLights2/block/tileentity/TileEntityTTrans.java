@@ -1,5 +1,6 @@
 package ds.mods.CCLights2.block.tileentity;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -7,20 +8,30 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.network.INetworkManager;
-import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet132TileEntityData;
 import cpw.mods.fml.common.network.PacketDispatcher;
 import cpw.mods.fml.common.network.Player;
 import dan200.computer.api.IComputerAccess;
-import ds.mods.CCLights2.GPU;
+import dan200.computer.api.ILuaContext;
+import dan200.computer.api.ILuaObject;
+import ds.mods.CCLights2.block.tileentity.TileEntityMonitor.MonitorObject;
+import ds.mods.CCLights2.converter.ConvertInteger;
+import ds.mods.CCLights2.gpu.GPU;
+import ds.mods.CCLights2.gpu.Monitor;
 import ds.mods.CCLights2.utils.TabMesg;
 import ds.mods.CCLights2.utils.TabMesg.Message;
 
-public class TileEntityTTrans extends MonitorBase {
+public class TileEntityTTrans extends TileEntityMonitor {
 	public UUID id = UUID.randomUUID();
 	public ArrayList<UUID> tablets = new ArrayList<UUID>();
 	
 	public boolean update = true;
+	
+	public TileEntityTTrans()
+	{
+		mon = new Monitor(16*32,9*32,getMonitorObject());
+		mon.tex.fill(Color.black);
+	}
 	
 	public void onRemove()
 	{
@@ -168,4 +179,43 @@ public class TileEntityTTrans extends MonitorBase {
 		}
 	}
 	
+	public ILuaObject getMonitorObject()
+	{
+		return new MonitorObject();
+	}
+	
+	public class MonitorObject implements ILuaObject
+	{
+
+		@Override
+		public String[] getMethodNames() {
+			return new String[]{"getResolution","getNumberOfTablets","getTabletUUID","disconnect"};
+		}
+
+		@Override
+		public Object[] callMethod(ILuaContext context, int method,
+				Object[] arguments) throws Exception {
+			switch (method)
+			{
+			case 0:
+			{
+				return new Object[]{mon.getWidth(),mon.getHeight()};
+			}
+			case 1:
+			{
+				return new Object[]{tablets.size()};
+			}
+			case 2:
+			{
+				return new Object[]{tablets.get(ConvertInteger.convert(arguments[0])).toString()};
+			}
+			case 3:
+			{
+				
+			}
+			}
+			return null;
+		}
+		
+	}
 }

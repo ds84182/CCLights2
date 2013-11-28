@@ -10,8 +10,8 @@ import com.google.common.io.ByteArrayDataOutput;
 
 import cpw.mods.fml.common.FMLLog;
 import ds.mods.CCLights2.CCLights2;
-import ds.mods.CCLights2.GPU;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
+import ds.mods.CCLights2.gpu.GPU;
 
 public class GPUSerializer implements ISerializer {
 

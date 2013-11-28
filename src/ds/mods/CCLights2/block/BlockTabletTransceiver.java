@@ -11,6 +11,7 @@ public class BlockTabletTransceiver extends Block {
 
 	public BlockTabletTransceiver(int par1, Material par2Material) {
 		super(par1, par2Material);
+		this.setUnlocalizedName("monitor.tablet");
 		this.setCreativeTab(CCLights2.ccltab);
 	}
 

@@ -20,7 +20,7 @@ public class BlockGPU extends Block {
 
 	public BlockGPU(int par1, Material par2Material) {
 		super(par1, par2Material);
-		this.setUnlocalizedName("GPU");
+		this.setUnlocalizedName("gpu");
 		this.setCreativeTab(CCLights2.ccltab);
 	}
 	

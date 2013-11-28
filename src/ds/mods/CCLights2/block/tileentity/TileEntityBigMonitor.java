@@ -1,5 +1,6 @@
 package ds.mods.CCLights2.block.tileentity;
 
+import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -12,16 +13,20 @@ import net.minecraft.util.AxisAlignedBB;
 
 import com.google.common.io.ByteArrayDataInput;
 
+import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.network.PacketDispatcher;
+import dan200.computer.api.ILuaContext;
+import dan200.computer.api.ILuaObject;
 import ds.mods.CCLights2.CCLights2;
-import ds.mods.CCLights2.Monitor;
+import ds.mods.CCLights2.block.tileentity.TileEntityMonitor.MonitorObject;
+import ds.mods.CCLights2.gpu.Monitor;
 import ds.mods.CCLights2.network.PacketHandler;
 
-public class TileEntityBigMonitor extends MonitorBase {
+public class TileEntityBigMonitor extends TileEntityMonitor {
 	public static final int MAX_WIDTH = 16;
 	public static final int MAX_HEIGHT = 9;
-	public static final int TICKS_TIL_SYNC = 20 * 30;
-	public boolean dirty = true;
+	public static final int TICKS_TIL_SYNC = 20 * 600;
+	public boolean dirty = false;
 	public boolean m_destroyed = false;
 	public boolean m_ignoreMe = false;
 	public int m_connections = 0;
@@ -35,8 +40,8 @@ public class TileEntityBigMonitor extends MonitorBase {
 	public Monitor m_originMonitor;
 
 	public TileEntityBigMonitor() {
-		mon = new Monitor(32, 32);
-		mon.tex.fill(0, 0, 0);
+		mon = new Monitor(32, 32,getMonitorObject());
+		mon.tex.fill(Color.black);
 	}
 
 	public void destroy() {
@@ -120,9 +125,10 @@ public class TileEntityBigMonitor extends MonitorBase {
 	}
 
 	public void propogateTerminal() {
+		if (origin() == null) return;
 		Monitor originTerminal = origin().mon;
 		originTerminal.removeAllGPUs();
-		originTerminal = new Monitor(m_width * 32, m_height * 32);
+		originTerminal = new Monitor(m_width * 32, m_height * 32,getMonitorObject());
 		origin().mon = originTerminal;
 		for (int y = 0; y < this.m_height; y++) {
 			for (int x = 0; x < this.m_width; x++) {
@@ -152,14 +158,16 @@ public class TileEntityBigMonitor extends MonitorBase {
 	public int getRight() {
 		int dir = getDir();
 		switch (dir) {
+		case 0:
+			return 5;
+		case 1:
+			return 2;
 		case 2:
 			return 4;
 		case 3:
-			return 5;
-		case 4:
 			return 3;
-		case 5:
-			return 2;
+		default:
+			FMLLog.info("Dir: "+dir);
 		}
 		return dir;
 	}
@@ -274,9 +282,7 @@ public class TileEntityBigMonitor extends MonitorBase {
 	}
 
 	public boolean mergeLeft() {
-		// System.out.println("Left");
 		TileEntityBigMonitor left = getNeighbour(-1, 0);
-		// System.out.println(left);
 		if ((left != null) && (left.m_yIndex == 0)
 				&& (left.m_height == this.m_height)) {
 			int width = left.m_width + this.m_width;
@@ -410,7 +416,7 @@ public class TileEntityBigMonitor extends MonitorBase {
 				below.expand();
 			}
 			mon.removeAllGPUs();
-			mon = new Monitor(32, 32);
+			mon = new Monitor(32, 32,getMonitorObject());
 			return;
 		}
 
@@ -470,43 +476,14 @@ public class TileEntityBigMonitor extends MonitorBase {
 		}
 	}
 
-	/*
-	 * public void monitorTouched(int side, float xPos, float yPos, float zPos)
-	 * { TileEntityMonitor origin = origin(); if (origin != null) {
-	 * origin.queueTouchEvent(side, xPos, yPos, zPos, this.m_xIndex,
-	 * this.m_yIndex); } }
-	 */
-
-	/*
-	 * public void queueTouchEvent(int side, float xPos, float yPos, float zPos,
-	 * int xIndex, int yIndex) { if (this.m_computers == null) { return; }
-	 * 
-	 * XYPair pair = convertToXY(xPos, yPos, zPos, side); pair.x += xIndex;
-	 * pair.y += this.m_height - yIndex - 1;
-	 * 
-	 * if ((pair.x > this.m_width - 0.125F) || (pair.y > this.m_height - 0.125F)
-	 * || (pair.x < 0.125F) || (pair.y < 0.125F)) { return; }
-	 * 
-	 * Terminal term = getTerminal(); if (term == null) { return; }
-	 * 
-	 * float xCharWidth = (this.m_width - 0.3125F) / term.getWidth(); float
-	 * yCharHeight = (this.m_height - 0.3125F) / term.getHeight();
-	 * 
-	 * int xCharPos = (int)Math.max((pair.x - 0.125F - 0.03125F) / xCharWidth +
-	 * 1.0F, 1.0F); int yCharPos = (int)Math.max((pair.y - 0.125F - 0.03125F) /
-	 * yCharHeight + 1.0F, 1.0F); for (IComputerAccess c : this.m_computers) {
-	 * c.queueEvent("monitor_touch", new Object[] { c.getAttachmentSide(),
-	 * Integer.valueOf(xCharPos), Integer.valueOf(yCharPos) }); } }
-	 */
-
 	@Override
 	public void updateEntity() {
-		if (dirty) {
-			propogateTerminal();
+		if (dirty || m_tts-- < 0) {
+			//propogateTerminal();
 			// Send update packet
-			PacketDispatcher.sendPacketToAllInDimension(createUpdatePacket(),
-					worldObj.provider.dimensionId);
+			PacketDispatcher.sendPacketToAllAround(xCoord,yCoord,zCoord,getMaxRenderDistanceSquared(),worldObj.provider.dimensionId,createUpdatePacket());
 			dirty = false;
+			m_tts = TICKS_TIL_SYNC;
 		}
 	}
 
@@ -516,6 +493,7 @@ public class TileEntityBigMonitor extends MonitorBase {
 		m_xIndex = dat.readInt();
 		m_yIndex = dat.readInt();
 		m_dir = dat.readInt();
+		propogateTerminal();
 		System.out.println("Handled update packet");
 	}
 
@@ -535,11 +513,46 @@ public class TileEntityBigMonitor extends MonitorBase {
 			outputStream.writeInt(m_yIndex);
 			outputStream.writeInt(m_dir);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		packet.data = bos.toByteArray();
 		packet.length = bos.size();
 		return packet;
+	}
+	
+	public ILuaObject getMonitorObject()
+	{
+		return new MonitorObject();
+	}
+	
+	public class MonitorObject implements ILuaObject
+	{
+
+		@Override
+		public String[] getMethodNames() {
+			return new String[]{"getResolution","getDPM","getBlockResolution"};
+		}
+
+		@Override
+		public Object[] callMethod(ILuaContext context, int method,
+				Object[] arguments) throws Exception {
+			switch (method)
+			{
+			case 0:
+			{
+				return new Object[]{mon.getWidth(),mon.getHeight()};
+			}
+			case 1:
+			{
+				return new Object[]{32};
+			}
+			case 2:
+			{
+				return new Object[]{m_width,m_height};
+			}
+			}
+			return null;
+		}
+		
 	}
 }

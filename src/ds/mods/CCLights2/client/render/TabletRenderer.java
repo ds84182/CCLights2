@@ -1,5 +1,6 @@
 package ds.mods.CCLights2.client.render;
 
+import java.awt.Color;
 import java.util.UUID;
 
 import net.minecraft.client.Minecraft;
@@ -18,13 +19,13 @@ import org.lwjgl.opengl.GL11;
 
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.Config;
-import ds.mods.CCLights2.Convert;
-import ds.mods.CCLights2.Monitor;
-import ds.mods.CCLights2.Texture;
-import ds.mods.CCLights2.block.tileentity.MonitorBase;
+import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
 import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
 import ds.mods.CCLights2.client.ClientProxy;
+import ds.mods.CCLights2.gpu.Monitor;
+import ds.mods.CCLights2.gpu.Texture;
 import ds.mods.CCLights2.item.ItemTablet;
+import ds.mods.CCLights2.utils.Convert;
 import ds.mods.CCLights2.utils.TabMesg;
 
 public class TabletRenderer implements IItemRenderer {
@@ -32,12 +33,18 @@ public class TabletRenderer implements IItemRenderer {
 	ModelTablet model = new ModelTablet();
 	TextureManager re;
 	ResourceLocation texture = new ResourceLocation("cclights", "textures/items/Tablet.png");
+	public static Texture defaultTexture = new Texture(16*32, 9*32);
 	public static DynamicTexture dyntex = new DynamicTexture(16*32,9*32);
 	public static int[] dyntex_data;
 	
 	public TabletRenderer()
 	{
 		dyntex_data = dyntex.getTextureData();
+		
+		defaultTexture.fill(Color.blue);
+		defaultTexture.drawText("Hello, World!", 0, 0, Color.white);
+		defaultTexture.drawText("Please configure the tablet with a Tablet Transmitter.", 0, 9, Color.white);
+		defaultTexture.drawText("You can do this by right clicking it with your tablet.", 0, 18, Color.white);
 	}
 
 	@Override
@@ -104,36 +111,50 @@ public class TabletRenderer implements IItemRenderer {
 				GL11.glPopMatrix();
 				return;
 			}
-			if (!nbt.getBoolean("canDisplay"))
-			{
-				if (Config.DEBUGS){
-				System.out.println("No Display");}
-				GL11.glPopMatrix();
-				return;
-			}
 			//Well, we need to get the screen :P
-			UUID trans = UUID.fromString(nbt.getString("trans"));
-			if (trans == null || TabMesg.getTabVar(trans, "x") == null) {nbt.setBoolean("canDisplay", false); GL11.glPopMatrix(); return;}
-			if (Minecraft.getMinecraft().theWorld == null) {GL11.glPopMatrix(); return;}
-			TileEntity noncast = Minecraft.getMinecraft().theWorld
-					.getBlockTileEntity(
-							(Integer)TabMesg.getTabVar(trans, "x"),
-							(Integer)TabMesg.getTabVar(trans, "y"),
-							(Integer)TabMesg.getTabVar(trans, "z"));
-			if (noncast == null || !(noncast instanceof TileEntityTTrans)){nbt.setBoolean("canDisplay", false); GL11.glPopMatrix(); return;}
-			MonitorBase tile = (MonitorBase) noncast;
-			Monitor mon;
-			mon = tile.mon;
-			if (mon.tex == null)
+			Texture tex = defaultTexture;
+			if (nbt.getBoolean("canDisplay"))
 			{
-				if (Config.DEBUGS){
-				System.out.println("No Texture");}
-				GL11.glPopMatrix();
-				return;
+				String uuistr = nbt.getString("trans");
+				if (uuistr != null)
+				{
+					UUID trans = UUID.fromString(uuistr);
+					if (!(trans == null || TabMesg.getTabVar(trans, "x") == null))
+					{
+						if (Minecraft.getMinecraft().theWorld == null) {GL11.glPopMatrix(); return;}
+						TileEntity noncast = Minecraft.getMinecraft().theWorld
+								.getBlockTileEntity(
+										(Integer)TabMesg.getTabVar(trans, "x"),
+										(Integer)TabMesg.getTabVar(trans, "y"),
+										(Integer)TabMesg.getTabVar(trans, "z"));
+						if (!(noncast == null || !(noncast instanceof TileEntityTTrans)))
+						{
+							TileEntityTTrans tile = (TileEntityTTrans) noncast;
+							Monitor mon;
+							mon = tile.mon;
+							if (mon.tex != null)
+								tex = mon.tex;
+							else
+								nbt.setBoolean("canDisplay", false);
+						}
+						else
+							nbt.setBoolean("canDisplay", false);
+					}
+					else
+						nbt.setBoolean("canDisplay", false);
+				}
+				else
+					nbt.setBoolean("canDisplay", false);
 			}
-			Texture tex = mon.tex;
 			GL11.glTranslatef(0F, -0.0001F, 0F);
-			tex.img.getRGB(0, 0, tex.getWidth(), tex.getHeight(), dyntex_data, 0, tex.getWidth());
+			if (tex == defaultTexture)
+			{
+				defaultTexture.fill(Color.blue);
+				defaultTexture.drawText("Hello, World!", 0, 0, Color.white);
+				defaultTexture.drawText("Please configure the tablet with a Tablet Transmitter.", 0, 9, Color.white);
+				defaultTexture.drawText("You can do this by right clicking it with your tablet.", 0, 18, Color.white);
+			}
+			tex.img.getRGB(0, 0, tex.getWidth(), tex.getHeight(), dyntex_data, 0, 16*32);
 			dyntex.updateDynamicTexture();
 			Tessellator tess = Tessellator.instance;
 			tess.startDrawingQuads();

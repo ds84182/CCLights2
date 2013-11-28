@@ -15,7 +15,7 @@ public class ItemRAM extends Item {
 	public ItemRAM(int par1) {
 		super(par1);
 		this.hasSubtypes = true;
-		this.setUnlocalizedName("RAM");
+		this.setUnlocalizedName("ram");
 		this.setCreativeTab(CCLights2.ccltab);
 	}
 	

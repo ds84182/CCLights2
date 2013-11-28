@@ -23,7 +23,7 @@ public class ItemTablet extends Item {
 		super(par1-256);
 		this.setMaxStackSize(1);
 		this.setNoRepair();
-		this.setUnlocalizedName("Tablet");
+		this.setUnlocalizedName("tablet");
 		this.setCreativeTab(CCLights2.ccltab);
 	}
 
@@ -44,7 +44,7 @@ public class ItemTablet extends Item {
 		//System.out.println("Output.");
 		//If canDisplay then show gui end
 		NBTTagCompound nbt = getNBT(par1ItemStack,par3World);
-		if (nbt.getBoolean("canDisplay") & !nbt.getBoolean("gui")) //Dunno how the second part is possible, but meh
+		if (!nbt.getBoolean("gui")) //Dunno how the second part is possible, but meh
 		{
 			//Show GUI
 			System.out.println("Show GUI");

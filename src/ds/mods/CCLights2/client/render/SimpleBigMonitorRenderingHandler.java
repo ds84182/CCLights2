@@ -1,5 +1,7 @@
 package ds.mods.CCLights2.client.render;
 
+import java.awt.Color;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.world.IBlockAccess;
@@ -12,6 +14,13 @@ public class SimpleBigMonitorRenderingHandler implements
 	
 	TileEntityBigMonitor tile = new TileEntityBigMonitor();
 	public TileEntityBigMonitorRenderer tileRender = new TileEntityBigMonitorRenderer();
+	
+	public SimpleBigMonitorRenderingHandler()
+	{
+		tile.mon.tex.fill(Color.blue);
+		tile.mon.tex.drawText("Hello,", 0, 0, Color.white);
+		tile.mon.tex.drawText("World!", 0, 9, Color.white); //Yes, the fake ass wrap trick
+	}
 
 	@Override
 	public void renderInventoryBlock(Block block, int metadata, int modelID,

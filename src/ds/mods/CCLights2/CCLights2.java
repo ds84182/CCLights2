@@ -86,7 +86,7 @@ public class CCLights2 {
 		// big monitor
 		monitorBig = new BlockBigMonitor(Config.MonitorBig, Material.iron);
 		GameRegistry.registerBlock(monitorBig, "CCLBigMonitor");
-		LanguageRegistry.addName(monitorBig, "BigMonitor");
+		LanguageRegistry.addName(monitorBig, "External Monitor");
 		GameRegistry.registerTileEntity(TileEntityBigMonitor.class,
 				"CCLBigMonitorTE");
 		GameRegistry.addRecipe(new ItemStack(monitorBig, 8), new Object[] {
@@ -95,7 +95,7 @@ public class CCLights2 {
 		// tablet trans
 		ttrans = new BlockTabletTransceiver(Config.TTrans, Material.iron);
 		GameRegistry.registerBlock(ttrans, "CCLTTrans");
-		LanguageRegistry.addName(ttrans, "TTrans");
+		LanguageRegistry.addName(ttrans, "Tablet Transmitter");
 		GameRegistry.registerTileEntity(TileEntityTTrans.class,
 				"CCLTTransTE");
 		GameRegistry.addRecipe(new ItemStack(ttrans, 1), new Object[] {
@@ -104,7 +104,7 @@ public class CCLights2 {
 		// RAM
 		ram = new ItemRAM(Config.Ram);
 		GameRegistry.registerItem(ram, "CCLRAM");
-		LanguageRegistry.addName(ram, "RAM");
+		LanguageRegistry.addName(ram, "Random Access Memory");
 		GameRegistry.addRecipe(new ItemStack(ram, 8), new Object[] { "III",
 				"R R", "GGG", 'I', Item.ingotIron, 'R', Block.blockRedstone,
 				'G', Item.ingotGold, 'L', Block.thinGlass });

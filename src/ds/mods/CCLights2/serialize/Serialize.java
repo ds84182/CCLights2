@@ -5,7 +5,7 @@ import java.util.Map;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 
-import ds.mods.CCLights2.GPU;
+import ds.mods.CCLights2.gpu.GPU;
 
 public class Serialize {
 	public static Object[][] classToSerializer  = new Object[][]

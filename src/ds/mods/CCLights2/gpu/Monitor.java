@@ -1,6 +1,10 @@
-package ds.mods.CCLights2;
+package ds.mods.CCLights2.gpu;
 
+import java.awt.Color;
 import java.util.ArrayList;
+
+import dan200.computer.api.ILuaObject;
+import ds.mods.CCLights2.Config;
 
 public class Monitor {
 	public ArrayList<GPU> gpu = new ArrayList<GPU>();
@@ -8,12 +12,15 @@ public class Monitor {
 	
 	private int width;
 	private int height;
+	public ILuaObject obj;
 	
-	public Monitor(int w, int h)
+	public Monitor(int w, int h, ILuaObject o)
 	{
 		width = w;
 		height = h;
 		tex = new Texture(w, h);
+		tex.fill(Color.black);
+		obj = o;
 	}
 	
 	public void resize(int w, int h)
@@ -21,6 +28,7 @@ public class Monitor {
 		width = w;
 		height = h;
 		tex.resize(w, h);
+		tex.fill(Color.black);
 		if (Config.DEBUGS){
 		System.out.println("Resized to: "+w+","+h);}
 	}

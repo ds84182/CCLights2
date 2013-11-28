@@ -1,14 +1,19 @@
-package ds.mods.CCLights2;
+package ds.mods.CCLights2.gpu;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.awt.image.RescaleOp;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
 import net.minecraft.util.ChatAllowedCharacters;
+import ds.mods.CCLights2.CCLights2;
+import ds.mods.CCLights2.jhlabs.image.BoxBlurFilter;
+import ds.mods.CCLights2.jhlabs.image.GaussianFilter;
 
 
 public class Texture {
@@ -17,8 +22,13 @@ public class Texture {
 	
 	private int width;
 	private int height;
+	public boolean renderLock = false;
 	
 	public static BufferedImage font;
+	
+	public AffineTransform transform = new AffineTransform();
+	public static AffineTransform resetTransform = new AffineTransform();
+	public static Texture temp;
 	
 	private static int[] charWidth = new int[256];
 	
@@ -34,10 +44,11 @@ public class Texture {
 		if (font == null)
 		{
 			try {
-				font = ImageIO.read(getClass().getResourceAsStream("ascii.png"));
+				font = ImageIO.read(CCLights2.class.getResourceAsStream("ascii.png"));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			temp = new Texture(512, 512);
 			int i = font.getWidth();
 	        int j = font.getHeight();
 	        aint = new int[i * j];
@@ -103,30 +114,38 @@ public class Texture {
 	
 	public int getMemoryUse()
 	{
-		return width*height/16;
+		return (width*height)/32;
 	}
 	
-	public void plot(int r, int g, int b, int x, int y)
+	public void plot(Color c, int x, int y)
 	{
-		graphics.setColor(new Color(r,g,b));
+		graphics.setTransform(transform);
+		graphics.setColor(c);
 		graphics.fillRect(x, y, 1, 1);
+		graphics.setTransform(resetTransform);
 	}
 	
-	public void filledRect(int r, int g, int b, int x, int y, int w, int h)
+	public void filledRect(Color c, int x, int y, int w, int h)
 	{
-		graphics.setColor(new Color(r,g,b));
+		graphics.setTransform(transform);
+		graphics.setColor(c);
 		graphics.fillRect(x, y, w, h);
+		graphics.setTransform(resetTransform);
 	}
 	
-	public void rect(int r, int g, int b, int x, int y, int w, int h)
+	public void rect(Color c, int x, int y, int w, int h)
 	{
-		graphics.setColor(new Color(r,g,b));
+		graphics.setTransform(transform);
+		graphics.setColor(c);
 		graphics.drawRect(x, y, w, h);
+		graphics.setTransform(resetTransform);
 	}
 	// draw a line from point x1,y1 into x2,y2
-	public void line(int r, int g, int b, int x1, int y1, int x2, int y2) { 
-		graphics.setColor(new Color(r,g,b));
+	public void line(Color c, int x1, int y1, int x2, int y2) { 
+		graphics.setTransform(transform);
+		graphics.setColor(c);
 		graphics.drawLine(x1, y1, x2, y2);
+		graphics.setTransform(resetTransform);
 	}
 	
 	public void flipV()
@@ -136,32 +155,54 @@ public class Texture {
 		graphics.drawImage(img, trans, null);
 	}
 	
-	public void drawTexture(Texture tex, int x, int y)
+	public void drawTexture(Texture tex, int x, int y, Color c)
 	{
 		if (tex == null)
 		{
 			System.out.println("Texture to draw is null.");
 			return;
 		}
-		drawTexture(tex,x,y,0,0,tex.width,tex.height, 255, 255, 255);
+		drawTexture(tex,x,y,0,0,tex.width,tex.height, c);
 	}
 	
-	public void drawTexture(Texture tex, int x, int y, int tx, int ty, int w, int h, int r, int g, int b)
+	public void drawTexture(Texture tex, int x, int y, int tx, int ty, int w, int h, Color c)
 	{
 		if (tex == null)
 		{
 			System.out.println("Texture to draw is null.");
 			return;
 		}
-		graphics.clipRect(x+tx, x+ty, w, h);
-		graphics.setColor(new Color(r,g,b));
-		graphics.drawImage(tex.img, x, y, null);
+		//System.out.println("Drawing texture");
+		graphics.setTransform(transform);
+		graphics.setClip(new Rectangle(x, y, w, h));
+		float[] scales = new float[]{c.getRed()/255f,c.getGreen()/255f,c.getBlue()/255f,c.getAlpha()/255f};//rgba
+		float[] offsets = new float[4];
+		RescaleOp rop = new RescaleOp(scales, offsets, null);
+		graphics.drawImage(tex.img, rop, x-tx, y-ty);
+		graphics.setClip(null);
+		graphics.setTransform(resetTransform);
 	}
 	
-	public void fill(int r, int g, int b)
+	public void fill(Color c)
 	{
-		graphics.setColor(new Color(r,g,b));
-		graphics.fillRect(0, 0, width, height);
+		graphics.setBackground(c);
+		graphics.clearRect(0, 0, width, height);
+	}
+	
+	public void polygon(int[] xPoints, int[] yPoints, int nPoints, Color c)
+	{
+		graphics.setColor(c);
+		graphics.setTransform(transform);
+		graphics.drawPolyline(xPoints, yPoints, nPoints);
+		graphics.setTransform(resetTransform);
+	}
+	
+	public void filledPolygon(int[] xPoints, int[] yPoints, int nPoints, Color c)
+	{
+		graphics.setColor(c);
+		graphics.setTransform(transform);
+		graphics.drawPolygon(xPoints, yPoints, nPoints);
+		graphics.setTransform(resetTransform);
 	}
 
 	public int[] getRGB(int x, int y) {
@@ -190,7 +231,7 @@ public class Texture {
             }
             else
             {
-                return 0;
+                return 8;
             }
         }
     }
@@ -243,7 +284,7 @@ public class Texture {
         }
     }
 	
-	public void drawText(String text, int x, int y, int r, int g, int b)
+	public void drawText(String text, int x, int y, Color c)
 	{
 		for (int i = 0; i<text.length(); i++)
 		{
@@ -262,7 +303,7 @@ public class Texture {
 					int rgb = aint[((fy+cy)*font.getWidth())+(fx+cx)];
 					if ((rgb&0xFFFFFF) > 0)
 					{
-						plot(r,g,b,fx+x,fy+y);
+						plot(c,fx+x,fy+y);
 					}
 				}
 			}
@@ -278,10 +319,30 @@ public class Texture {
 		height = h;
 	}
 	
+	@Override
+	protected void finalize() throws Throwable {
+		System.out.println("Texture is being discarded...");
+		dispose();
+	}
+
 	public void dispose()
 	{
 		graphics.dispose();
 		graphics = null;
 		img = null;
+	}
+	
+	public void clearRect(Color c, int x, int y, int w, int h)
+	{
+		graphics.setBackground(c);
+		graphics.clearRect(x, y, w, h);
+	}
+	
+	public static BoxBlurFilter filter = new BoxBlurFilter();
+	{
+		filter.setRadius(2);
+	}
+	public void blur() {
+		filter.filter(img, img);
 	}
 }

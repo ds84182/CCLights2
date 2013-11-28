@@ -19,7 +19,7 @@ public class BlockMonitor extends Block {
 
 	public BlockMonitor(int par1, Material par2Material) {
 		super(par1, par2Material);
-		this.setUnlocalizedName("Monitor");
+		this.setUnlocalizedName("monitor.normal");
 		this.setCreativeTab(CCLights2.ccltab);
 	}
 	

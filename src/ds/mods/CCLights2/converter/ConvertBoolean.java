@@ -1,8 +1,11 @@
 package ds.mods.CCLights2.converter;
 
 public class ConvertBoolean {
-	public static Boolean convert(Object obj)
+	public static Boolean convert(Object obj) throws Exception
 	{
-		return (Boolean) obj;
+		if (obj instanceof Boolean)
+			return (Boolean) obj;
+		else
+			throw new Exception("boolean expected, got "+obj.getClass().getName());
 	}
 }

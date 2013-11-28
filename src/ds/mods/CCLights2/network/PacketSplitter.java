@@ -59,4 +59,28 @@ public class PacketSplitter {
 			PacketDispatcher.sendPacketToPlayer(new Packet250CustomPayload("CCLights2",out.toByteArray()), player);
 		}
 	}
+	
+	public static void sendPacketToAllAround(Packet250CustomPayload packet, int X, int Y, int Z, double range, int dimensionId)
+	{
+		if (packet.length<=32768)
+		{
+			PacketDispatcher.sendPacketToAllAround(X, Y, Z, range, dimensionId, packet);
+			return;
+		}
+		//Each packet contains the byte -1 and a short as a random value. We make sure that that short is not on the send list for each player.
+		//Packets are split into packets of 32767-3 (3 for that byte and short)
+		int numOfPackets = (int) Math.ceil(packet.data.length/(32767-11D));
+		short rand = (short) new Random().nextInt();
+		for (int i = 0; i<numOfPackets; i++)
+		{
+			byte[] copy = Arrays.copyOfRange(packet.data, (32767-11)*i, ((32767-11)*i)+Math.min(32767-11, packet.data.length-((32767-11)*i)));
+			ByteArrayDataOutput out = ByteStreams.newDataOutput(copy.length+11);
+			out.writeByte(-1);
+			out.writeShort(rand);
+			out.writeInt(i);
+			out.writeInt(numOfPackets);
+			out.write(copy);
+			PacketDispatcher.sendPacketToAllAround(X, Y, Z, range, dimensionId, new Packet250CustomPayload("CCLights2",out.toByteArray()));
+		}
+	}
 }
