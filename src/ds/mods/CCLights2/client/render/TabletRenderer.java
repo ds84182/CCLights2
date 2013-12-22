@@ -106,8 +106,7 @@ public class TabletRenderer implements IItemRenderer {
 			NBTTagCompound nbt = ((ItemTablet)CCLights2.tablet).getNBT(item, Minecraft.getMinecraft().theWorld);
 			if (nbt == null)
 			{
-				if (Config.DEBUGS){
-				System.out.println("No NBT");}
+				CCLights2.debug("No NBT");
 				GL11.glPopMatrix();
 				return;
 			}

@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 
 import dan200.computer.api.ILuaObject;
+import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.Config;
 
 public class Monitor {
@@ -29,8 +30,7 @@ public class Monitor {
 		height = h;
 		tex.resize(w, h);
 		tex.fill(Color.black);
-		if (Config.DEBUGS){
-		System.out.println("Resized to: "+w+","+h);}
+		CCLights2.debug("Resized to: "+w+","+h);
 	}
 	
 	public GPU getGPU(int index) {

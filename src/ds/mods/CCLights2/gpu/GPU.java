@@ -14,6 +14,7 @@ import net.minecraft.network.packet.Packet250CustomPayload;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 
+import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
 import ds.mods.CCLights2.network.PacketHandler;
 import ds.mods.CCLights2.network.PacketSplitter;
@@ -48,13 +49,13 @@ public class GPU {
 	{
 		monitors.add(mon);
 		currentMonitor = mon;
-		System.out.println("Added monitor "+mon.getWidth()+"x"+mon.getHeight()+" "+mon);
+		CCLights2.debug("Added monitor "+mon.getWidth()+"x"+mon.getHeight()+" "+mon);
 	}
 	
 	public void removeMonitor(Monitor mon)
 	{
 		monitors.remove(mon);
-		System.out.println("Rem monitor "+mon.getWidth()+"x"+mon.getHeight()+" "+mon);
+		CCLights2.debug("Rem monitor "+mon.getWidth()+"x"+mon.getHeight()+" "+mon);
 		if (currentMonitor == mon)
 		{
 			textures[0] = null;
@@ -74,7 +75,7 @@ public class GPU {
 			addMonitor(mon);
 		}
 		this.currentMonitor = mon;
-		System.out.println("Monitor set!");
+		CCLights2.debug("Monitor set!");
 		bindedTexture = mon.getTex();
 		textures[0] = bindedTexture;
 		bindedSlot = 0;

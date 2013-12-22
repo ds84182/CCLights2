@@ -159,7 +159,7 @@ public class Texture {
 	{
 		if (tex == null)
 		{
-			System.out.println("Texture to draw is null.");
+			CCLights2.debug("Texture to draw is null.");
 			return;
 		}
 		drawTexture(tex,x,y,0,0,tex.width,tex.height, c);
@@ -169,7 +169,7 @@ public class Texture {
 	{
 		if (tex == null)
 		{
-			System.out.println("Texture to draw is null.");
+			CCLights2.debug("Texture to draw is null.");
 			return;
 		}
 		//System.out.println("Drawing texture");
@@ -321,7 +321,7 @@ public class Texture {
 	
 	@Override
 	protected void finalize() throws Throwable {
-		System.out.println("Texture is being discarded...");
+		CCLights2.debug("Texture is being discarded...");
 		dispose();
 	}
 

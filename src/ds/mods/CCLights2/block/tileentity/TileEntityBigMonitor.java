@@ -224,7 +224,7 @@ public class TileEntityBigMonitor extends TileEntityMonitor {
 	}
 
 	public void resize(int width, int height, boolean ignoreTerminals) {
-		System.out.println("Resizing: " + width + "," + height);
+		CCLights2.debug("Resizing: " + width + "," + height);
 		int right = getRight();
 		int rightX = net.minecraft.util.Facing.offsetsXForSide[right];
 		int rightZ = net.minecraft.util.Facing.offsetsZForSide[right];
@@ -346,7 +346,7 @@ public class TileEntityBigMonitor extends TileEntityMonitor {
 	public void expand() {
 		dirty = true;
 		while ((mergeLeft()) || (mergeRight()) || (mergeUp()) || (mergeDown())) {
-			System.out.println("Expanding");
+			CCLights2.debug("Expanding");
 		}
 		;
 	}
@@ -494,7 +494,7 @@ public class TileEntityBigMonitor extends TileEntityMonitor {
 		m_yIndex = dat.readInt();
 		m_dir = dat.readInt();
 		propogateTerminal();
-		System.out.println("Handled update packet");
+		CCLights2.debug("Handled update packet");
 	}
 
 	public Packet createUpdatePacket() {

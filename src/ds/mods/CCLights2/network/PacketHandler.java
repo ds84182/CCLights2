@@ -51,7 +51,7 @@ public class PacketHandler implements IPacketHandler {
 		if (doThreadding)
 		{
 			thread = new ClientDrawThread();
-			System.out.println("Start thread");
+			CCLights2.debug("Start thread");
 			thread.start();
 		}
 	}
@@ -72,7 +72,7 @@ public class PacketHandler implements IPacketHandler {
 					splitPackets.get(id).addPacket(packet.data);
 					if (splitPackets.get(id).finish)
 					{
-						System.out.println("Split packet finished.");
+						CCLights2.debug("Split packet finished.");
 						splitPackets.put(id, null);
 					}
 				}
@@ -118,7 +118,7 @@ public class PacketHandler implements IPacketHandler {
 						{
 							if (!thread.isAlive())
 							{
-								System.out.println("The client draw thread died, restarting");
+								CCLights2.debug("The client draw thread died, restarting");
 								thread = new ClientDrawThread();
 								thread.start();
 							}
@@ -228,7 +228,7 @@ public class PacketHandler implements IPacketHandler {
 				if (player instanceof EntityPlayerMP)
 				{
 					//Server//
-					System.out.println("Got DL packet from client!");
+					CCLights2.debug("Got DL packet from client!");
 					int dim = dat.readInt();
 					World world = null;
 					for (int i = 0; i<MinecraftServer.getServer().worldServers.length; i++)
@@ -374,7 +374,7 @@ public class PacketHandler implements IPacketHandler {
 		{
 			arr[i] = dat.readInt();
 		}
-		System.out.println(w+","+h);
+		CCLights2.debug(w+","+h);
 		tex.img.setRGB(0, 0, w, h, arr, 0, w);
 	}
 	

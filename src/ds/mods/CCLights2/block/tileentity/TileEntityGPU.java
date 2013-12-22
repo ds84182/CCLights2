@@ -56,10 +56,10 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 		gpu.tile = this;
 		if (CCLights2.proxy.getClientWorld() != null) {
 			// download textures//
-			System.out.println("Client side GPU!");
+			CCLights2.debug("Client side GPU!");
 			sendDLREQ = true;
 		} else {
-			System.out.println("Server side GPU!");
+			CCLights2.debug("Server side GPU!");
 		}
 	}
 
@@ -129,7 +129,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 						}
 						if (found)
 							break;
-						System.out.println("Connecting!");
+						CCLights2.debug("Connecting!");
 						tile.connect(this.gpu);
 						tile.mon.tex.fill(Color.black);
 						tile.mon.tex.drawText("Monitor connected", 0, 0, Color.white);
@@ -137,10 +137,8 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 						return;
 					}
 				} else {
-					if (Config.DEBUGS) {
-						System.out.println(dir.name());
-						System.out.println(ftile.toString());
-					}
+						CCLights2.debug(dir.name());
+						CCLights2.debug(ftile.toString());
 				}
 			}
 		}
@@ -484,9 +482,9 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 					//System.out.println(((Double)m.get(i+1D)).byteValue());
 					data[(int) i] = ((Double)m.get(i+1D)).byteValue();
 				}
-				System.out.println("Moved data");
+				CCLights2.debug("Moved data");
 				BufferedImage img = ImageLoader.load(data, format);
-				System.out.println("Imaged loaded "+img);
+				CCLights2.debug("Imaged loaded "+img);
 				int w = img.getWidth();
 				int h =  img.getHeight();
 				DrawCMD cmd = new DrawCMD();
@@ -780,7 +778,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			}
 			packet.data = bos.toByteArray();
 			packet.length = bos.size();
-			System.out.println("Sent DL Request to server!");
+			CCLights2.debug("Sent DL Request to server!");
 			PacketDispatcher.sendPacketToServer(packet);
 			sendDLREQ = false;
 		}

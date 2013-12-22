@@ -48,7 +48,7 @@ public class GuiTablet extends GuiScreen {
 	public void initGui()
 	{
 		nbt.setBoolean("gui", true);
-		System.out.println("Created textures");
+		CCLights2.debug("Created textures");
 		tex.img.setRGB(0, 0, tex.getWidth(), tex.getHeight(), TabletRenderer.dyntex_data, 0, 16*32);
 		TabletRenderer.dyntex.updateDynamicTexture();
 		Keyboard.enableRepeatEvents(true);
@@ -87,8 +87,7 @@ public class GuiTablet extends GuiScreen {
 					my = par2;
 					if (mlx != mx | mly != my)
 					{
-						if (Config.DEBUGS){
-						System.out.println("Moused move!");}
+						CCLights2.debug("Moused move!");
 						
 	//					Packet250CustomPayload packet = new Packet250CustomPayload();
 	//					packet.channel = "GPUMouse";
@@ -158,8 +157,7 @@ public class GuiTablet extends GuiScreen {
 		if (nbt.getBoolean("canDisplay"))
 			if (par1 > -1 & par2 > -1 & par1 < mon.getWidth()+1 & par2 < mon.getHeight()+1)
 			{
-				if (Config.DEBUGS){
-				System.out.println("Mouse click! "+par3);}
+				CCLights2.debug("Mouse click! "+par3);
 				isMouseDown = true;
 				mouseButton = par3;
 				mlx = par1;
@@ -198,8 +196,7 @@ public class GuiTablet extends GuiScreen {
 			{
 				if (par3 == mouseButton)
 				{
-					 if (Config.DEBUGS){
-					System.out.println("Mouse up! "+par3);}
+					CCLights2.debug("Mouse up! "+par3);
 					isMouseDown = false;
 	//				Packet250CustomPayload packet = new Packet250CustomPayload();
 	//				packet.channel = "GPUMouse";

@@ -52,7 +52,7 @@ public class GuiMonitor extends GuiScreen {
 		Texture tex = mon.tex;
 		if (tex == null)
 			throw new RuntimeException("OpenGL texture setup failed!");
-		System.out.println("Created textures");
+		CCLights2.debug("Created textures");
 		tex.img.getRGB(0, 0, tex.getWidth(), tex.getHeight(), TabletRenderer.dyntex_data, 0, 16*32);
 		TabletRenderer.dyntex.updateDynamicTexture();
 		Keyboard.enableRepeatEvents(true);
@@ -86,7 +86,7 @@ public class GuiMonitor extends GuiScreen {
 		int wheel = Mouse.getDWheel();
 		if (wheel != 0)
 		{
-			System.out.println(wheel/120);
+			CCLights2.debug(wheel/120+"");
 			Packet250CustomPayload packet = new Packet250CustomPayload();
 			packet.channel = "CCLights2";
 	    	ByteArrayDataOutput out = ByteStreams.newDataOutput();
@@ -120,8 +120,7 @@ public class GuiMonitor extends GuiScreen {
 				my = par2;
 				if (mlx != mx | mly != my)
 				{
-					if (Config.DEBUGS){
-					System.out.println("Moused move!");}
+					CCLights2.debug("Moused move!");
 					Packet250CustomPayload packet = new Packet250CustomPayload();
 					packet.channel = "CCLights2";
 					ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
@@ -191,8 +190,7 @@ public class GuiMonitor extends GuiScreen {
 		par2 = applyYOffset(par2);
 		if (par1 > -1 & par2 > -1 & par1 < mon.getWidth()+1 & par2 < mon.getHeight()+1)
 		{
-			if (Config.DEBUGS){
-			System.out.println("Mouse click! "+par3);}
+			CCLights2.debug("Mouse click! "+par3);
 			isMouseDown = true;
 			mouseButton = par3;
 			mlx = par1;
@@ -230,8 +228,7 @@ public class GuiMonitor extends GuiScreen {
 		{
 			if (par3 == mouseButton)
 			{
-				if (Config.DEBUGS){
-				System.out.println("Mouse up! "+par3);}
+				CCLights2.debug("Mouse up! "+par3);
 				isMouseDown = false;
 				Packet250CustomPayload packet = new Packet250CustomPayload();
 				packet.channel = "CCLights2";

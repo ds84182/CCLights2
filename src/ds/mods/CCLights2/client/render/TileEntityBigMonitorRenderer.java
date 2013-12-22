@@ -68,7 +68,7 @@ public class TileEntityBigMonitorRenderer extends TileEntitySpecialRenderer {
 				if (m.m_width > 1) GL11.glTranslatef(1F-(1/(float)m.m_width),0F,0F);
 				break;
 			default:
-				System.out.println(m.m_dir);
+				CCLights2.debug(m.m_dir+"");
 			}
 			GL11.glDisable(GL11.GL_TEXTURE_2D);
 			GL11.glColor3f(1F, 1F, 1F);

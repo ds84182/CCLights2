@@ -38,8 +38,7 @@ public class BlockBigMonitor extends Block {
 			int par4, EntityPlayer par5EntityPlayer, int par6, float par7,
 			float par8, float par9) {
 		TileEntityBigMonitor tile = (TileEntityBigMonitor) par1World.getBlockTileEntity(par2,par3,par4);
-		{
-		System.out.println(par7+","+par8+","+par9+","+tile.m_dir);}
+		CCLights2.debug(par7+","+par8+","+par9+","+tile.m_dir);
 		float x = 0f;
 		float y = 0f;
 		switch (tile.m_dir)
@@ -99,10 +98,10 @@ public class BlockBigMonitor extends Block {
 		}
 		int px = (int) Math.floor(x*32F);
 		int py = (int) Math.floor((1F-y)*32F);
-		System.out.println(px+","+py);
+		CCLights2.debug(px+","+py);
 		px+=(tile.m_width-tile.m_xIndex-1)*32;
 		py+=(tile.m_height-tile.m_yIndex-1)*32;
-		//System.out.println(px+","+py);
+		CCLights2.debug(px+","+py);
 		if (!par1World.isRemote)
 		{
 			//Send it to the tileentity!
@@ -141,8 +140,7 @@ public class BlockBigMonitor extends Block {
 	{
 		int l = MathHelper.floor_double((double)(entityliving.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
 		TileEntityBigMonitor tile = (TileEntityBigMonitor) world.getBlockTileEntity(i, j, k);
-		if (Config.DEBUGS){
-		System.out.println("Placed.");}
+		CCLights2.debug("Placed.");
 		 tile.setDir(l);
 		tile.contractNeighbours();
         //monitor.setDir(dir);

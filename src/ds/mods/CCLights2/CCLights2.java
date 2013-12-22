@@ -1,5 +1,8 @@
 package ds.mods.CCLights2;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
@@ -7,6 +10,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.MinecraftForge;
+import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -32,7 +36,7 @@ import ds.mods.CCLights2.item.ItemTablet;
 import ds.mods.CCLights2.network.PacketHandler;
 
 @Mod(modid = "CCLights2", name = "CCLights2", version = "0.2")
-@NetworkMod(clientSideRequired = true, serverSideRequired = true, channels = {"CCLights2"}, packetHandler = PacketHandler.class)
+@NetworkMod(clientSideRequired = true, serverSideRequired = true, channels = { "CCLights2" }, packetHandler = PacketHandler.class)
 public class CCLights2 {
 	@Instance("CCLights2")
 	public static CCLights2 instance;
@@ -46,15 +50,14 @@ public class CCLights2 {
 	public static Item ram;
 	public static Item tablet;
 	protected static Configuration config;
-	
-	public static CreativeTabs ccltab = new CreativeTabs("CClights2")
-	 {
-		 @Override
-	  public ItemStack getIconItemStack()
-	  {
-	   return new ItemStack(Config.Tablet, 1, 0);
-	  }
-	 };
+	public static Logger logger;
+
+	public static CreativeTabs ccltab = new CreativeTabs("CClights2") {
+		@Override
+		public ItemStack getIconItemStack() {
+			return new ItemStack(Config.Tablet, 1, 0);
+		}
+	};
 
 	// end variables
 
@@ -91,16 +94,15 @@ public class CCLights2 {
 				"CCLBigMonitorTE");
 		GameRegistry.addRecipe(new ItemStack(monitorBig, 8), new Object[] {
 				"LLL", "LGL", "LLL", 'G', monitor, 'L', Block.thinGlass });
-		
+
 		// tablet trans
 		ttrans = new BlockTabletTransceiver(Config.TTrans, Material.iron);
 		GameRegistry.registerBlock(ttrans, "CCLTTrans");
 		LanguageRegistry.addName(ttrans, "Tablet Transmitter");
-		GameRegistry.registerTileEntity(TileEntityTTrans.class,
-				"CCLTTransTE");
-		GameRegistry.addRecipe(new ItemStack(ttrans, 1), new Object[] {
-				" L ", "LGL", " L ", 'G', monitor, 'L', Item.redstone });
-		
+		GameRegistry.registerTileEntity(TileEntityTTrans.class, "CCLTTransTE");
+		GameRegistry.addRecipe(new ItemStack(ttrans, 1), new Object[] { " L ",
+				"LGL", " L ", 'G', monitor, 'L', Item.redstone });
+
 		// RAM
 		ram = new ItemRAM(Config.Ram);
 		GameRegistry.registerItem(ram, "CCLRAM");
@@ -115,13 +117,22 @@ public class CCLights2 {
 		GameRegistry.addRecipe(new ItemStack(tablet, 2), new Object[] { "GIG",
 				"RMR", "GIG", 'I', Item.ingotIron, 'R', Item.redstone, 'G',
 				Item.ingotGold, 'M', monitorBig });
-		
+
 		ImageLoader.register(new GeneralImageLoader());
+		logger = event.getModLog();
+		logger.setParent(FMLLog.getLogger());
 	}
 
 	@EventHandler
 	public void load(FMLInitializationEvent event) {
 		proxy.registerRenderInfo();
 		MinecraftForge.EVENT_BUS.register(new Events());
+	}
+
+	public static void debug(String debugmsg) {
+		if (Config.DEBUGS) {
+			Level level = Level.INFO;
+			logger.log(level, debugmsg);
+		}
 	}
 }

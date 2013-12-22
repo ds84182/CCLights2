@@ -47,7 +47,7 @@ public class ItemTablet extends Item {
 		if (!nbt.getBoolean("gui")) //Dunno how the second part is possible, but meh
 		{
 			//Show GUI
-			System.out.println("Show GUI");
+			CCLights2.debug("Show GUI");
 			par2EntityPlayer.openGui(CCLights2.instance, 1, par3World, 0, 0, 0);
 		}
 		return par1ItemStack;
@@ -58,15 +58,15 @@ public class ItemTablet extends Item {
 			EntityPlayer par2EntityPlayer, World par3World, int par4, int par5,
 			int par6, int par7, float par8, float par9, float par10) {
 		NBTTagCompound nbt = getNBT(par1ItemStack,par3World);
-		System.out.println(par3World.getBlockId(par4, par5, par6));
+		CCLights2.debug(par3World.getBlockId(par4, par5, par6)+"");
 		if (!par3World.isRemote && CCLights2.ttrans.blockID == par3World.getBlockId(par4, par5, par6))
 		{
-			System.out.println("Right clicked GPU");
+			CCLights2.debug("Right clicked GPU");
 			nbt.setBoolean("canDisplay",true);
 			TileEntityTTrans tile = (TileEntityTTrans) par3World.getBlockTileEntity(par4, par5, par6);
 			nbt.setString("trans", tile.id.toString());
 			TabMesg.pushMessage(tile.id, new Message("connect",UUID.fromString(nbt.getString("uuid"))));
-			System.out.println(tile.id.toString());
+			CCLights2.debug(tile.id.toString());
 			return false;
 		}
 		return false;

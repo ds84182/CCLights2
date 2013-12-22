@@ -29,8 +29,7 @@ public class GuiHandler implements IGuiHandler {
 			TileEntity tile_entity = world.getBlockTileEntity(x, y, z);
 			return new GuiMonitor(((TileEntityMonitor) tile_entity));
 		case 1:
-			if (Config.DEBUGS){
-			System.out.println("Tablet GUI");}
+			CCLights2.debug("Tablet GUI");
 			return new GuiTablet(player.getHeldItem().getTagCompound(),world);
 		}
 		return null;

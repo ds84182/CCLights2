@@ -3,6 +3,7 @@ package ds.mods.CCLights2.utils;
 import net.minecraft.client.renderer.texture.IconRegister;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.Config;
 
 public class Convert {
@@ -29,8 +30,7 @@ public class Convert {
 		case 2:
 		{
 			color = to16(r,g,b);
-            if(Config.DEBUGS){
-			System.out.println("R: "+r+" G: "+g+" B: "+b+" Color: "+color);}
+			CCLights2.debug("R: "+r+" G: "+g+" B: "+b+" Color: "+color);
 			break;
 		}
 		default:
