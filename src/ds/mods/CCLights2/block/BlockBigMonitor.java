@@ -164,6 +164,6 @@ public class BlockBigMonitor extends Block {
 	}
 	public void registerIcons(IconRegister par1IconRegister)
     {
-        this.blockIcon = par1IconRegister.registerIcon("cclights:monitor");
+        this.blockIcon = par1IconRegister.registerIcon("cclights:monitorsides");
     }
 }

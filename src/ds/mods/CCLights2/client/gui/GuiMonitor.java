@@ -10,6 +10,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.util.ChatAllowedCharacters;
+//import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -32,13 +33,14 @@ import ds.mods.CCLights2.utils.Convert;
 
 //DONE: Don't fire events when mouse is outside area, and apply correct offsets.
 public class GuiMonitor extends GuiScreen {
+	//private static final ResourceLocation corners = new ResourceLocation("cclights", "textures/gui/corners.png");
 	public Monitor mon;
 	public TileEntityMonitor tile;
 	public boolean isMouseDown = false;
 	public int mouseButton = 0;
-	public int mlx;
+	public int mlx;  // mouselast x
 	public int mly;
-	public int mx;
+	public int mx;   // mouse x
 	public int my;
 	
 	public GuiMonitor(TileEntityMonitor mon)

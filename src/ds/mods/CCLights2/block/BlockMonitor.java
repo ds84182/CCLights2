@@ -7,14 +7,13 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Icon;
 import net.minecraft.world.World;
-import net.minecraftforge.common.ForgeDirection;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
 
 public class BlockMonitor extends Block {
-	
+	@SideOnly(Side.CLIENT)
 	Icon sides = null;
 
 	public BlockMonitor(int par1, Material par2Material) {
@@ -26,14 +25,18 @@ public class BlockMonitor extends Block {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public Icon getIcon(int side, int meta) {
-		return ForgeDirection.getOrientation(side) == ForgeDirection.NORTH ? this.blockIcon : sides;
+		if(side == 2) {
+			return this.blockIcon;
+			} else {
+			return sides;
+	  }
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IconRegister par1IconRegister) {
-		this.blockIcon = par1IconRegister.registerIcon("cclights:monitor");
-		sides = par1IconRegister.registerIcon("cclights:blank");
+		this.blockIcon = par1IconRegister.registerIcon("cclights:monitorfront");
+		sides = par1IconRegister.registerIcon("cclights:monitorsides");
 	}
 
     @Override
