@@ -3,14 +3,12 @@ package ds.mods.CCLights2.client.gui;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.IntBuffer;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.util.ChatAllowedCharacters;
-//import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -21,19 +19,16 @@ import com.google.common.io.ByteStreams;
 
 import cpw.mods.fml.common.network.PacketDispatcher;
 import ds.mods.CCLights2.CCLights2;
-import ds.mods.CCLights2.Config;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
-import ds.mods.CCLights2.client.ClientProxy;
 import ds.mods.CCLights2.client.render.TabletRenderer;
 import ds.mods.CCLights2.gpu.Monitor;
 import ds.mods.CCLights2.gpu.Texture;
 import ds.mods.CCLights2.network.PacketHandler;
-import ds.mods.CCLights2.utils.Convert;
 
 
 //DONE: Don't fire events when mouse is outside area, and apply correct offsets.
 public class GuiMonitor extends GuiScreen {
-	//private static final ResourceLocation corners = new ResourceLocation("cclights", "textures/gui/corners.png");
+	private static final ResourceLocation corners = new ResourceLocation("cclights", "textures/gui/corners.png");
 	public Monitor mon;
 	public TileEntityMonitor tile;
 	public boolean isMouseDown = false;
@@ -165,6 +160,9 @@ public class GuiMonitor extends GuiScreen {
 		TabletRenderer.dyntex.updateDynamicTexture();
 		this.drawTexturedModalRect(unapplyXOffset(0), unapplyYOffset(0), mon.getWidth(), mon.getHeight());
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
+		
+		
+		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
     }
 	
 	public void drawTexturedModalRect(int x, int y, int w, int h)

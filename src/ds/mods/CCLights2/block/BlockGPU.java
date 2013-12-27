@@ -5,14 +5,11 @@ import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IconRegister;
-import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Icon;
-import net.minecraft.util.MathHelper;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -28,15 +25,7 @@ public class BlockGPU extends Block {
 		super(par1, par2Material);
 		this.setUnlocalizedName("gpu");
 		this.setCreativeTab(CCLights2.ccltab);
-	}
-
-	@SideOnly(Side.CLIENT)
-	public Icon getBlockTexture(IBlockAccess par1IBlockAccess, int x, int y,
-			int z, int side) {
-		if (side == 0 || side == 1) {
-			return this.blockIcon;
-		}
-		return sides;
+		this.setHardness(0.6F).setStepSound(soundStoneFootstep);
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -81,6 +70,7 @@ public class BlockGPU extends Block {
 				par3, par4);
 		if (!par1World.isRemote) {
 			Random rand = new Random();
+			if(tile != null && tile.addedType != null){
 			for (int i = 0; i < tile.addedType.length; i++) {
 				int n = tile.addedType[i];
 				while (n != 0) {
@@ -103,6 +93,7 @@ public class BlockGPU extends Block {
 					var14.motionZ = (double) ((float) rand.nextGaussian() * var15);
 					par1World.spawnEntityInWorld(var14);
 				}
+			}
 			}
 		}
 		super.breakBlock(par1World, par2, par3, par4, par5, par6);

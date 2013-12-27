@@ -1,10 +1,6 @@
 package ds.mods.CCLights2.utils;
 
-import net.minecraft.client.renderer.texture.IconRegister;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.CCLights2.CCLights2;
-import ds.mods.CCLights2.Config;
 
 public class Convert {
 	public static int to256(int r, int g, int b)

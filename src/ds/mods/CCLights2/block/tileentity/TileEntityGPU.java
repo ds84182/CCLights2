@@ -25,7 +25,6 @@ import dan200.computer.api.IComputerAccess;
 import dan200.computer.api.ILuaContext;
 import dan200.computer.api.IPeripheral;
 import ds.mods.CCLights2.CCLights2;
-import ds.mods.CCLights2.Config;
 import ds.mods.CCLights2.converter.ConvertDouble;
 import ds.mods.CCLights2.converter.ConvertInteger;
 import ds.mods.CCLights2.converter.ConvertString;

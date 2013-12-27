@@ -5,7 +5,6 @@ import java.util.ArrayList;
 
 import dan200.computer.api.ILuaObject;
 import ds.mods.CCLights2.CCLights2;
-import ds.mods.CCLights2.Config;
 
 public class Monitor {
 	public ArrayList<GPU> gpu = new ArrayList<GPU>();

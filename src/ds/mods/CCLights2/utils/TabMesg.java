@@ -1,6 +1,5 @@
 package ds.mods.CCLights2.utils;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
 import java.util.UUID;

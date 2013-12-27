@@ -4,9 +4,7 @@
 
 package ds.mods.CCLights2.jhlabs.image;
 
-import java.awt.*;
-import java.awt.image.*;
-import java.awt.geom.*;
+import java.awt.image.BufferedImage;
 
 public class BoxBlurFilter extends AbstractBufferedImageOp {
 

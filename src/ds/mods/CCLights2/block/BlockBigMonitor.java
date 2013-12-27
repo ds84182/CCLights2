@@ -7,13 +7,11 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Direction;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import cpw.mods.fml.common.network.Player;
 import ds.mods.CCLights2.CCLights2;
-import ds.mods.CCLights2.Config;
 import ds.mods.CCLights2.block.tileentity.TileEntityBigMonitor;
 import ds.mods.CCLights2.gpu.GPU;
 
@@ -23,6 +21,7 @@ public class BlockBigMonitor extends Block {
 		super(par1, par2Material);
 		this.setUnlocalizedName("monitor.big");
 		this.setCreativeTab(CCLights2.ccltab);
+		this.setHardness(0.6F).setStepSound(soundStoneFootstep);
 	}
 	
 	@Override

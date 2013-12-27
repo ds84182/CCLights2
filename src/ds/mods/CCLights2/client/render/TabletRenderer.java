@@ -18,14 +18,10 @@ import net.minecraftforge.client.IItemRenderer;
 import org.lwjgl.opengl.GL11;
 
 import ds.mods.CCLights2.CCLights2;
-import ds.mods.CCLights2.Config;
-import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
 import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
-import ds.mods.CCLights2.client.ClientProxy;
 import ds.mods.CCLights2.gpu.Monitor;
 import ds.mods.CCLights2.gpu.Texture;
 import ds.mods.CCLights2.item.ItemTablet;
-import ds.mods.CCLights2.utils.Convert;
 import ds.mods.CCLights2.utils.TabMesg;
 
 public class TabletRenderer implements IItemRenderer {

@@ -18,7 +18,6 @@ import cpw.mods.fml.common.network.PacketDispatcher;
 import dan200.computer.api.ILuaContext;
 import dan200.computer.api.ILuaObject;
 import ds.mods.CCLights2.CCLights2;
-import ds.mods.CCLights2.block.tileentity.TileEntityMonitor.MonitorObject;
 import ds.mods.CCLights2.gpu.Monitor;
 import ds.mods.CCLights2.network.PacketHandler;
 

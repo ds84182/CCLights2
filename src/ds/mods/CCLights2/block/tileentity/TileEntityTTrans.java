@@ -14,7 +14,6 @@ import cpw.mods.fml.common.network.Player;
 import dan200.computer.api.IComputerAccess;
 import dan200.computer.api.ILuaContext;
 import dan200.computer.api.ILuaObject;
-import ds.mods.CCLights2.block.tileentity.TileEntityMonitor.MonitorObject;
 import ds.mods.CCLights2.converter.ConvertInteger;
 import ds.mods.CCLights2.gpu.GPU;
 import ds.mods.CCLights2.gpu.Monitor;

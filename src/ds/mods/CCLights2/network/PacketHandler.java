@@ -9,6 +9,7 @@ import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet250CustomPayload;
@@ -28,12 +29,13 @@ import ds.mods.CCLights2.ClientDrawThread;
 import ds.mods.CCLights2.block.tileentity.TileEntityBigMonitor;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
+import ds.mods.CCLights2.block.tileentity.TileEntityaAdvancedlight;
 import ds.mods.CCLights2.gpu.DrawCMD;
 import ds.mods.CCLights2.gpu.GPU;
 import ds.mods.CCLights2.gpu.Texture;
 
 public class PacketHandler implements IPacketHandler {
-	//"GPUDrawlist", "GPUEvent", "GPUDownload", "GPUMouse", "GPUKey", "GPUTile"
+	//"GPUDrawlist", "GPUEvent", "GPUDownload", "GPUMouse", "GPUKey", "GPUTile","LIGHT"
 	public static final byte NET_SPLITPACKET = -1;
 	public static final byte NET_GPUDRAWLIST = 0;
 	public static final byte NET_GPUEVENT = 1;
@@ -42,6 +44,7 @@ public class PacketHandler implements IPacketHandler {
 	public static final byte NET_GPUKEY = 4;
 	public static final byte NET_GPUTILE = 5;
 	public static final byte NET_GPUINIT = 6;
+	public static final byte NET_LIGHT = 7;
 	
 	public HashMap<Short,SplitPacket> splitPackets = new HashMap<Short,SplitPacket>();
 	
@@ -349,6 +352,19 @@ public class PacketHandler implements IPacketHandler {
 					tile.handleUpdatePacket(dat);
 				}
 				break;
+			}
+			case(NET_LIGHT):{
+				int x = dat.readInt();
+				int y = dat.readInt();
+				int z = dat.readInt();
+				World world = Minecraft.getMinecraft().theWorld;
+				TileEntityaAdvancedlight tile = (TileEntityaAdvancedlight) world.getBlockTileEntity(x, y, z);
+				if(tile != null){	
+				TileEntityaAdvancedlight ntile = (TileEntityaAdvancedlight) tile;
+					ntile.r = dat.readFloat();
+					ntile.g = dat.readFloat();
+					ntile.b = dat.readFloat();
+				}
 			}
 		}
 	}

@@ -1,16 +1,11 @@
 package ds.mods.CCLights2;
 
 import net.minecraftforge.common.Configuration;
-import net.minecraftforge.common.Property;
 
 public class Config {
 	public static boolean DEBUGS;
-	public static int Tablet;
-	static int Monitor;
-	static int MonitorBig;
-	static int Gpu;
-	static int Ram;
-	static int TTrans;
+	public static boolean Vanilla,IC2;
+	public static int Tablet,light,advlight,Monitor,MonitorBig,Gpu,Ram,TTrans;
 	static void loadConfig(Configuration config)
 	  {
 	    config.load();
@@ -20,7 +15,11 @@ public class Config {
 	    MonitorBig = config.get("Blocks and item ids", "Big Monitor", 545).getInt(545);
 	    Ram = config.get("Blocks and item ids", "Ram", 4097-256).getInt(4097-256);
 	    Tablet = config.get("Blocks and item ids", "Tablet", 4098).getInt(4098);
+	    light = config.get("Blocks and item ids", "Light", 546).getInt(546);
+	    advlight = config.get("Blocks and item ids", "Advanced Light", 547).getInt(547);
 	    DEBUGS = config.get("Misc", "DEBUG", false).getBoolean(true);
+	    Vanilla = config.get("Misc", "CompatVanilla", true).getBoolean(false);
+	    IC2 = config.get("Misc", "CompatIC2", false).getBoolean(false);
 	    config.save();
 	  }
 }

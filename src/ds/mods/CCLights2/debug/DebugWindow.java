@@ -1,10 +1,8 @@
 package ds.mods.CCLights2.debug;
 
-import java.awt.*;
+import java.awt.Frame;
+import java.awt.Graphics;
 
-import javax.swing.JPanel;
-
-import ds.mods.CCLights2.Config;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
 
 public class DebugWindow extends Frame {

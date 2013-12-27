@@ -13,13 +13,10 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
 import ds.mods.CCLights2.CCLights2;
-import ds.mods.CCLights2.Config;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
-import ds.mods.CCLights2.client.ClientProxy;
 import ds.mods.CCLights2.client.render.TabletRenderer;
 import ds.mods.CCLights2.gpu.Monitor;
 import ds.mods.CCLights2.gpu.Texture;
-import ds.mods.CCLights2.utils.Convert;
 import ds.mods.CCLights2.utils.TabMesg;
 
 public class GuiTablet extends GuiScreen {

@@ -15,7 +15,6 @@ import org.lwjgl.opengl.GL11;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityBigMonitor;
 import ds.mods.CCLights2.gpu.Texture;
-import ds.mods.CCLights2.network.PacketHandler;
 
 public class TileEntityBigMonitorRenderer extends TileEntitySpecialRenderer {
 	

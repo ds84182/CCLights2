@@ -4,10 +4,13 @@
 
 package ds.mods.CCLights2.jhlabs.image;
 
-import java.awt.*;
-import java.awt.geom.*;
-import java.awt.image.*;
-import java.awt.image.Kernel;
+import java.awt.AlphaComposite;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BandCombineOp;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 
 public class ShadowFilter extends AbstractBufferedImageOp {
 

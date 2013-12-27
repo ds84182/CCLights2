@@ -4,7 +4,7 @@
 
 package ds.mods.CCLights2.jhlabs.image;
 
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
 
 /**
  * A filter which subtracts Gaussian blur from an image, sharpening it.

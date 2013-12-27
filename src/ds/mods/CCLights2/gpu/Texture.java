@@ -13,7 +13,6 @@ import javax.imageio.ImageIO;
 import net.minecraft.util.ChatAllowedCharacters;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.jhlabs.image.BoxBlurFilter;
-import ds.mods.CCLights2.jhlabs.image.GaussianFilter;
 
 
 public class Texture {
