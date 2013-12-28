@@ -7,7 +7,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import ds.mods.CCLights2.CCLights2;
-import ds.mods.CCLights2.block.tileentity.TileEntityaAdvancedlight;
+import ds.mods.CCLights2.block.tileentity.TileEntityAdvancedlight;
 
 public class BlockAdvancedLight extends BlockContainer
 {
@@ -38,7 +38,7 @@ public class BlockAdvancedLight extends BlockContainer
 
     public TileEntity createNewTileEntity(World var1)
     {
-        return new TileEntityaAdvancedlight();
+        return new TileEntityAdvancedlight();
     }
     
 }

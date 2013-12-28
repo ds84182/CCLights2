@@ -6,7 +6,7 @@ import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
-import ds.mods.CCLights2.block.tileentity.TileEntityaAdvancedlight;
+import ds.mods.CCLights2.block.tileentity.TileEntityAdvancedlight;
 
 public class TileEntityLightRenderer extends TileEntitySpecialRenderer {
 	private ModelLight model;
@@ -14,7 +14,7 @@ public class TileEntityLightRenderer extends TileEntitySpecialRenderer {
 		model = new ModelLight();
 	}
 
-	public void renderAModelAt(TileEntityaAdvancedlight tile, double d,double d1, double d2, float f) {
+	public void renderAModelAt(TileEntityAdvancedlight tile, double d,double d1, double d2, float f) {
 		bindTexture(new ResourceLocation("cclights", "textures/blocks/Light.png"));
 		GL11.glPushMatrix(); // start
 		GL11.glColor3f((float) tile.r / 255, (float) tile.g / 255,(float) tile.b / 255);
@@ -29,6 +29,6 @@ public class TileEntityLightRenderer extends TileEntitySpecialRenderer {
 	}
 
 	public void renderTileEntityAt(TileEntity tileentity, double d, double d1,double d2, float f) {
-		renderAModelAt((TileEntityaAdvancedlight) tileentity, d, d1, d2, f); // where to render
+		renderAModelAt((TileEntityAdvancedlight) tileentity, d, d1, d2, f); // where to render
 	}
 }

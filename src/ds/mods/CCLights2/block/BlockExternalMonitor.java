@@ -12,12 +12,12 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import cpw.mods.fml.common.network.Player;
 import ds.mods.CCLights2.CCLights2;
-import ds.mods.CCLights2.block.tileentity.TileEntityBigMonitor;
+import ds.mods.CCLights2.block.tileentity.TileEntityExternalMonitor;
 import ds.mods.CCLights2.gpu.GPU;
 
-public class BlockBigMonitor extends Block {
+public class BlockExternalMonitor extends Block {
 
-	public BlockBigMonitor(int par1, Material par2Material) {
+	public BlockExternalMonitor(int par1, Material par2Material) {
 		super(par1, par2Material);
 		this.setUnlocalizedName("monitor.big");
 		this.setCreativeTab(CCLights2.ccltab);
@@ -27,7 +27,7 @@ public class BlockBigMonitor extends Block {
 	@Override
 	public void breakBlock(World par1World, int par2, int par3, int par4,
 			int par5, int par6) {
-		TileEntityBigMonitor tile = (TileEntityBigMonitor) par1World.getBlockTileEntity(par2, par3, par4);
+		TileEntityExternalMonitor tile = (TileEntityExternalMonitor) par1World.getBlockTileEntity(par2, par3, par4);
 		tile.destroy();
 		super.breakBlock(par1World, par2, par3, par4, par5, par6);
 	}
@@ -36,7 +36,7 @@ public class BlockBigMonitor extends Block {
 	public boolean onBlockActivated(World par1World, int par2, int par3,
 			int par4, EntityPlayer par5EntityPlayer, int par6, float par7,
 			float par8, float par9) {
-		TileEntityBigMonitor tile = (TileEntityBigMonitor) par1World.getBlockTileEntity(par2,par3,par4);
+		TileEntityExternalMonitor tile = (TileEntityExternalMonitor) par1World.getBlockTileEntity(par2,par3,par4);
 		CCLights2.debug(par7+","+par8+","+par9+","+tile.m_dir);
 		float x = 0f;
 		float y = 0f;
@@ -131,14 +131,14 @@ public class BlockBigMonitor extends Block {
 	@Override
 	public TileEntity createTileEntity(World w, int meta)
 	{
-		return new TileEntityBigMonitor();
+		return new TileEntityExternalMonitor();
 	}
 	
 	@Override
 	public void onBlockPlacedBy(World world, int i, int j, int k, EntityLivingBase entityliving, ItemStack item)
 	{
 		int l = MathHelper.floor_double((double)(entityliving.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
-		TileEntityBigMonitor tile = (TileEntityBigMonitor) world.getBlockTileEntity(i, j, k);
+		TileEntityExternalMonitor tile = (TileEntityExternalMonitor) world.getBlockTileEntity(i, j, k);
 		CCLights2.debug("Placed.");
 		 tile.setDir(l);
 		tile.contractNeighbours();

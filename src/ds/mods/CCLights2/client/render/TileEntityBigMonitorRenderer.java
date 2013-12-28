@@ -13,7 +13,7 @@ import net.minecraft.util.Facing;
 import org.lwjgl.opengl.GL11;
 
 import ds.mods.CCLights2.CCLights2;
-import ds.mods.CCLights2.block.tileentity.TileEntityBigMonitor;
+import ds.mods.CCLights2.block.tileentity.TileEntityExternalMonitor;
 import ds.mods.CCLights2.gpu.Texture;
 
 public class TileEntityBigMonitorRenderer extends TileEntitySpecialRenderer {
@@ -37,11 +37,11 @@ public class TileEntityBigMonitorRenderer extends TileEntitySpecialRenderer {
 			double var6, float var8) {
 		GL11.glPushMatrix();
 		GL11.glTranslated(var2, var4, var6);
-		render((TileEntityBigMonitor) var1);
+		render((TileEntityExternalMonitor) var1);
 		GL11.glPopMatrix();
 	}
 	
-	public void render(TileEntityBigMonitor m)
+	public void render(TileEntityExternalMonitor m)
 	{
 		Tessellator t = Tessellator.instance;
 		if (m.m_xIndex == 0 & m.m_yIndex == 0)

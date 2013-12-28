@@ -11,7 +11,7 @@ import dan200.computer.api.IComputerAccess;
 import dan200.computer.api.ILuaContext;
 import dan200.computer.api.IPeripheral;
 
-public class TileEntityaAdvancedlight  extends TileEntity implements IPeripheral {
+public class TileEntityAdvancedlight  extends TileEntity implements IPeripheral {
 	    public float r = 255;
 	    public float g = 255;
 	    public float b = 255;

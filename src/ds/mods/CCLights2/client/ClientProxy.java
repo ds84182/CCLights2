@@ -7,8 +7,8 @@ import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.CommonProxy;
-import ds.mods.CCLights2.block.tileentity.TileEntityBigMonitor;
-import ds.mods.CCLights2.block.tileentity.TileEntityaAdvancedlight;
+import ds.mods.CCLights2.block.tileentity.TileEntityExternalMonitor;
+import ds.mods.CCLights2.block.tileentity.TileEntityAdvancedlight;
 import ds.mods.CCLights2.client.render.SimpleBigMonitorRenderingHandler;
 import ds.mods.CCLights2.client.render.TabletRenderer;
 import ds.mods.CCLights2.client.render.TileEntityBigMonitorRenderer;
@@ -26,8 +26,8 @@ public class ClientProxy extends CommonProxy {
 		this.modelID = RenderingRegistry.getNextAvailableRenderId();
 		SBMRH = new SimpleBigMonitorRenderingHandler();
 		RenderingRegistry.registerBlockHandler(SBMRH);
-		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityBigMonitor.class, new TileEntityBigMonitorRenderer());
+		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityExternalMonitor.class, new TileEntityBigMonitorRenderer());
 		MinecraftForgeClient.registerItemRenderer(CCLights2.tablet.itemID,new TabletRenderer());
-        ClientRegistry.bindTileEntitySpecialRenderer(TileEntityaAdvancedlight.class, new TileEntityLightRenderer());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileEntityAdvancedlight.class, new TileEntityLightRenderer());
 	}
 }

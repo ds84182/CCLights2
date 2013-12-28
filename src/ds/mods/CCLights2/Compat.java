@@ -8,12 +8,12 @@ import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.LanguageRegistry;
 import ds.mods.CCLights2.block.BlockAdvancedLight;
-import ds.mods.CCLights2.block.BlockBigMonitor;
+import ds.mods.CCLights2.block.BlockExternalMonitor;
 import ds.mods.CCLights2.block.BlockColorLight;
 import ds.mods.CCLights2.block.BlockGPU;
 import ds.mods.CCLights2.block.BlockMonitor;
 import ds.mods.CCLights2.block.BlockTabletTransceiver;
-import ds.mods.CCLights2.block.tileentity.TileEntityBigMonitor;
+import ds.mods.CCLights2.block.tileentity.TileEntityExternalMonitor;
 import ds.mods.CCLights2.block.tileentity.TileEntityColorLight;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
@@ -37,10 +37,10 @@ public class Compat {
 		LanguageRegistry.addName(CCLights2.monitor, "Monitor");
 		GameRegistry.registerTileEntity(TileEntityMonitor.class, "CCLMonitorTE");
 		
-		CCLights2.monitorBig = new BlockBigMonitor(Config.MonitorBig, Material.iron); // big Monitor (screen dammit)
+		CCLights2.monitorBig = new BlockExternalMonitor(Config.MonitorBig, Material.iron); // big Monitor (screen dammit)
 		GameRegistry.registerBlock(CCLights2.monitorBig, "CCLBigMonitor");
 		LanguageRegistry.addName(CCLights2.monitorBig, "External Monitor");
-		GameRegistry.registerTileEntity(TileEntityBigMonitor.class,"CCLBigMonitorTE");
+		GameRegistry.registerTileEntity(TileEntityExternalMonitor.class,"CCLBigMonitorTE");
         
 		CCLights2.light = new BlockColorLight(Config.light, Material.iron); //lightblock normal
 		GameRegistry.registerBlock(CCLights2.light, "CCLLIGHT");

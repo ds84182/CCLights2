@@ -26,10 +26,10 @@ import cpw.mods.fml.common.network.Player;
 import dan200.computer.api.IComputerAccess;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.ClientDrawThread;
-import ds.mods.CCLights2.block.tileentity.TileEntityBigMonitor;
+import ds.mods.CCLights2.block.tileentity.TileEntityExternalMonitor;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
-import ds.mods.CCLights2.block.tileentity.TileEntityaAdvancedlight;
+import ds.mods.CCLights2.block.tileentity.TileEntityAdvancedlight;
 import ds.mods.CCLights2.gpu.DrawCMD;
 import ds.mods.CCLights2.gpu.GPU;
 import ds.mods.CCLights2.gpu.Texture;
@@ -346,7 +346,7 @@ public class PacketHandler implements IPacketHandler {
 				int x = dat.readInt();
 				int y = dat.readInt();
 				int z = dat.readInt();
-				TileEntityBigMonitor tile = (TileEntityBigMonitor) CCLights2.proxy.getClientWorld().getBlockTileEntity(x, y, z);
+				TileEntityExternalMonitor tile = (TileEntityExternalMonitor) CCLights2.proxy.getClientWorld().getBlockTileEntity(x, y, z);
 				if (tile != null)
 				{
 					tile.handleUpdatePacket(dat);
@@ -358,9 +358,9 @@ public class PacketHandler implements IPacketHandler {
 				int y = dat.readInt();
 				int z = dat.readInt();
 				World world = Minecraft.getMinecraft().theWorld;
-				TileEntityaAdvancedlight tile = (TileEntityaAdvancedlight) world.getBlockTileEntity(x, y, z);
+				TileEntityAdvancedlight tile = (TileEntityAdvancedlight) world.getBlockTileEntity(x, y, z);
 				if(tile != null){	
-				TileEntityaAdvancedlight ntile = (TileEntityaAdvancedlight) tile;
+				TileEntityAdvancedlight ntile = (TileEntityAdvancedlight) tile;
 					ntile.r = dat.readFloat();
 					ntile.g = dat.readFloat();
 					ntile.b = dat.readFloat();

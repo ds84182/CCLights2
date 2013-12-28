@@ -22,7 +22,7 @@ import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.gpu.Monitor;
 import ds.mods.CCLights2.network.PacketHandler;
 
-public class TileEntityBigMonitor extends TileEntityMonitor implements IPeripheral {
+public class TileEntityExternalMonitor extends TileEntityMonitor implements IPeripheral {
 	public static final int MAX_WIDTH = 16;
 	public static final int MAX_HEIGHT = 9;
 	public static final int TICKS_TIL_SYNC = 20 * 600;
@@ -39,7 +39,7 @@ public class TileEntityBigMonitor extends TileEntityMonitor implements IPeripher
 	public int m_tts = TICKS_TIL_SYNC;
 	public Monitor m_originMonitor;
 
-	public TileEntityBigMonitor() {
+	public TileEntityExternalMonitor() {
 		mon = new Monitor(32, 32,getMonitorObject());
 		mon.tex.fill(Color.black);
 	}
@@ -64,7 +64,7 @@ public class TileEntityBigMonitor extends TileEntityMonitor implements IPeripher
 					this.worldObj, this.xCoord, this.yCoord, this.zCoord);
 		}
 
-		TileEntityBigMonitor monitor = getNeighbour(this.m_width - 1,
+		TileEntityExternalMonitor monitor = getNeighbour(this.m_width - 1,
 				this.m_height - 1);
 
 		if (monitor != null) {
@@ -132,7 +132,7 @@ public class TileEntityBigMonitor extends TileEntityMonitor implements IPeripher
 		origin().mon = originTerminal;
 		for (int y = 0; y < this.m_height; y++) {
 			for (int x = 0; x < this.m_width; x++) {
-				TileEntityBigMonitor monitor = getNeighbour(x, y);
+				TileEntityExternalMonitor monitor = getNeighbour(x, y);
 				if (monitor != null) {
 					// synchronized (monitor.mon)
 					{
@@ -188,12 +188,12 @@ public class TileEntityBigMonitor extends TileEntityMonitor implements IPeripher
 		return this.m_yIndex;
 	}
 
-	public TileEntityBigMonitor getSimilarMonitorAt(int x, int y, int z) {
+	public TileEntityExternalMonitor getSimilarMonitorAt(int x, int y, int z) {
 		if ((y >= 0) && (y < this.worldObj.getHeight())) {
 			if (this.worldObj.getChunkProvider().chunkExists(x >> 4, z >> 4)) {
 				TileEntity tile = this.worldObj.getBlockTileEntity(x, y, z);
-				if ((tile != null) && ((tile instanceof TileEntityBigMonitor))) {
-					TileEntityBigMonitor monitor = (TileEntityBigMonitor) tile;
+				if ((tile != null) && ((tile instanceof TileEntityExternalMonitor))) {
+					TileEntityExternalMonitor monitor = (TileEntityExternalMonitor) tile;
 					if ((monitor.getDir() == getDir())
 							&& (!monitor.m_destroyed) && (!monitor.m_ignoreMe)) {
 						return monitor;
@@ -205,7 +205,7 @@ public class TileEntityBigMonitor extends TileEntityMonitor implements IPeripher
 		return null;
 	}
 
-	public TileEntityBigMonitor getNeighbour(int x, int y) {
+	public TileEntityExternalMonitor getNeighbour(int x, int y) {
 		int right = getRight();
 		int xOffset = -this.m_xIndex + x;
 		return getSimilarMonitorAt(this.xCoord
@@ -215,7 +215,7 @@ public class TileEntityBigMonitor extends TileEntityMonitor implements IPeripher
 						* xOffset);
 	}
 
-	public TileEntityBigMonitor origin() {
+	public TileEntityExternalMonitor origin() {
 		return getNeighbour(0, 0);
 	}
 
@@ -236,7 +236,7 @@ public class TileEntityBigMonitor extends TileEntityMonitor implements IPeripher
 
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
-				TileEntityBigMonitor monitor = getSimilarMonitorAt(this.xCoord
+				TileEntityExternalMonitor monitor = getSimilarMonitorAt(this.xCoord
 						+ rightX * x, this.yCoord + y, this.zCoord + rightZ * x);
 				if (monitor != null) {
 					totalConnections += monitor.m_connections;
@@ -282,7 +282,7 @@ public class TileEntityBigMonitor extends TileEntityMonitor implements IPeripher
 	}
 
 	public boolean mergeLeft() {
-		TileEntityBigMonitor left = getNeighbour(-1, 0);
+		TileEntityExternalMonitor left = getNeighbour(-1, 0);
 		if ((left != null) && (left.m_yIndex == 0)
 				&& (left.m_height == this.m_height)) {
 			int width = left.m_width + this.m_width;
@@ -297,7 +297,7 @@ public class TileEntityBigMonitor extends TileEntityMonitor implements IPeripher
 
 	public boolean mergeRight() {
 		// System.out.println("Right");
-		TileEntityBigMonitor right = getNeighbour(this.m_width, 0);
+		TileEntityExternalMonitor right = getNeighbour(this.m_width, 0);
 		// System.out.println(right);
 		if ((right != null) && (right.m_yIndex == 0)
 				&& (right.m_height == this.m_height)) {
@@ -313,7 +313,7 @@ public class TileEntityBigMonitor extends TileEntityMonitor implements IPeripher
 
 	public boolean mergeUp() {
 		// System.out.println("Up");
-		TileEntityBigMonitor above = getNeighbour(0, this.m_height);
+		TileEntityExternalMonitor above = getNeighbour(0, this.m_height);
 		// System.out.println(above);
 		if ((above != null) && (above.m_xIndex == 0)
 				&& (above.m_width == this.m_width)) {
@@ -329,7 +329,7 @@ public class TileEntityBigMonitor extends TileEntityMonitor implements IPeripher
 
 	public boolean mergeDown() {
 		// System.out.println("Down");
-		TileEntityBigMonitor below = getNeighbour(0, -1);
+		TileEntityExternalMonitor below = getNeighbour(0, -1);
 		// System.out.println(below);
 		if ((below != null) && (below.m_xIndex == 0)
 				&& (below.m_width == this.m_width)) {
@@ -355,28 +355,28 @@ public class TileEntityBigMonitor extends TileEntityMonitor implements IPeripher
 		this.mon.removeAllGPUs();
 		this.m_ignoreMe = true;
 		if (this.m_xIndex > 0) {
-			TileEntityBigMonitor left = getNeighbour(this.m_xIndex - 1,
+			TileEntityExternalMonitor left = getNeighbour(this.m_xIndex - 1,
 					this.m_yIndex);
 			if (left != null) {
 				left.contract();
 			}
 		}
 		if (this.m_xIndex + 1 < this.m_width) {
-			TileEntityBigMonitor right = getNeighbour(this.m_xIndex + 1,
+			TileEntityExternalMonitor right = getNeighbour(this.m_xIndex + 1,
 					this.m_yIndex);
 			if (right != null) {
 				right.contract();
 			}
 		}
 		if (this.m_yIndex > 0) {
-			TileEntityBigMonitor below = getNeighbour(this.m_xIndex,
+			TileEntityExternalMonitor below = getNeighbour(this.m_xIndex,
 					this.m_yIndex - 1);
 			if (below != null) {
 				below.contract();
 			}
 		}
 		if (this.m_yIndex + 1 < this.m_height) {
-			TileEntityBigMonitor above = getNeighbour(this.m_xIndex,
+			TileEntityExternalMonitor above = getNeighbour(this.m_xIndex,
 					this.m_yIndex + 1);
 			if (above != null) {
 				above.contract();
@@ -390,10 +390,10 @@ public class TileEntityBigMonitor extends TileEntityMonitor implements IPeripher
 		int height = this.m_height;
 		int width = this.m_width;
 
-		TileEntityBigMonitor origin = origin();
+		TileEntityExternalMonitor origin = origin();
 		if (origin == null) {
-			TileEntityBigMonitor right = null;
-			TileEntityBigMonitor below = null;
+			TileEntityExternalMonitor right = null;
+			TileEntityExternalMonitor below = null;
 			if (width > 1) {
 				right = getNeighbour(1, 0);
 			}
@@ -422,12 +422,12 @@ public class TileEntityBigMonitor extends TileEntityMonitor implements IPeripher
 
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
-				TileEntityBigMonitor monitor = origin.getNeighbour(x, y);
+				TileEntityExternalMonitor monitor = origin.getNeighbour(x, y);
 				if (monitor == null) {
-					TileEntityBigMonitor above = null;
-					TileEntityBigMonitor left = null;
-					TileEntityBigMonitor right = null;
-					TileEntityBigMonitor below = null;
+					TileEntityExternalMonitor above = null;
+					TileEntityExternalMonitor left = null;
+					TileEntityExternalMonitor right = null;
+					TileEntityExternalMonitor below = null;
 
 					Monitor claimedTerminal = null;
 					if (y > 0) {

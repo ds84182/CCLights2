@@ -7,12 +7,12 @@ import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.world.IBlockAccess;
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import ds.mods.CCLights2.CCLights2;
-import ds.mods.CCLights2.block.tileentity.TileEntityBigMonitor;
+import ds.mods.CCLights2.block.tileentity.TileEntityExternalMonitor;
 
 public class SimpleBigMonitorRenderingHandler implements
 		ISimpleBlockRenderingHandler {
 	
-	TileEntityBigMonitor tile = new TileEntityBigMonitor();
+	TileEntityExternalMonitor tile = new TileEntityExternalMonitor();
 	public TileEntityBigMonitorRenderer tileRender = new TileEntityBigMonitorRenderer();
 	
 	public SimpleBigMonitorRenderingHandler()
