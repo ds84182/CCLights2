@@ -22,7 +22,7 @@ import ds.mods.CCLights2.gpu.imageLoader.GeneralImageLoader;
 import ds.mods.CCLights2.gpu.imageLoader.ImageLoader;
 import ds.mods.CCLights2.network.PacketHandler;
 
-@Mod(modid = "CCLights2", name = "CCLights2", version = "0.2")
+@Mod(modid = "CCLights2", name = "CCLights2", version = "0.2",dependencies="required-after:ComputerCraft;required-after:CCTurtle")
 @NetworkMod(clientSideRequired = true, serverSideRequired = true, channels = { "CCLights2" }, packetHandler = PacketHandler.class)
 public class CCLights2 {
 	@Instance("CCLights2")
