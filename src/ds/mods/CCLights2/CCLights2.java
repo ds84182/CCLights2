@@ -58,6 +58,7 @@ public class CCLights2 {
 		if (Loader.isModLoaded("IC2") && Config.IC2) {
             Compat.IC2();
         }
+		logger.log(Level.INFO, "STANDING BY");
 	}
 
 	@EventHandler

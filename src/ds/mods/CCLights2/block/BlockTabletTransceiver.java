@@ -15,7 +15,6 @@ import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
 
 public class BlockTabletTransceiver extends Block {
-	@SideOnly(Side.CLIENT)
 	Icon sides = null;
 	
 	public BlockTabletTransceiver(int par1, Material par2Material) {

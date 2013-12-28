@@ -16,7 +16,6 @@ import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
 
 public class BlockMonitor extends Block {
-	@SideOnly(Side.CLIENT)
 	Icon sides = null;
 
 	public BlockMonitor(int par1, Material par2Material) {

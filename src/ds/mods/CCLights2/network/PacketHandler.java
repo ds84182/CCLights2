@@ -9,7 +9,6 @@ import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet250CustomPayload;
@@ -26,10 +25,11 @@ import cpw.mods.fml.common.network.Player;
 import dan200.computer.api.IComputerAccess;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.ClientDrawThread;
+import ds.mods.CCLights2.block.tileentity.TileEntityAdvancedlight;
 import ds.mods.CCLights2.block.tileentity.TileEntityExternalMonitor;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
-import ds.mods.CCLights2.block.tileentity.TileEntityAdvancedlight;
+import ds.mods.CCLights2.client.ClientProxy;
 import ds.mods.CCLights2.gpu.DrawCMD;
 import ds.mods.CCLights2.gpu.GPU;
 import ds.mods.CCLights2.gpu.Texture;
@@ -92,7 +92,7 @@ public class PacketHandler implements IPacketHandler {
 				int y = dat.readInt();
 				int z = dat.readInt();
 				int len = dat.readInt();
-				TileEntityGPU tile = (TileEntityGPU) CCLights2.proxy.getClientWorld().getBlockTileEntity(x, y, z);
+				TileEntityGPU tile = (TileEntityGPU) ClientProxy.getClientWorld().getBlockTileEntity(x, y, z);
 				if (tile != null)
 				{
 					GPU gpu = tile.gpu;
@@ -208,7 +208,7 @@ public class PacketHandler implements IPacketHandler {
 				int x = dat.readInt();
 				int y = dat.readInt();
 				int z = dat.readInt();
-				TileEntityGPU tile = (TileEntityGPU) CCLights2.proxy.getClientWorld().getBlockTileEntity(x, y, z);
+				TileEntityGPU tile = (TileEntityGPU) ClientProxy.getClientWorld().getBlockTileEntity(x, y, z);
 				if (tile == null) return;
 				if (tile.gpu == null) return;
 				tile.gpu.color = new Color(dat.readInt(),true);
@@ -274,7 +274,7 @@ public class PacketHandler implements IPacketHandler {
 				}
 				else
 				{
-					World world = CCLights2.proxy.getClientWorld();
+					World world = ClientProxy.getClientWorld();
 					TileEntityGPU tile = (TileEntityGPU) world.getBlockTileEntity(x, y, z);
 					if (tile == null) return;
 					if (tile.gpu == null) return;
@@ -346,7 +346,7 @@ public class PacketHandler implements IPacketHandler {
 				int x = dat.readInt();
 				int y = dat.readInt();
 				int z = dat.readInt();
-				TileEntityExternalMonitor tile = (TileEntityExternalMonitor) CCLights2.proxy.getClientWorld().getBlockTileEntity(x, y, z);
+				TileEntityExternalMonitor tile = (TileEntityExternalMonitor) ClientProxy.getClientWorld().getBlockTileEntity(x, y, z);
 				if (tile != null)
 				{
 					tile.handleUpdatePacket(dat);
@@ -357,7 +357,7 @@ public class PacketHandler implements IPacketHandler {
 				int x = dat.readInt();
 				int y = dat.readInt();
 				int z = dat.readInt();
-				World world = Minecraft.getMinecraft().theWorld;
+				World world = ClientProxy.getClientWorld();
 				TileEntityAdvancedlight tile = (TileEntityAdvancedlight) world.getBlockTileEntity(x, y, z);
 				if(tile != null){	
 				TileEntityAdvancedlight ntile = (TileEntityAdvancedlight) tile;

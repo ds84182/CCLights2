@@ -6,8 +6,8 @@ import net.minecraft.world.World;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 
-import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
+import ds.mods.CCLights2.client.ClientProxy;
 import ds.mods.CCLights2.gpu.GPU;
 
 public class GPUSerializer implements ISerializer {
@@ -31,7 +31,7 @@ public class GPUSerializer implements ISerializer {
 		
 		//System.out.printf("GPU in dim %d at %d, %d, %d\n", d, x, y, z);
 		
-		World world = CCLights2.proxy.getClientWorld();
+		World world = ClientProxy.getClientWorld();
 		
 		TileEntity noncast = world.getBlockTileEntity(x, y, z);
 		if (noncast != null)

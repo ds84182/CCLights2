@@ -53,13 +53,6 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 	public TileEntityGPU() {
 		gpu = new GPU(1024 * 8);
 		gpu.tile = this;
-		if (CCLights2.proxy.getClientWorld() != null) {
-			// download textures//
-			CCLights2.debug("Client side GPU!");
-			sendDLREQ = true;
-		} else {
-			CCLights2.debug("Server side GPU!");
-		}
 	}
 
 	public void startClick(Player player, int button, int x, int y) {

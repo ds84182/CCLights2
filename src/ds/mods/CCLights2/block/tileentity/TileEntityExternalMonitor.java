@@ -481,7 +481,7 @@ public class TileEntityExternalMonitor extends TileEntityMonitor implements IPer
 		if (dirty || m_tts-- < 0) {
 			//propogateTerminal();
 			// Send update packet
-			PacketDispatcher.sendPacketToAllAround(xCoord,yCoord,zCoord,getMaxRenderDistanceSquared(),worldObj.provider.dimensionId,createUpdatePacket());
+			PacketDispatcher.sendPacketToAllAround(xCoord,yCoord,zCoord,4096.0D,worldObj.provider.dimensionId,createUpdatePacket());
 			dirty = false;
 			m_tts = TICKS_TIL_SYNC;
 		}

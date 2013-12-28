@@ -18,7 +18,6 @@ import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
 import ds.mods.CCLights2.item.ItemRAM;
 
 public class BlockGPU extends Block {
-	@SideOnly(Side.CLIENT)
 	Icon sides = null;
 
 	public BlockGPU(int par1, Material par2Material) {
