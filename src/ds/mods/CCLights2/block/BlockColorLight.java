@@ -11,6 +11,7 @@ import net.minecraft.util.Icon;
 import net.minecraft.world.World;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityColorLight;
 
 public class BlockColorLight extends BlockContainer {
@@ -20,7 +21,7 @@ public class BlockColorLight extends BlockContainer {
 		this.setUnlocalizedName("Light");
 		this.setLightValue(1.0F);
 		this.setHardness(0.6F).setStepSound(soundStoneFootstep);
-		this.setCreativeTab(CreativeTabs.tabBlock);
+		this.setCreativeTab(CCLights2.ccltab);
 	}
 
 	@SideOnly(Side.CLIENT)

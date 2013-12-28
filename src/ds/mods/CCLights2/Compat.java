@@ -13,6 +13,7 @@ import ds.mods.CCLights2.block.BlockColorLight;
 import ds.mods.CCLights2.block.BlockGPU;
 import ds.mods.CCLights2.block.BlockMonitor;
 import ds.mods.CCLights2.block.BlockTabletTransceiver;
+import ds.mods.CCLights2.block.tileentity.TileEntityAdvancedlight;
 import ds.mods.CCLights2.block.tileentity.TileEntityExternalMonitor;
 import ds.mods.CCLights2.block.tileentity.TileEntityColorLight;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
@@ -50,6 +51,7 @@ public class Compat {
 		CCLights2.advancedlight = new BlockAdvancedLight(Config.advlight, Material.iron); //lightblock advanced
 		GameRegistry.registerBlock(CCLights2.advancedlight, "CCLADVLIGHT");
 		LanguageRegistry.addName(CCLights2.advancedlight, "Advanced Light");
+		GameRegistry.registerTileEntity(TileEntityAdvancedlight.class, "CCLAdvLight");
 		
 		CCLights2.ttrans = new BlockTabletTransceiver(Config.TTrans, Material.iron); // tablet transfer block
 		GameRegistry.registerBlock(CCLights2.ttrans, "CCLTTrans");
