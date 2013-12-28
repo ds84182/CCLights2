@@ -3,6 +3,7 @@ package ds.mods.CCLights2.block.tileentity;
 import java.util.Arrays;
 import java.util.List;
 
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import dan200.computer.api.IComputerAccess;
 import dan200.computer.api.ILuaContext;
@@ -13,7 +14,7 @@ public class TileEntityColorLight  extends TileEntity implements IPeripheral{
     public static final List<String> colors = Arrays.asList( "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white");
 	@Override
 	public String getType() {
-		return "CCLIGHT";
+		return "Light";
 	}
 
 	@Override
@@ -29,8 +30,8 @@ public class TileEntityColorLight  extends TileEntity implements IPeripheral{
 			try {
 				color = Integer.parseInt(colorString);
 			} catch (NumberFormatException ex) {
-				if (colors.contains(colorString)) {
-					color = colors.indexOf(colorString);
+				if (colors.contains(colorString.toLowerCase())) {
+					color = colors.indexOf(colorString.toLowerCase());
 				}
 				else{throw new Exception("Invalid COLOR!");}
 			}
@@ -45,6 +46,20 @@ public class TileEntityColorLight  extends TileEntity implements IPeripheral{
         	return (new Object[]{this.color});
         }
 		return null;
+	}
+	
+	@Override
+	public void readFromNBT(NBTTagCompound par1NBTTagCompound)
+	{
+		super.readFromNBT(par1NBTTagCompound);
+		this.color = par1NBTTagCompound.getInteger("color");
+		//colorChange();
+	}
+	@Override
+	public void writeToNBT(NBTTagCompound par1NBTTagCompound)
+	{
+		super.writeToNBT(par1NBTTagCompound);
+		par1NBTTagCompound.setInteger("color",this.color);
 	}
 
 	@Override

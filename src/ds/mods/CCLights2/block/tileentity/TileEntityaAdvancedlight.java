@@ -25,12 +25,12 @@ public class TileEntityaAdvancedlight  extends TileEntity implements IPeripheral
 
 	    public String getType()
 	    {
-	        return "Light";
+	        return "LightAdv";
 	    }
 
 	    public String[] getMethodNames()
 	    {
-	        return (new String[] { "setColorRGB", "getColorRGB", "getSize" });
+	        return (new String[] { "setColorRGB", "getColorRGB"});
 	    }
         @Override
         public Object[] callMethod(IComputerAccess computer,ILuaContext context, int method, Object[] arguments)
@@ -53,10 +53,6 @@ public class TileEntityaAdvancedlight  extends TileEntity implements IPeripheral
 	        else if (method == 1)
 	        {
 	        	return (new Object[]{this.r,this.g,this.b});
-	        }
-	        else if (method == 2)
-	        {
-	        	return new Object[] {1,1};
 	        }
 
 	        return null;

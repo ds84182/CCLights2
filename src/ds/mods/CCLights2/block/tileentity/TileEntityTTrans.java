@@ -13,14 +13,14 @@ import cpw.mods.fml.common.network.PacketDispatcher;
 import cpw.mods.fml.common.network.Player;
 import dan200.computer.api.IComputerAccess;
 import dan200.computer.api.ILuaContext;
-import dan200.computer.api.ILuaObject;
+import dan200.computer.api.IPeripheral;
 import ds.mods.CCLights2.converter.ConvertInteger;
 import ds.mods.CCLights2.gpu.GPU;
 import ds.mods.CCLights2.gpu.Monitor;
 import ds.mods.CCLights2.utils.TabMesg;
 import ds.mods.CCLights2.utils.TabMesg.Message;
 
-public class TileEntityTTrans extends TileEntityMonitor {
+public class TileEntityTTrans extends TileEntityMonitor implements IPeripheral {
 	public UUID id = UUID.randomUUID();
 	public ArrayList<UUID> tablets = new ArrayList<UUID>();
 	
@@ -177,44 +177,47 @@ public class TileEntityTTrans extends TileEntityMonitor {
 			PacketDispatcher.sendPacketToAllAround(xCoord, yCoord, zCoord, 64, worldObj.provider.dimensionId, pkt);
 		}
 	}
-	
-	public ILuaObject getMonitorObject()
-	{
-		return new MonitorObject();
+	@Override
+	public String[] getMethodNames() {
+		return new String[]{"getResolution","getNumberOfTablets","getTabletUUID","disconnect"};
 	}
-	
-	public class MonitorObject implements ILuaObject
-	{
 
-		@Override
-		public String[] getMethodNames() {
-			return new String[]{"getResolution","getNumberOfTablets","getTabletUUID","disconnect"};
+	@Override
+	public Object[] callMethod(IComputerAccess computer,ILuaContext context, int method,Object[] arguments) 
+			throws Exception {
+		switch (method)
+		{
+		case 0:
+		{
+			return new Object[]{mon.getWidth(),mon.getHeight()};
 		}
+		case 1:
+		{
+			return new Object[]{tablets.size()};
+		}
+		case 2:
+		{
+			return new Object[]{tablets.get(ConvertInteger.convert(arguments[0])).toString()};
+		}
+		case 3:
+		{
 
-		@Override
-		public Object[] callMethod(ILuaContext context, int method,
-				Object[] arguments) throws Exception {
-			switch (method)
-			{
-			case 0:
-			{
-				return new Object[]{mon.getWidth(),mon.getHeight()};
-			}
-			case 1:
-			{
-				return new Object[]{tablets.size()};
-			}
-			case 2:
-			{
-				return new Object[]{tablets.get(ConvertInteger.convert(arguments[0])).toString()};
-			}
-			case 3:
-			{
-				
-			}
-			}
-			return null;
 		}
-		
+		}
+		return null;
 	}
+
+	@Override
+	public String getType() {return "TabletTransciever";
+	}
+	@Override
+	public boolean canAttachToSide(int side) {return true;
+	}
+
+	@Override
+	public void attach(IComputerAccess computer) {}
+
+	@Override
+	public void detach(IComputerAccess computer) {}
+
 }

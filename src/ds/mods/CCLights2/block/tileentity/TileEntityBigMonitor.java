@@ -15,13 +15,14 @@ import com.google.common.io.ByteArrayDataInput;
 
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.network.PacketDispatcher;
+import dan200.computer.api.IComputerAccess;
 import dan200.computer.api.ILuaContext;
-import dan200.computer.api.ILuaObject;
+import dan200.computer.api.IPeripheral;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.gpu.Monitor;
 import ds.mods.CCLights2.network.PacketHandler;
 
-public class TileEntityBigMonitor extends TileEntityMonitor {
+public class TileEntityBigMonitor extends TileEntityMonitor implements IPeripheral {
 	public static final int MAX_WIDTH = 16;
 	public static final int MAX_HEIGHT = 9;
 	public static final int TICKS_TIL_SYNC = 20 * 600;
@@ -518,40 +519,40 @@ public class TileEntityBigMonitor extends TileEntityMonitor {
 		packet.length = bos.size();
 		return packet;
 	}
-	
-	public ILuaObject getMonitorObject()
-	{
-		return new MonitorObject();
+	@Override
+	public String[] getMethodNames() {
+		return new String[]{"getResolution","getDPM","getBlockResolution"};
 	}
-	
-	public class MonitorObject implements ILuaObject
-	{
 
-		@Override
-		public String[] getMethodNames() {
-			return new String[]{"getResolution","getDPM","getBlockResolution"};
+	@Override
+	public Object[] callMethod(IComputerAccess computer,ILuaContext context, int method,Object[] arguments) throws Exception {
+		switch (method)
+		{
+		case 0:
+		{
+			return new Object[]{mon.getWidth(),mon.getHeight()};
 		}
-
-		@Override
-		public Object[] callMethod(ILuaContext context, int method,
-				Object[] arguments) throws Exception {
-			switch (method)
-			{
-			case 0:
-			{
-				return new Object[]{mon.getWidth(),mon.getHeight()};
-			}
-			case 1:
-			{
-				return new Object[]{32};
-			}
-			case 2:
-			{
-				return new Object[]{m_width,m_height};
-			}
-			}
-			return null;
+		case 1:
+		{
+			return new Object[]{32};
 		}
-		
+		case 2:
+		{
+			return new Object[]{m_width,m_height};
+		}
+		}
+		return null;
 	}
+
+	@Override
+	public String getType() {return "Monitor";}
+
+	@Override
+	public boolean canAttachToSide(int side) {return true;}
+
+	@Override
+	public void attach(IComputerAccess computer) {}
+
+	@Override
+	public void detach(IComputerAccess computer) {}
 }

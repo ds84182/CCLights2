@@ -46,18 +46,18 @@ public class CCLights2 {
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
-		Configuration config = new Configuration(
-				event.getSuggestedConfigurationFile());
+		Configuration config = new Configuration(event.getSuggestedConfigurationFile());
 		Config.loadConfig(config);
 		ImageLoader.register(new GeneralImageLoader());
 		logger = event.getModLog();
 		logger.setParent(FMLLog.getLogger());
+		Compat.init();
 		if(Config.Vanilla){
 		Compat.Vanilla();
 		}
 		if (Loader.isModLoaded("IC2") && Config.IC2) {
             Compat.IC2();
-            }
+        }
 	}
 
 	@EventHandler
