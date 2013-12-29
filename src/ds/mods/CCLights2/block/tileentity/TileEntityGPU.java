@@ -752,28 +752,34 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
+	@SideOnly(Side.SERVER)
 	public synchronized void updateEntity() {
 		synchronized (this) {if (!frame) gpu.processSendList();}
 		connectToMonitor();
+		
+	}
+	
+	@Override
+	@SideOnly(Side.CLIENT)
+	public synchronized void updateEntity(){
 		if (ticks++ % 20 == 0) {
-			Packet250CustomPayload packet = new Packet250CustomPayload();
-			packet.channel = "CCLights2";
-			ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
-			DataOutputStream outputStream = new DataOutputStream(bos);
-			try {
-				outputStream.writeByte(PacketHandler.NET_GPUDOWNLOAD);
-				outputStream.writeInt(xCoord);
-				outputStream.writeInt(yCoord);
-				outputStream.writeInt(zCoord);
-				outputStream.writeInt(worldObj.provider.dimensionId);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			packet.data = bos.toByteArray();
-			packet.length = bos.size();
-			CCLights2.debug("Sent DL Request to server!");
-			PacketDispatcher.sendPacketToServer(packet);
+		Packet250CustomPayload packet = new Packet250CustomPayload();
+		packet.channel = "CCLights2";
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
+		DataOutputStream outputStream = new DataOutputStream(bos);
+		try {
+			outputStream.writeByte(PacketHandler.NET_GPUDOWNLOAD);
+			outputStream.writeInt(xCoord);
+			outputStream.writeInt(yCoord);
+			outputStream.writeInt(zCoord);
+			outputStream.writeInt(worldObj.provider.dimensionId);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		packet.data = bos.toByteArray();
+		packet.length = bos.size();
+		CCLights2.debug("Sent DL Request to server!");
+		PacketDispatcher.sendPacketToServer(packet);
 		}
 	}
 }
