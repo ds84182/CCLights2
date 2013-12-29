@@ -21,6 +21,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.ForgeDirection;
 import cpw.mods.fml.common.network.PacketDispatcher;
 import cpw.mods.fml.common.network.Player;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import dan200.computer.api.IComputerAccess;
 import dan200.computer.api.ILuaContext;
 import dan200.computer.api.IPeripheral;
@@ -39,7 +41,6 @@ import ds.mods.CCLights2.network.PacketHandler;
 public class TileEntityGPU extends TileEntity implements IPeripheral {
 	public GPU gpu;
 	public int ticks;
-	public boolean sendDLREQ = false;
 	public ArrayList<DrawCMD> newarr = new ArrayList<DrawCMD>();
 	public ArrayList<IComputerAccess> comp = new ArrayList<IComputerAccess>();
 	public int emptyFor = 0;
@@ -751,10 +752,11 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 	}
 
 	@Override
+	@SideOnly(Side.CLIENT)
 	public synchronized void updateEntity() {
 		synchronized (this) {if (!frame) gpu.processSendList();}
 		connectToMonitor();
-		if (sendDLREQ & ticks++ % 20 == 0) {
+		if (ticks++ % 20 == 0) {
 			Packet250CustomPayload packet = new Packet250CustomPayload();
 			packet.channel = "CCLights2";
 			ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
@@ -772,7 +774,6 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			packet.length = bos.size();
 			CCLights2.debug("Sent DL Request to server!");
 			PacketDispatcher.sendPacketToServer(packet);
-			sendDLREQ = false;
 		}
 	}
 }
