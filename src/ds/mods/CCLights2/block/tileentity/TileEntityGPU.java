@@ -19,10 +19,10 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.ForgeDirection;
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.PacketDispatcher;
 import cpw.mods.fml.common.network.Player;
 import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import dan200.computer.api.IComputerAccess;
 import dan200.computer.api.ILuaContext;
 import dan200.computer.api.IPeripheral;
@@ -49,6 +49,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 	public Random rand = new Random();
 	public int[] addedType = new int[1025];
 	public boolean frame = false;
+	private boolean sentOnce = false;
 	public DebugWindow wind;
 
 	public TileEntityGPU() {
@@ -752,17 +753,10 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 	}
 
 	@Override
-	@SideOnly(Side.SERVER)
 	public synchronized void updateEntity() {
-		synchronized (this) {if (!frame) gpu.processSendList();}
+		synchronized (this) {if (!frame){ gpu.processSendList();}}
 		connectToMonitor();
-		
-	}
-	
-	@Override
-	@SideOnly(Side.CLIENT)
-	public synchronized void updateEntity(){
-		if (ticks++ % 20 == 0) {
+		if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT && ticks++ % 20 == 0 && !sentOnce) {
 		Packet250CustomPayload packet = new Packet250CustomPayload();
 		packet.channel = "CCLights2";
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
@@ -780,6 +774,8 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 		packet.length = bos.size();
 		CCLights2.debug("Sent DL Request to server!");
 		PacketDispatcher.sendPacketToServer(packet);
+		this.sentOnce=true;
 		}
+		
 	}
 }

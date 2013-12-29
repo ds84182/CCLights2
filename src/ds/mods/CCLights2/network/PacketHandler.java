@@ -20,7 +20,6 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 
 import cpw.mods.fml.common.network.IPacketHandler;
-import cpw.mods.fml.common.network.PacketDispatcher;
 import cpw.mods.fml.common.network.Player;
 import dan200.computer.api.IComputerAccess;
 import ds.mods.CCLights2.CCLights2;
@@ -262,7 +261,7 @@ public class PacketHandler implements IPacketHandler {
 							it.next().getMatrix(matrix);
 							writeMatrix(out,matrix);
 						}
-						PacketDispatcher.sendPacketToPlayer(new Packet250CustomPayload("CCLights2", out.toByteArray()), player);
+						PacketSplitter.sendPacketToPlayer(new Packet250CustomPayload("CCLights2", out.toByteArray()), player);
 					}
 					for (int i = 0; i<tile.gpu.textures.length; i++)
 					{

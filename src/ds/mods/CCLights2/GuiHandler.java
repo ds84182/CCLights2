@@ -14,9 +14,6 @@ public class GuiHandler implements IGuiHandler {
 	public Object getServerGuiElement(int ID, EntityPlayer player, World world,
 			int x, int y, int z) {
 		TileEntity tile_entity = world.getBlockTileEntity(x, y, z);
-		/*if(tile_entity instanceof TEFireFurnace){
-			return new ContainerFireFurnace(player.inventory, (TEFireFurnace) tile_entity);
-		}*/
 		return null;
 	}
 
