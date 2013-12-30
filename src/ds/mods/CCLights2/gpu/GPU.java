@@ -169,7 +169,7 @@ public class GPU {
 	{
 		if (tile == null)
 			throw new IllegalArgumentException("GPU cannot send packet without Tile Entity!");
-		PacketSplitter.sendPacketToAllAround((Packet250CustomPayload) packet, tile.xCoord, tile.yCoord, tile.zCoord, tile.getMaxRenderDistanceSquared(), tile.worldObj.provider.dimensionId);
+		PacketSplitter.sendPacketToAllAround((Packet250CustomPayload) packet, tile.xCoord, tile.yCoord, tile.zCoord, 4096.0D, tile.worldObj.provider.dimensionId);
 	}
 	
 	public Object[] processCommand(DrawCMD cmd) throws Exception
