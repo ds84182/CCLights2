@@ -1,34 +1,23 @@
 package ds.mods.CCLights2.client.gui;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.network.packet.Packet250CustomPayload;
-import net.minecraft.util.ChatAllowedCharacters;
-import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
-
-import cpw.mods.fml.common.network.PacketDispatcher;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
 import ds.mods.CCLights2.client.render.TabletRenderer;
 import ds.mods.CCLights2.gpu.Monitor;
 import ds.mods.CCLights2.gpu.Texture;
-import ds.mods.CCLights2.network.PacketHandler;
+import ds.mods.CCLights2.network.PacketSenders;
 
 
 //DONE: Don't fire events when mouse is outside area, and apply correct offsets.
 public class GuiMonitor extends GuiScreen {
-	private static final ResourceLocation corners = new ResourceLocation("cclights", "textures/gui/corners.png");
+	//private static final ResourceLocation corners = new ResourceLocation("cclights", "textures/gui/corners.png");
 	public Monitor mon;
 	public TileEntityMonitor tile;
 	public boolean isMouseDown = false;
@@ -84,30 +73,7 @@ public class GuiMonitor extends GuiScreen {
 		if (wheel != 0)
 		{
 			CCLights2.debug(wheel/120+"");
-			Packet250CustomPayload packet = new Packet250CustomPayload();
-			packet.channel = "CCLights2";
-	    	ByteArrayDataOutput out = ByteStreams.newDataOutput();
-	    	
-    		out.writeByte(PacketHandler.NET_GPUEVENT);
-			out.writeInt(tile.xCoord);
-			out.writeInt(tile.yCoord);
-			out.writeInt(tile.zCoord);
-			out.writeInt(tile.worldObj.provider.dimensionId);
-			out.writeUTF("monitor_scroll");
-			out.writeInt(3);
-			
-			out.writeInt(0);
-			out.writeInt(par1);
-			
-			out.writeInt(0);
-			out.writeInt(par2);
-			
-			out.writeInt(0);
-			out.writeInt(wheel/120);
-				
-	    	packet.data = out.toByteArray();
-	    	packet.length = packet.data.length;
-	    	PacketDispatcher.sendPacketToServer(packet);
+			PacketSenders.GPUEvent(par1,par2,tile,wheel);
 		}
 		if (isMouseDown)
 		{
@@ -118,25 +84,7 @@ public class GuiMonitor extends GuiScreen {
 				if (mlx != mx | mly != my)
 				{
 					CCLights2.debug("Moused move!");
-					Packet250CustomPayload packet = new Packet250CustomPayload();
-					packet.channel = "CCLights2";
-					ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
-			    	DataOutputStream outputStream = new DataOutputStream(bos);
-			    	try {
-			    		outputStream.writeByte(PacketHandler.NET_GPUMOUSE);
-						outputStream.writeInt(tile.xCoord);
-						outputStream.writeInt(tile.yCoord);
-						outputStream.writeInt(tile.zCoord);
-						outputStream.writeInt(tile.worldObj.provider.dimensionId);
-						outputStream.writeInt(1);
-						outputStream.writeInt(mx);
-						outputStream.writeInt(my);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-			    	packet.data = bos.toByteArray();
-			    	packet.length = bos.size();
-			    	PacketDispatcher.sendPacketToServer(packet);
+					PacketSenders.mouseEventMove(mx,mly,tile);
 				}
 				mlx = mx;
 				mly = my;
@@ -197,26 +145,7 @@ public class GuiMonitor extends GuiScreen {
 			mx = par1;
 			mly = par2;
 			my = par2;
-			Packet250CustomPayload packet = new Packet250CustomPayload();
-			packet.channel = "CCLights2";
-			ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
-	    	DataOutputStream outputStream = new DataOutputStream(bos);
-	    	try {
-	    		outputStream.writeByte(PacketHandler.NET_GPUMOUSE);
-				outputStream.writeInt(tile.xCoord);
-				outputStream.writeInt(tile.yCoord);
-				outputStream.writeInt(tile.zCoord);
-				outputStream.writeInt(tile.worldObj.provider.dimensionId);
-				outputStream.writeInt(0);
-				outputStream.writeInt(par3);
-				outputStream.writeInt(par1);
-				outputStream.writeInt(par2);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-	    	packet.data = bos.toByteArray();
-	    	packet.length = bos.size();
-	    	PacketDispatcher.sendPacketToServer(packet);
+			PacketSenders.mouseEvent(mx,my,par3,tile);
 		}
     }
 	
@@ -230,81 +159,17 @@ public class GuiMonitor extends GuiScreen {
 			{
 				CCLights2.debug("Mouse up! "+par3);
 				isMouseDown = false;
-				Packet250CustomPayload packet = new Packet250CustomPayload();
-				packet.channel = "CCLights2";
-				ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
-		    	DataOutputStream outputStream = new DataOutputStream(bos);
-		    	try {
-		    		outputStream.writeByte(PacketHandler.NET_GPUMOUSE);
-					outputStream.writeInt(tile.xCoord);
-					outputStream.writeInt(tile.yCoord);
-					outputStream.writeInt(tile.zCoord);
-					outputStream.writeInt(tile.worldObj.provider.dimensionId);
-					outputStream.writeInt(2);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-		    	packet.data = bos.toByteArray();
-		    	packet.length = bos.size();
-		    	PacketDispatcher.sendPacketToServer(packet);
+                PacketSenders.mouseEventUp(tile);
 			}
 		}
     }
-	
-	public void sendKeyEvent(char par1 ,int par2)
-	{
-		Packet250CustomPayload packet = new Packet250CustomPayload();
-		packet.channel = "CCLights2";
-		ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
-    	DataOutputStream outputStream = new DataOutputStream(bos);
-    	try {
-    		outputStream.writeByte(PacketHandler.NET_GPUEVENT);
-			outputStream.writeInt(tile.xCoord);
-			outputStream.writeInt(tile.yCoord);
-			outputStream.writeInt(tile.zCoord);
-			outputStream.writeInt(tile.worldObj.provider.dimensionId);
-			outputStream.writeUTF("key");
-			outputStream.writeInt(1);
-			outputStream.writeInt(0);
-			outputStream.writeInt(par2);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-    	packet.data = bos.toByteArray();
-    	packet.length = bos.size();
-    	PacketDispatcher.sendPacketToServer(packet);
-    	
-    	if (ChatAllowedCharacters.isAllowedCharacter(par1))
-    	{
-	    	packet = new Packet250CustomPayload();
-			packet.channel = "CCLights2";
-			bos = new ByteArrayOutputStream(8);
-	    	outputStream = new DataOutputStream(bos);
-	    	try {
-	    		outputStream.writeByte(PacketHandler.NET_GPUEVENT);
-				outputStream.writeInt(tile.xCoord);
-				outputStream.writeInt(tile.yCoord);
-				outputStream.writeInt(tile.zCoord);
-				outputStream.writeInt(tile.worldObj.provider.dimensionId);
-				outputStream.writeUTF("char");
-				outputStream.writeInt(1);
-				outputStream.writeInt(2);
-				outputStream.writeChar(par1);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-	    	packet.data = bos.toByteArray();
-	    	packet.length = bos.size();
-	    	PacketDispatcher.sendPacketToServer(packet);
-    	}
-	}
 
 	protected void keyTyped(char par1, int par2)
     {
         super.keyTyped(par1, par2);
         if (par2 != 1)
         {
-			  sendKeyEvent(par1, par2);
+			  PacketSenders.sendKeyEvent(par1, par2,tile);
         }
     }
 	

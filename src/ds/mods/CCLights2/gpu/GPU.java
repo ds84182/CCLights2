@@ -8,16 +8,9 @@ import java.util.Deque;
 import java.util.Stack;
 import java.util.UUID;
 
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.Packet250CustomPayload;
-
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
-
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
-import ds.mods.CCLights2.network.PacketHandler;
-import ds.mods.CCLights2.network.PacketSplitter;
+import ds.mods.CCLights2.network.PacketSenders;
 
 public class GPU {
 	public Texture[] textures;
@@ -163,13 +156,6 @@ public class GPU {
 	public void scale(double sx, double sy)
 	{
 		transform.scale(sx, sy);
-	}
-	
-	public void sendPacketNow(Packet packet)
-	{
-		if (tile == null)
-			throw new IllegalArgumentException("GPU cannot send packet without Tile Entity!");
-		PacketSplitter.sendPacketToAllAround((Packet250CustomPayload) packet, tile.xCoord, tile.yCoord, tile.zCoord, 4096.0D, tile.worldObj.provider.dimensionId);
 	}
 	
 	public Object[] processCommand(DrawCMD cmd) throws Exception
@@ -375,30 +361,9 @@ public class GPU {
 	{
 		if (!drawlist.isEmpty())
 		{
-			Deque<DrawCMD> copy = drawlist;
 			if (!tile.worldObj.isRemote)
 			{
-				Packet250CustomPayload packet = new Packet250CustomPayload();
-				packet.channel = "CCLights2";
-				ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
-	    		outputStream.writeByte(PacketHandler.NET_GPUDRAWLIST);
-				outputStream.writeInt(tile.xCoord);
-				outputStream.writeInt(tile.yCoord);
-				outputStream.writeInt(tile.zCoord);
-				outputStream.writeInt(copy.size());
-				while (!drawlist.isEmpty())
-				{
-					DrawCMD c = drawlist.removeLast();
-					outputStream.writeInt(c.cmd);
-					outputStream.writeInt(c.args.length);
-					for (int g = 0; g<c.args.length; g++)
-					{
-						outputStream.writeDouble(c.args[g]);
-					}
-				}
-		    	packet.data = outputStream.toByteArray();
-		    	packet.length = packet.data.length;
-		    	sendPacketNow(packet);
+		    	PacketSenders.sendPacketsNow(drawlist,tile);
 			}
 			drawlist.clear();
 		}

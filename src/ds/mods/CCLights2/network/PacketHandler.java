@@ -2,12 +2,7 @@ package ds.mods.CCLights2.network;
 
 import java.awt.Color;
 import java.awt.geom.AffineTransform;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.ArrayDeque;
-import java.util.HashMap;
-import java.util.Iterator;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.INetworkManager;
@@ -16,7 +11,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 
 import com.google.common.io.ByteArrayDataInput;
-import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 
 import cpw.mods.fml.common.network.IPacketHandler;
@@ -35,7 +29,7 @@ import ds.mods.CCLights2.gpu.Texture;
 
 public class PacketHandler implements IPacketHandler {
 	//"GPUDrawlist", "GPUEvent", "GPUDownload", "GPUMouse", "GPUKey", "GPUTile","LIGHT"
-	public static final byte NET_SPLITPACKET = -1;
+
 	public static final byte NET_GPUDRAWLIST = 0;
 	public static final byte NET_GPUEVENT = 1;
 	public static final byte NET_GPUDOWNLOAD = 2;
@@ -44,8 +38,6 @@ public class PacketHandler implements IPacketHandler {
 	public static final byte NET_GPUTILE = 5;
 	public static final byte NET_GPUINIT = 6;
 	public static final byte NET_LIGHT = 7;
-	
-	public HashMap<Short,SplitPacket> splitPackets = new HashMap<Short,SplitPacket>();
 	
 	public boolean doThreadding = true;
 	public ClientDrawThread thread;
@@ -65,26 +57,6 @@ public class PacketHandler implements IPacketHandler {
 		byte typ = dat.readByte();
 		switch (typ)
 		{
-			case NET_SPLITPACKET:
-			{
-				//Split packet.
-				short id = dat.readShort();
-				if (splitPackets.get(id) != null)
-				{
-					splitPackets.get(id).addPacket(packet.data);
-					if (splitPackets.get(id).finish)
-					{
-						CCLights2.debug("Split packet finished.");
-						splitPackets.put(id, null);
-					}
-				}
-				else
-				{
-					SplitPacket p = new SplitPacket(packet.data, this, manager, player, packet.channel);
-					if (!p.finish) splitPackets.put(id, p);
-				}
-				break;
-			}
 			case (NET_GPUDRAWLIST):
 			{
 				int x = dat.readInt();
@@ -96,7 +68,6 @@ public class PacketHandler implements IPacketHandler {
 				{
 					GPU gpu = tile.gpu;
 					//TODO> alekso56: I might put clientside drawing in another thread so that Minecraft doesn't get stalled when a graphically intensive packet comes
-					//System.out.println(len+" drawcmds");
 					int[] most = new int[30];
 					for (int i = 0; i<len; i++)
 					{
@@ -244,40 +215,14 @@ public class PacketHandler implements IPacketHandler {
 						}
 					}
 					TileEntityGPU tile = (TileEntityGPU) world.getBlockTileEntity(x, y, z);
-					{
-						ByteArrayDataOutput out = ByteStreams.newDataOutput();
-						out.writeByte(NET_GPUINIT);
-						out.writeInt(x);
-						out.writeInt(y);
-						out.writeInt(z);
-						out.writeInt(tile.gpu.color.getRGB());
-						double[] matrix = new double[6];
-						tile.gpu.transform.getMatrix(matrix);
-						writeMatrix(out,matrix);
-						Iterator<AffineTransform> it = tile.gpu.transformStack.iterator();
-						out.writeInt(tile.gpu.transformStack.size());
-						while (it.hasNext())
-						{
-							it.next().getMatrix(matrix);
-							writeMatrix(out,matrix);
-						}
-						PacketSplitter.sendPacketToPlayer(new Packet250CustomPayload("CCLights2", out.toByteArray()), player);
-					}
+					PacketSenders.sendPacketToPlayer(x, y, z, tile,player);
 					for (int i = 0; i<tile.gpu.textures.length; i++)
 					{
 						if (tile.gpu.textures[i] != null)
 						{
-							sendTextures(player,tile.gpu.textures[i],i,x,y,z);
+							PacketSenders.sendTextures(player,tile.gpu.textures[i],i,x,y,z);
 						}
 					}
-				}
-				else
-				{
-					World world = ClientProxy.getClientWorld();
-					TileEntityGPU tile = (TileEntityGPU) world.getBlockTileEntity(x, y, z);
-					if (tile == null) return;
-					if (tile.gpu == null) return;
-					recTexture(dat, tile);
 				}
 				break;
 			}
@@ -368,7 +313,7 @@ public class PacketHandler implements IPacketHandler {
 		}
 	}
 	
-	public void recTexture(ByteArrayDataInput dat, TileEntityGPU tile)
+	public static void recTexture(ByteArrayDataInput dat, TileEntityGPU tile)
 	{
 		GPU gpu = tile.gpu;
 		int id = dat.readInt();
@@ -391,44 +336,6 @@ public class PacketHandler implements IPacketHandler {
 		}
 		CCLights2.debug(w+","+h);
 		tex.img.setRGB(0, 0, w, h, arr, 0, w);
-	}
-	
-	public void sendTextures(Player whom, Texture tex, int id, int x, int y, int z)
-	{
-		Packet250CustomPayload packet = new Packet250CustomPayload();
-		packet.channel = "CCLights2";
-		ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
-    	DataOutputStream outputStream = new DataOutputStream(bos);
-    	try {
-    		outputStream.writeByte(NET_GPUDOWNLOAD);
-			outputStream.writeInt(x);
-			outputStream.writeInt(y);
-			outputStream.writeInt(z);
-			outputStream.writeInt(id);
-			outputStream.writeInt(tex.getWidth());
-			outputStream.writeInt(tex.getHeight());
-			int[] arr = new int[tex.getWidth()*tex.getHeight()*4];
-			tex.img.getRGB(0, 0, tex.getWidth(), tex.getHeight(), arr, 0, tex.getWidth());
-			outputStream.writeInt(arr.length);
-			for (int i=0; i<arr.length; i++)
-			{
-				outputStream.writeInt(arr[i]);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-    	packet.data = bos.toByteArray();
-    	packet.length = bos.size();
-    	//System.out.println(packet.length);
-    	PacketSplitter.sendPacketToPlayer(packet, whom);
-	}
-	
-	public void writeMatrix(ByteArrayDataOutput out, double[] matrix)
-	{
-		for (int i = 0; i<matrix.length; i++)
-		{
-			out.writeDouble(matrix[i]);
-		}
 	}
 	
 	public void readMatrix(ByteArrayDataInput dat, double[] matrix)
