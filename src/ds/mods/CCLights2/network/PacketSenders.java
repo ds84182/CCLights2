@@ -25,39 +25,53 @@ public class PacketSenders {
 	public static void sendPacketsNow(Deque<DrawCMD> drawlist,TileEntityGPU tile) {
 		if (tile == null)
 			throw new IllegalArgumentException("GPU cannot send packet without Tile Entity!");
-		Packet250CustomPayload packet = new Packet250CustomPayload();
-		packet.channel = "CCLights2";
-		ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
-		outputStream.writeByte(PacketHandler.NET_GPUDRAWLIST);
-		outputStream.writeInt(tile.xCoord);
-		outputStream.writeInt(tile.yCoord);
-		outputStream.writeInt(tile.zCoord);
-		outputStream.writeInt(drawlist.size());
 		while (!drawlist.isEmpty()) {
-			DrawCMD c = drawlist.removeLast();
-			outputStream.writeInt(c.cmd);
 			int length = 0;
+			DrawCMD c = drawlist.removeLast();
 			if(c.args.length >= 4085){
-				int repeats = 4085/c.args.length;
 				length = 4085;
-				for(int l = 0; l < repeats; l++){
-				for (int g = 0; g < length; g++) {
-					outputStream.writeDouble(c.args[g]);
-				}
+				for(int l = 0; l < c.args.length; l = l + 4085){
+					Packet250CustomPayload packet = new Packet250CustomPayload();
+					packet.channel = "CCLights2";
+					ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
+					outputStream.writeByte(PacketHandler.NET_GPUDRAWLIST);
+					outputStream.writeInt(tile.xCoord);
+					outputStream.writeInt(tile.yCoord);
+					outputStream.writeInt(tile.zCoord);
+					outputStream.writeInt(drawlist.size()+1);
+					outputStream.writeInt(l);
+					outputStream.writeInt(c.cmd);
+				 for (int g = 0; g <= length; g++) {
+					outputStream.writeDouble(c.args[g+l]);
+				 }
+				 packet.data = outputStream.toByteArray();
+					packet.length = packet.data.length;
+					PacketDispatcher.sendPacketToAllAround(tile.xCoord, tile.yCoord,
+							tile.zCoord, 4096D, tile.worldObj.provider.dimensionId, packet);
 				}
 			}
 			else{
 			int lenght = c.args.length;
+			Packet250CustomPayload packet = new Packet250CustomPayload();
+			packet.channel = "CCLights2";
+			ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
+			outputStream.writeByte(PacketHandler.NET_GPUDRAWLIST);
+			outputStream.writeInt(tile.xCoord);
+			outputStream.writeInt(tile.yCoord);
+			outputStream.writeInt(tile.zCoord);
+			outputStream.writeInt(drawlist.size()+1);
+			outputStream.writeInt(0);
+			outputStream.writeInt(c.cmd);
 			outputStream.writeInt(lenght);
 			for (int g = 0; g < length; g++) {
 				outputStream.writeDouble(c.args[g]);
 			}
+			packet.data = outputStream.toByteArray();
+			packet.length = packet.data.length;
+			PacketDispatcher.sendPacketToAllAround(tile.xCoord, tile.yCoord,
+					tile.zCoord, 4096D, tile.worldObj.provider.dimensionId, packet);
 			}
 		}
-		packet.data = outputStream.toByteArray();
-		packet.length = packet.data.length;
-		PacketDispatcher.sendPacketToAllAround(tile.xCoord, tile.yCoord,
-				tile.zCoord, 4096D, tile.worldObj.provider.dimensionId, packet);
 	}
 
 	public static void GPUEvent(int par1, int par2, TileEntityMonitor tile,int wheel) {

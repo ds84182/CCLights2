@@ -75,8 +75,9 @@ public class PacketHandler implements IPacketHandler {
 						cmd.cmd = dat.readInt();
 						most[cmd.cmd+1]++;
 						int lent = dat.readInt();
+						int step = dat.readInt();
 						cmd.args = new double[lent];
-						for (int g = 0; g<lent; g++)
+						for (int g = step; g<lent; g = g++)
 						{
 							cmd.args[g] = dat.readDouble();
 						}
