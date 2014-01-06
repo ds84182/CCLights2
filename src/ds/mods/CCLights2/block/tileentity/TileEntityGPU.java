@@ -4,8 +4,6 @@ import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,11 +14,9 @@ import javax.imageio.ImageIO;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.ForgeDirection;
 import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.network.PacketDispatcher;
 import cpw.mods.fml.common.network.Player;
 import cpw.mods.fml.relauncher.Side;
 import dan200.computer.api.IComputerAccess;
@@ -36,7 +32,7 @@ import ds.mods.CCLights2.gpu.GPU;
 import ds.mods.CCLights2.gpu.Monitor;
 import ds.mods.CCLights2.gpu.Texture;
 import ds.mods.CCLights2.gpu.imageLoader.ImageLoader;
-import ds.mods.CCLights2.network.PacketHandler;
+import ds.mods.CCLights2.network.PacketSenders;
 
 public class TileEntityGPU extends TileEntity implements IPeripheral {
 	public GPU gpu;
@@ -757,23 +753,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 		synchronized (this) {if (!frame){ gpu.processSendList();}}
 		connectToMonitor();
 		if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT && ticks++ % 20 == 0 && !sentOnce) {
-		Packet250CustomPayload packet = new Packet250CustomPayload();
-		packet.channel = "CCLights2";
-		ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
-		DataOutputStream outputStream = new DataOutputStream(bos);
-		try {
-			outputStream.writeByte(PacketHandler.NET_GPUDOWNLOAD);
-			outputStream.writeInt(xCoord);
-			outputStream.writeInt(yCoord);
-			outputStream.writeInt(zCoord);
-			outputStream.writeInt(worldObj.provider.dimensionId);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		packet.data = bos.toByteArray();
-		packet.length = bos.size();
-		CCLights2.debug("Sent DL Request to server!");
-		PacketDispatcher.sendPacketToServer(packet);
+		PacketSenders.GPUDOWNLOAD(xCoord, yCoord, zCoord, worldObj.provider.dimensionId);
 		this.sentOnce=true;
 		}
 		

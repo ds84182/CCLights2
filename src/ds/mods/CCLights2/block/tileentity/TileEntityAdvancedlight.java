@@ -1,15 +1,19 @@
 package ds.mods.CCLights2.block.tileentity;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
+import java.io.IOException;
 
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.packet.Packet250CustomPayload;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.tileentity.TileEntity;
+
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
+
 import cpw.mods.fml.common.network.PacketDispatcher;
 import dan200.computer.api.IComputerAccess;
 import dan200.computer.api.ILuaContext;
 import dan200.computer.api.IPeripheral;
+import ds.mods.CCLights2.network.PacketChunker;
 
 public class TileEntityAdvancedlight  extends TileEntity implements IPeripheral {
 	    public float r = 255;
@@ -65,8 +69,7 @@ public class TileEntityAdvancedlight  extends TileEntity implements IPeripheral 
 	    
 	    public void colorChange()
 	    {
-	    	ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
-	    	DataOutputStream outputStream = new DataOutputStream(bos);
+	    	ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
 	    	try {
 	    		outputStream.writeInt(xCoord);
 	    		outputStream.writeInt(yCoord);
@@ -74,15 +77,11 @@ public class TileEntityAdvancedlight  extends TileEntity implements IPeripheral 
 	    		outputStream.writeFloat(this.r);
 	    		outputStream.writeFloat(this.g);
 	    		outputStream.writeFloat(this.b);
-	    	} catch (Exception ex) {
+	    	Packet[] packets = PacketChunker.instance.createPackets("CCLights2", outputStream.toByteArray());
+	    	PacketDispatcher.sendPacketToAllPlayers(packets[0]);
+	    	} catch (IOException ex) {
 	    		ex.printStackTrace();
 	    	}
-
-	    	Packet250CustomPayload packet = new Packet250CustomPayload();
-	    	packet.channel = "Light";
-	    	packet.data = bos.toByteArray();
-	    	packet.length = bos.size();
-	    	PacketDispatcher.sendPacketToAllPlayers(packet);
 	    }
 	    @Override
 	    public void readFromNBT(NBTTagCompound par1NBTTagCompound)

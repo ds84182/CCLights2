@@ -1,26 +1,21 @@
 package ds.mods.CCLights2.block.tileentity;
 
 import java.awt.Color;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 
 import com.google.common.io.ByteArrayDataInput;
 
 import cpw.mods.fml.common.FMLLog;
-import cpw.mods.fml.common.network.PacketDispatcher;
 import dan200.computer.api.IComputerAccess;
 import dan200.computer.api.ILuaContext;
 import dan200.computer.api.IPeripheral;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.gpu.Monitor;
-import ds.mods.CCLights2.network.PacketHandler;
+import ds.mods.CCLights2.network.PacketSenders;
 
 public class TileEntityExternalMonitor extends TileEntityMonitor implements IPeripheral {
 	public static final int MAX_WIDTH = 16;
@@ -481,7 +476,7 @@ public class TileEntityExternalMonitor extends TileEntityMonitor implements IPer
 		if (dirty || m_tts-- < 0) {
 			//propogateTerminal();
 			// Send update packet
-			PacketDispatcher.sendPacketToAllAround(xCoord,yCoord,zCoord,4096.0D,worldObj.provider.dimensionId,createUpdatePacket());
+			PacketSenders.ExternalMonitorUpdate(xCoord, yCoord, zCoord, worldObj.provider.dimensionId,m_width, m_height,m_xIndex,m_yIndex,m_dir);
 			dirty = false;
 			m_tts = TICKS_TIL_SYNC;
 		}
@@ -496,29 +491,7 @@ public class TileEntityExternalMonitor extends TileEntityMonitor implements IPer
 		propogateTerminal();
 		CCLights2.debug("Handled update packet");
 	}
-
-	public Packet createUpdatePacket() {
-		Packet250CustomPayload packet = new Packet250CustomPayload();
-		packet.channel = "CCLights2";
-		ByteArrayOutputStream bos = new ByteArrayOutputStream(8);
-		DataOutputStream outputStream = new DataOutputStream(bos);
-		try {
-			outputStream.writeByte(PacketHandler.NET_GPUTILE);
-			outputStream.writeInt(xCoord);
-			outputStream.writeInt(yCoord);
-			outputStream.writeInt(zCoord);
-			outputStream.writeInt(m_width);
-			outputStream.writeInt(m_height);
-			outputStream.writeInt(m_xIndex);
-			outputStream.writeInt(m_yIndex);
-			outputStream.writeInt(m_dir);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		packet.data = bos.toByteArray();
-		packet.length = bos.size();
-		return packet;
-	}
+	
 	@Override
 	public String[] getMethodNames() {
 		return new String[]{"getResolution","getDPM","getBlockResolution"};
