@@ -127,8 +127,8 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 						return;
 					}
 				} else {
-						CCLights2.debug(dir.name());
-						CCLights2.debug(ftile.toString());
+						//CCLights2.debug(dir.name());
+						//CCLights2.debug(ftile.toString());
 				}
 			}
 		}

@@ -19,37 +19,38 @@ import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
 import ds.mods.CCLights2.gpu.DrawCMD;
 import ds.mods.CCLights2.gpu.Texture;
 
-public class PacketSenders {
+public final class PacketSenders {
 
-	public static void sendPacketsNow(Deque<DrawCMD> drawlist,
+	public static synchronized void sendPacketsNow(Deque<DrawCMD> drawlist,
 			TileEntityGPU tile) {
 		if (tile == null)
 			throw new IllegalArgumentException(
 					"GPU cannot send packet without Tile Entity!");
+		ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
+		outputStream.writeByte(PacketHandler.NET_GPUDRAWLIST);
+		outputStream.writeInt(tile.xCoord);
+		outputStream.writeInt(tile.yCoord);
+		outputStream.writeInt(tile.zCoord);
+		outputStream.writeInt(drawlist.size());
 		while (!drawlist.isEmpty()) {
 			DrawCMD c = drawlist.removeLast();
-			ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
-			outputStream.writeByte(PacketHandler.NET_GPUDRAWLIST);
-			outputStream.writeInt(tile.xCoord);
-			outputStream.writeInt(tile.yCoord);
-			outputStream.writeInt(tile.zCoord);
-			outputStream.writeInt(drawlist.size() + 1);
 			outputStream.writeInt(c.cmd);
+			outputStream.writeInt(c.args.length);
+			//System.out.println("CMD:"+c.cmd+"lent"+c.args.length+"len: "+drawlist.size()+1);
 			for (int g = 0; g < c.args.length; g++) {
 				outputStream.writeDouble(c.args[g]);
 			}
-			try {
-				Packet[] packets = PacketChunker.instance.createPackets("CCLights2",
-						outputStream.toByteArray());
-				for (int g = 0; g < packets.length; g++) {
-					PacketDispatcher.sendPacketToAllAround(tile.xCoord,
-							tile.yCoord, tile.zCoord, 4096D,
-							tile.worldObj.provider.dimensionId, packets[g]);
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
+		}
+		try {
+			Packet[] packets = PacketChunker.instance.createPackets("CCLights2",
+					outputStream.toByteArray());
+			for (int g = 0; g < packets.length; g++) {
+				PacketDispatcher.sendPacketToAllAround(tile.xCoord,
+						tile.yCoord, tile.zCoord, 4096.0D,
+						tile.worldObj.provider.dimensionId, packets[g]);
 			}
-
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -73,14 +74,13 @@ public class PacketSenders {
 		out.writeInt(0);
 		out.writeInt(wheel / 120);
 
-		Packet[] packets;
 		try {
-			packets = PacketChunker.instance.createPackets("CCLights2", out.toByteArray());
+			Packet[] packets = PacketChunker.instance.createPackets("CCLights2", out.toByteArray());
 			PacketDispatcher.sendPacketToServer(packets[0]);
 		} catch (IOException e) {e.printStackTrace();}
 	}
 
-	public static void sendPacketToPlayer(int x, int y, int z,TileEntityGPU tile, Player player) {
+	public synchronized static void sendPacketToPlayer(int x, int y, int z,TileEntityGPU tile, Player player) {
 		ByteArrayDataOutput out = ByteStreams.newDataOutput();
 		out.writeByte(PacketHandler.NET_GPUINIT);
 		out.writeInt(x);
@@ -96,6 +96,7 @@ public class PacketSenders {
 			it.next().getMatrix(matrix);
 			writeMatrix(out, matrix);
 		}
+		System.out.println(out.toByteArray().toString());
 		try {
 			Packet[] packets = PacketChunker.instance.createPackets("CCLights2",
 					out.toByteArray());
@@ -108,7 +109,7 @@ public class PacketSenders {
 
 	}
 
-	public static void sendTextures(Player whom, Texture tex, int id, int x,int y, int z) {
+	public synchronized static void sendTextures(Player whom, Texture tex, int id, int x,int y, int z) {
 		ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
 		try {
 			outputStream.writeByte(PacketHandler.NET_GPUDOWNLOAD);
@@ -232,7 +233,7 @@ public class PacketSenders {
 		}
 	}
 
-	public static void ExternalMonitorUpdate(int xCoord,int yCoord,int zCoord,int dimId, int m_width, int m_height, int m_xIndex, int m_yIndex, int m_dir) {
+	public synchronized static void ExternalMonitorUpdate(int xCoord,int yCoord,int zCoord,int dimId, int m_width, int m_height, int m_xIndex, int m_yIndex, int m_dir) {
 			ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
 			try {
 				outputStream.writeByte(PacketHandler.NET_GPUTILE);

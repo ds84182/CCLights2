@@ -55,74 +55,73 @@ public class PacketHandler implements IPacketHandler {
 	@Override
 	public void onPacketData(INetworkManager manager,
 			Packet250CustomPayload packet, Player player) {
-		ByteArrayDataInput dat = null;
 		try {
 			byte[] data = PacketChunker.instance.getBytes(packet);
 			if (data != null) { // data is now the full, combined data
-				dat = ByteStreams.newDataInput(data);
+				ByteArrayDataInput dat = ByteStreams.newDataInput(data);
 				byte typ = dat.readByte();
 				switch (typ)
 				{
-				case (NET_GPUDRAWLIST):
-				{
-					int x = dat.readInt();
-					int y = dat.readInt();
-					int z = dat.readInt();
-					int len = dat.readInt();
-					TileEntityGPU tile = (TileEntityGPU) ClientProxy.getClientWorld().getBlockTileEntity(x, y, z);
-					if (tile != null)
-					{
-						GPU gpu = tile.gpu;
-						//TODO> alekso56: I might put clientside drawing in another thread so that Minecraft doesn't get stalled when a graphically intensive packet comes
-						int[] most = new int[30];
-						for (int i = 0; i<len; i++)
-						{
-							DrawCMD cmd = new DrawCMD();
-							cmd.cmd = dat.readInt();
-							most[cmd.cmd+1]++;
-							int lent = dat.readInt();
-							int step = dat.readInt();
-							cmd.args = new double[lent];
-							for (int g = step; g<lent; g = g++)
-							{
-								cmd.args[g] = dat.readDouble();
-							}
-							if (!doThreadding)
-								try {
-									tile.gpu.processCommand(cmd);
-								} catch (Exception e) {
-									//MEH.
-									e.printStackTrace();
-								}
-							else
-							{
-								if (!thread.isAlive())
-								{
-									CCLights2.debug("The client draw thread died, restarting");
-									thread = new ClientDrawThread();
-									thread.start();
-								}
-								if (thread.draws.get(tile.gpu) == null)
-								{
-									thread.draws.put(tile.gpu, new ArrayDeque<DrawCMD>());
-								}
-								thread.draws.get(tile.gpu).addLast(cmd);
-							}
-						}
-						int n = -1;
-						int ind = 0;
-						for (int i=0; i<most.length; i++)
-						{
-							if (n<most[i])
-							{
-								n=most[i];
-								ind=i;
-							}
-						}
-						//System.out.println("Most used drawcmd: "+(ind-1)+" with "+n+" uses");
-					}
-					break;
-				}
+		          case (NET_GPUDRAWLIST):
+                  {
+                          int x = dat.readInt();
+                          int y = dat.readInt();
+                          int z = dat.readInt();
+                          TileEntityGPU tile = (TileEntityGPU) ClientProxy.getClientWorld().getBlockTileEntity(x, y, z);
+                          if (tile != null)
+                          {
+                        	      int len = dat.readInt();
+                                  GPU gpu = tile.gpu;
+                                  //TODO> alekso56: I might put clientside drawing in another thread so that Minecraft doesn't get stalled when a graphically intensive packet comes
+                                  int[] most = new int[30];
+                                  DrawCMD cmd = new DrawCMD();
+                                  for (int i = 0; i<len; i++)
+                                  { 
+                                          cmd.cmd = dat.readInt();
+                                          most[cmd.cmd+1]++;
+                                          int lent = dat.readInt();
+                                          //System.out.println(" CLIENT CMD:"+cmd.cmd+" LENT; "+lent+" curr: "+i+" len: "+len);
+                                          cmd.args = new double[lent];
+                                          for (int g = 0; g<lent; g++)
+                                          {
+                                                  cmd.args[g] = dat.readDouble();
+                                          }
+                                          if (!doThreadding)
+                                                  try {
+                                                          tile.gpu.processCommand(cmd);
+                                                  } catch (Exception e) {
+                                                          //MEH.
+                                                          e.printStackTrace();
+                                                  }
+                                          else
+                                          {
+                                                  if (!thread.isAlive())
+                                                  {
+                                                          CCLights2.debug("The client draw thread died, restarting");
+                                                          thread = new ClientDrawThread();
+                                                          thread.start();
+                                                  }
+                                                  if (thread.draws.get(tile.gpu) == null)
+                                                  {
+                                                          thread.draws.put(tile.gpu, new ArrayDeque<DrawCMD>());
+                                                  }
+                                                  thread.draws.get(tile.gpu).addLast(cmd);
+                                          }
+                                  }
+                                  int n = -1;
+                                  int ind = 0;
+                                  for (int i=0; i<most.length; i++)
+                                  {
+                                          if (n<most[i])
+                                          {
+                                                  n=most[i];
+                                                  ind=i;
+                                          }
+                                  }
+                                  //System.out.println("Most used drawcmd: "+(ind-1)+" with "+n+" uses");
+                          }
+                          break;
+                  }
 				case (NET_GPUEVENT):
 				{
 					int x = dat.readInt();
