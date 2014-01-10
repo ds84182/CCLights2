@@ -2,8 +2,11 @@ package ds.mods.CCLights2.network;
 
 import java.awt.Color;
 import java.awt.geom.AffineTransform;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.zip.GZIPInputStream;
 
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet250CustomPayload;
@@ -58,7 +61,23 @@ public class PacketHandler implements IPacketHandler {
 		try {
 			byte[] data = PacketChunker.instance.getBytes(packet);
 			if (data != null) { // data is now the full, combined data
-				ByteArrayDataInput dat = ByteStreams.newDataInput(data);
+				
+				// im crap at gzip ;_; but hey! it works!
+				ByteArrayDataInput dat;
+				if(CCLights2.gzip){
+				ByteArrayInputStream input = new ByteArrayInputStream(data);
+				GZIPInputStream zipStream = new GZIPInputStream(input);
+				ByteArrayOutputStream bo = new ByteArrayOutputStream();
+				while (zipStream.available() > 0){bo.write(zipStream.read());}
+				dat = ByteStreams.newDataInput(bo.toByteArray());
+				zipStream.close();
+				input.close();
+				}
+				else{
+					dat = ByteStreams.newDataInput(data);
+				}
+				
+				CCLights2.debug("packetHandler: "+data.length);
 				byte typ = dat.readByte();
 				switch (typ)
 				{

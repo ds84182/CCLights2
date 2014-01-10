@@ -21,11 +21,9 @@ import ds.mods.CCLights2.gpu.Texture;
 
 public final class PacketSenders {
 
-	public static synchronized void sendPacketsNow(Deque<DrawCMD> drawlist,
+	public static void sendPacketsNow(Deque<DrawCMD> drawlist,
 			TileEntityGPU tile) {
-		if (tile == null)
-			throw new IllegalArgumentException(
-					"GPU cannot send packet without Tile Entity!");
+		if (tile == null){throw new IllegalArgumentException("GPU cannot send packet without Tile Entity!");}
 		ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
 		outputStream.writeByte(PacketHandler.NET_GPUDRAWLIST);
 		outputStream.writeInt(tile.xCoord);
@@ -96,7 +94,6 @@ public final class PacketSenders {
 			it.next().getMatrix(matrix);
 			writeMatrix(out, matrix);
 		}
-		System.out.println(out.toByteArray().toString());
 		try {
 			Packet[] packets = PacketChunker.instance.createPackets("CCLights2",
 					out.toByteArray());
@@ -109,7 +106,7 @@ public final class PacketSenders {
 
 	}
 
-	public synchronized static void sendTextures(Player whom, Texture tex, int id, int x,int y, int z) {
+	public static void sendTextures(Player whom, Texture tex, int id, int x,int y, int z) {
 		ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
 		try {
 			outputStream.writeByte(PacketHandler.NET_GPUDOWNLOAD);

@@ -10,7 +10,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.MinecraftForge;
 import cpw.mods.fml.common.FMLLog;
-import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -18,6 +17,8 @@ import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
+import cpw.mods.fml.common.network.NetworkRegistry;
+import cpw.mods.fml.common.registry.LanguageRegistry;
 import ds.mods.CCLights2.gpu.imageLoader.GeneralImageLoader;
 import ds.mods.CCLights2.gpu.imageLoader.ImageLoader;
 import ds.mods.CCLights2.network.PacketHandler;
@@ -34,6 +35,7 @@ public class CCLights2 {
 	public static Item ram,tablet;
 	protected static Configuration config;
 	public static Logger logger;
+	public static boolean gzip;
 
 	public static CreativeTabs ccltab = new CreativeTabs("CClights2") {
 		@Override
@@ -52,18 +54,14 @@ public class CCLights2 {
 		logger = event.getModLog();
 		logger.setParent(FMLLog.getLogger());
 		Compat.init();
-		if(Config.Vanilla){
-		Compat.Vanilla();
-		}
-		if (Loader.isModLoaded("IC2") && Config.IC2) {
-            Compat.IC2();
-        }
+        LanguageRegistry.instance().addStringLocalization("itemGroup.CClights2", "en_US", "CCLights 2"); //creativetabs
 		logger.log(Level.INFO, "STANDING BY");
 	}
 
 	@EventHandler
 	public void load(FMLInitializationEvent event) {
 		proxy.registerRenderInfo();
+        NetworkRegistry.instance().registerGuiHandler(CCLights2.class, new GuiHandler());
 		MinecraftForge.EVENT_BUS.register(new Events());
 	}
 

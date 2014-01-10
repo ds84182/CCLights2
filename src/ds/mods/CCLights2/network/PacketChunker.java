@@ -1,12 +1,15 @@
 package ds.mods.CCLights2.network;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.zip.GZIPOutputStream;
 
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet250CustomPayload;
+import ds.mods.CCLights2.CCLights2;
 
 // credits to teh openMods team for this class!
 public class PacketChunker {
@@ -25,8 +28,23 @@ public class PacketChunker {
 	 * @return the list of chunks
 	 * @throws IOException
 	 */
-	public Packet[] createPackets(String channel, byte[] data) throws IOException {
-
+	public Packet[] createPackets(String channel, byte[] input) throws IOException {
+		byte[] data;
+		//gzip.jpg
+		if(CCLights2.gzip){
+		ByteArrayOutputStream dataToCompress = new ByteArrayOutputStream();
+		GZIPOutputStream zipStream = new GZIPOutputStream(dataToCompress);
+		zipStream.write(input);
+		zipStream.close();
+		data = dataToCompress.toByteArray();
+		dataToCompress.close();
+		}
+		else{
+			data = input;
+		}
+		
+		CCLights2.debug("packetsender: "+data.length);
+		
 		int start = 0;
 		short maxChunkSize = Short.MAX_VALUE - 100;
 		byte numChunks = (byte)Math.ceil(data.length / (double)maxChunkSize);

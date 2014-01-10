@@ -4,7 +4,7 @@ import net.minecraftforge.common.Configuration;
 
 public class Config {
 	public static boolean DEBUGS;
-	public static boolean Vanilla,IC2;
+	public static boolean Vanilla,IC2,gzip;
 	public static int Tablet,light,advlight,Monitor,MonitorBig,Gpu,Ram,TTrans;
 	static void loadConfig(Configuration config)
 	  {
@@ -17,8 +17,9 @@ public class Config {
 	    Tablet = config.get("Blocks and item ids", "Tablet", 4098).getInt(4098);
 	    light = config.get("Blocks and item ids", "Light", 546).getInt(546);
 	    advlight = config.get("Blocks and item ids", "Advanced Light", 547).getInt(547);
-	    DEBUGS = config.get("Misc", "DEBUG", false).getBoolean(true);
-	    Vanilla = config.get("Misc", "CompatVanilla", true).getBoolean(false);
+	    DEBUGS = config.get("Misc", "DEBUG", false).getBoolean(false);
+	    gzip = config.get("Misc", "GZIP", true).getBoolean(true);
+	    Vanilla = config.get("Misc", "CompatVanilla", true).getBoolean(true);
 	    IC2 = config.get("Misc", "CompatIC2", false).getBoolean(false);
 	    config.save();
 	  }
