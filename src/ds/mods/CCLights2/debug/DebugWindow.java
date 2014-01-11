@@ -5,6 +5,7 @@ import java.awt.Graphics;
 
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
 
+@SuppressWarnings("serial")
 public class DebugWindow extends Frame {
     TileEntityGPU gpu;
 	public DebugWindow(TileEntityGPU gpu)

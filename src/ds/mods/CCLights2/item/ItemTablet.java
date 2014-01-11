@@ -8,7 +8,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -30,16 +29,13 @@ public class ItemTablet extends Item {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void addInformation(ItemStack par1ItemStack,
-			EntityPlayer par2EntityPlayer, List par3List, boolean par4) {
+			EntityPlayer par2EntityPlayer, @SuppressWarnings("rawtypes") List par3List, boolean par4) {
 		
 	}
 
 	@Override
 	public ItemStack onItemRightClick(ItemStack par1ItemStack, World par3World, EntityPlayer par2EntityPlayer) {
-		MovingObjectPosition mop = new MovingObjectPosition(par2EntityPlayer);
-		int par4 = mop.blockX;
-		int par5 = mop.blockY;
-		int par6 = mop.blockZ;
+		
 		//TODO: Make Wireless Transmitter
 		//System.out.println("Output.");
 		//If canDisplay then show gui end

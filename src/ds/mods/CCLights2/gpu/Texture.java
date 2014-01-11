@@ -65,7 +65,7 @@ public class Texture {
 
 	            if (i1 == 32)
 	            {
-	                this.charWidth[i1] = 3 + b0;
+	                Texture.charWidth[i1] = 3 + b0;
 	            }
 
 	            int l1 = l - 1;
@@ -95,7 +95,7 @@ public class Texture {
 	                }
 
 	                ++l1;
-	                this.charWidth[i1] = (int)(0.5D + (double)((float)l1 * f)) + b0;
+	                Texture.charWidth[i1] = (int)(0.5D + (double)((float)l1 * f)) + b0;
 	                ++i1;
 	                break;
 	            }

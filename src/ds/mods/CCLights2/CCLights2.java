@@ -7,7 +7,6 @@ import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.StatCollector;
 import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.MinecraftForge;
 import cpw.mods.fml.common.FMLLog;
@@ -20,7 +19,6 @@ import cpw.mods.fml.common.network.NetworkRegistry;
 import ds.mods.CCLights2.gpu.imageLoader.GeneralImageLoader;
 import ds.mods.CCLights2.gpu.imageLoader.ImageLoader;
 import ds.mods.CCLights2.network.PacketHandler;
-import ds.mods.CCLights2.utils.LangHelper;
 
 @Mod(modid = "CCLights2", name = "CCLights2", version = "0.4",dependencies="required-after:ComputerCraft;required-after:CCTurtle")
 @NetworkMod(clientSideRequired = true, serverSideRequired = true, channels = { "CCLights2" }, packetHandler = PacketHandler.class)
