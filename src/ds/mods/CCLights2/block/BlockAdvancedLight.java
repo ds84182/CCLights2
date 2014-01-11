@@ -7,16 +7,16 @@ import net.minecraft.block.material.Material;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import ds.mods.CCLights2.CCLights2;
+import ds.mods.CCLights2.CommonProxy;
 import ds.mods.CCLights2.block.tileentity.TileEntityAdvancedlight;
 
 public class BlockAdvancedLight extends BlockContainer
 {
-
     public BlockAdvancedLight(int i, Material j)
     {
         super(i, j);
         this.setLightValue(1.0F);
-        this.setUnlocalizedName("Advanced Light");
+        this.setUnlocalizedName("Advanced.Light");
 		this.setCreativeTab(CCLights2.ccltab);
 		this.setHardness(0.6F).setStepSound(soundStoneFootstep);
     }
@@ -33,7 +33,7 @@ public class BlockAdvancedLight extends BlockContainer
 	  return false;
 	}
 	public int getRenderType() {
-	  return CCLights2.proxy.modelID;
+	  return CommonProxy.modelID;
 	}
 
     public TileEntity createNewTileEntity(World var1)

@@ -43,6 +43,7 @@ public class Monitor {
 		gpu.removeMonitor(this);
 		this.gpu.remove(gpu);
 	}
+	@SuppressWarnings("unchecked")
 	public void removeAllGPUs() {
 		for (GPU g : (ArrayList<GPU>)gpu.clone())
 		{

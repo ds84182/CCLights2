@@ -6,7 +6,7 @@ import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.world.IBlockAccess;
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
-import ds.mods.CCLights2.CCLights2;
+import ds.mods.CCLights2.CommonProxy;
 import ds.mods.CCLights2.block.tileentity.TileEntityExternalMonitor;
 
 public class SimpleBigMonitorRenderingHandler implements
@@ -41,7 +41,7 @@ public class SimpleBigMonitorRenderingHandler implements
 
 	@Override
 	public int getRenderId() {
-		return CCLights2.proxy.modelID;
+		return CommonProxy.modelID;
 	}
 
 }

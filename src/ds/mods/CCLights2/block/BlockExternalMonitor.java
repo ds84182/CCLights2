@@ -12,6 +12,7 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import cpw.mods.fml.common.network.Player;
 import ds.mods.CCLights2.CCLights2;
+import ds.mods.CCLights2.CommonProxy;
 import ds.mods.CCLights2.block.tileentity.TileEntityExternalMonitor;
 import ds.mods.CCLights2.gpu.GPU;
 
@@ -25,16 +26,14 @@ public class BlockExternalMonitor extends Block {
 	}
 	
 	@Override
-	public void breakBlock(World par1World, int par2, int par3, int par4,
-			int par5, int par6) {
+	public void breakBlock(World par1World, int par2, int par3, int par4, int par5, int par6) {
 		TileEntityExternalMonitor tile = (TileEntityExternalMonitor) par1World.getBlockTileEntity(par2, par3, par4);
 		tile.destroy();
 		super.breakBlock(par1World, par2, par3, par4, par5, par6);
 	}
 
 	@Override
-	public boolean onBlockActivated(World par1World, int par2, int par3,
-			int par4, EntityPlayer par5EntityPlayer, int par6, float par7,
+	public boolean onBlockActivated(World par1World, int par2, int par3, int par4, EntityPlayer par5EntityPlayer, int par6, float par7,
 			float par8, float par9) {
 		TileEntityExternalMonitor tile = (TileEntityExternalMonitor) par1World.getBlockTileEntity(par2,par3,par4);
 		CCLights2.debug(par7+","+par8+","+par9+","+tile.m_dir);
@@ -117,8 +116,7 @@ public class BlockExternalMonitor extends Block {
 	}
 
 	@Override
-	public void setBlockBoundsBasedOnState(IBlockAccess par1iBlockAccess,
-			int par2, int par3, int par4) {
+	public void setBlockBoundsBasedOnState(IBlockAccess par1iBlockAccess, int par2, int par3, int par4) {
 		setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
 	}
 
@@ -154,7 +152,7 @@ public class BlockExternalMonitor extends Block {
 
 	@Override
 	public int getRenderType() {
-		return CCLights2.proxy.modelID;
+		return CommonProxy.modelID;
 	}
 
 	@Override

@@ -154,6 +154,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				"getMonitor", "blur", "startFrame", "endFrame", "clearRect" };
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public synchronized Object[] callMethod(IComputerAccess computer,
 			ILuaContext context, int method, Object[] args) throws Exception {
