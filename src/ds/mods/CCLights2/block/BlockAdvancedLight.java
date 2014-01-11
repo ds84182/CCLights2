@@ -11,12 +11,11 @@ import ds.mods.CCLights2.block.tileentity.TileEntityAdvancedlight;
 
 public class BlockAdvancedLight extends BlockContainer
 {
-
     public BlockAdvancedLight(int i, Material j)
     {
         super(i, j);
         this.setLightValue(1.0F);
-        this.setUnlocalizedName("Advanced Light");
+        this.setUnlocalizedName("Advanced.Light");
 		this.setCreativeTab(CCLights2.ccltab);
 		this.setHardness(0.6F).setStepSound(soundStoneFootstep);
     }

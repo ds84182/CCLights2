@@ -11,20 +11,21 @@ import ds.mods.CCLights2.client.gui.GuiTablet;
 public class GuiHandler implements IGuiHandler {
 
 	@Override
-	public Object getServerGuiElement(int ID, EntityPlayer player, World world,
-			int x, int y, int z) {
-		TileEntity tile_entity = world.getBlockTileEntity(x, y, z);
+	public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		return null;
 	}
 
 	@Override
-	public Object getClientGuiElement(int ID, EntityPlayer player, World world,
-			int x, int y, int z) {
+	public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
+		// Use ID 0 to open regular tile GUI. Just use elseif's
+		
 		switch (ID)
 		{
 		case 0:
 			TileEntity tile_entity = world.getBlockTileEntity(x, y, z);
-			return new GuiMonitor(((TileEntityMonitor) tile_entity));
+			if(tile_entity instanceof TileEntityMonitor) {
+				return new GuiMonitor(((TileEntityMonitor) tile_entity));
+			}
 		case 1:
 			CCLights2.debug("Tablet GUI");
 			return new GuiTablet(player.getHeldItem().getTagCompound(),world);

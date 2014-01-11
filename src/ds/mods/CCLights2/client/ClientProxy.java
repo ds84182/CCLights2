@@ -22,9 +22,12 @@ public class ClientProxy extends CommonProxy {
 	}
 	
 	public SimpleBigMonitorRenderingHandler SBMRH;
+	
+	@Override
 	public void registerRenderInfo()
 	{
-		this.modelID = RenderingRegistry.getNextAvailableRenderId();
+		CommonProxy.modelID = RenderingRegistry.getNextAvailableRenderId();
+		
 		SBMRH = new SimpleBigMonitorRenderingHandler();
 		RenderingRegistry.registerBlockHandler(SBMRH);
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityExternalMonitor.class, new TileEntityBigMonitorRenderer());
