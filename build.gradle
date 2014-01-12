@@ -1,0 +1,78 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:1.0-SNAPSHOT'
+    }
+}
+ENV = System.getenv()
+
+if(ENV.DRONE_BUILD_NUMBER)
+buildNum = ENV.DRONE_BUILD_NUMBER + " - drone"
+
+else if (ENV.BUILD_NUMBER)
+buildNum = ENV.BUILD_NUMBER + "- jenkins"
+
+else if (ENV.TRAVIS_BUILD_NUMBER)
+buildNum = ENV.TRAVIS_BUILD_NUMBER + "- travis"
+
+else
+buildNum = config.build_number + "- manual"
+
+apply plugin: 'java'
+apply plugin: 'forge'
+
+
+targetCompatibility = JavaVersion.VERSION_1_7
+
+// define the properties file
+ext.configFile = file "build.properties"
+
+configFile.withReader {
+    // read config
+    def prop = new Properties()
+    prop.load(it)
+    ext.config = new ConfigSlurper().parse prop
+}
+
+version = config.mod_version + "." + buildNum
+group= "ds.mods"
+archivesBaseName = "CCLights2"
+
+minecraft {
+	version = config.minecraft_version + "-" + config.forge_version
+	
+	replace "@VERSION@", project.version
+	replace "@AUTHOR@", config.author_name
+}
+
+processResources
+{
+    // replace stuff in mcmod.info, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+		include 'mcmod.info'
+                
+        expand 'version' : project.version, 'mcversion' : project.minecraft.version
+    }
+        
+    // copy everything else, thats not the mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        exclude '**/*.lang'
+        exclude '**/*.info'
+        exclude '**/*.properties'
+    }
+}
+
+task deobfJar(type: Jar) {
+        from sourceSets.main.output
+        appendix = 'deobf'
+}
+ 
+artifacts {
+        archives deobfJar
+}

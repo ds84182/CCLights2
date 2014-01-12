@@ -27,17 +27,12 @@ public class CCLights2 {
 	public static CCLights2 instance;
 	
 	@SidedProxy(serverSide = "ds.mods.CCLights2.CommonProxy", clientSide = "ds.mods.CCLights2.client.ClientProxy")
-	// start variables
 	public static CommonProxy proxy;
 	
 	public static Block gpu,monitor,monitorBig,light,advancedlight,ttrans;
 	public static Item ram,tablet;
-	
-	//protected static Configuration config;
 	public static Logger logger;
 	
-	public static boolean gzip;
-
 	public static CreativeTabs ccltab = new CreativeTabs("CClights2") {
 		@Override
 		public ItemStack getIconItemStack() {
@@ -46,11 +41,8 @@ public class CCLights2 {
 		}
 	};
 
-	// end variables
-
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
-		//Configuration config = ;
 		Config.loadConfig(new Configuration(event.getSuggestedConfigurationFile()));
 		ImageLoader.register(new GeneralImageLoader());
 		logger = event.getModLog();
