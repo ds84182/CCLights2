@@ -9,9 +9,7 @@ import java.util.zip.GZIPOutputStream;
 
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet250CustomPayload;
-import ds.mods.CCLights2.CCLights2;
 
-// credits to teh openMods team for this class!
 public class PacketChunker {
 
 	private byte packetId = 0;
@@ -29,27 +27,21 @@ public class PacketChunker {
 	 * @throws IOException
 	 */
 	public Packet[] createPackets(String channel, byte[] input) throws IOException {
-		byte[] data;
 		//gzip.jpg
-		if(CCLights2.gzip){
 		ByteArrayOutputStream dataToCompress = new ByteArrayOutputStream();
 		GZIPOutputStream zipStream = new GZIPOutputStream(dataToCompress);
 		zipStream.write(input);
 		zipStream.close();
-		data = dataToCompress.toByteArray();
+		byte[] data = dataToCompress.toByteArray();
 		dataToCompress.close();
-		}
-		else{
-			data = input;
-		}
 		
-		CCLights2.debug("packetsender: "+data.length);
+		//CCLights2.debug("packetsender: "+(data.length-input.length));
 		
 		int start = 0;
 		short maxChunkSize = Short.MAX_VALUE - 100;
 		byte numChunks = (byte)Math.ceil(data.length / (double)maxChunkSize);
 		Packet[] packets = new Packet[numChunks];
-		final byte META_LENGTH = 3;
+		final byte META_LENGTH = 4;
 
 		for (byte i = 0; i < numChunks; i++) {
 
@@ -61,9 +53,10 @@ public class PacketChunker {
 
 			// set the chunk metadata: total number of chunks, current chunk
 			// index, packetId to match chunks together
-			chunk[0] = numChunks;
-			chunk[1] = i;
-			chunk[2] = packetId;
+			chunk[0] = PacketHandler.NET_SPLITPACKET;
+			chunk[1] = numChunks;
+			chunk[2] = i;
+			chunk[3] = packetId;
 
 			// copy part of the data across
 			System.arraycopy(data, start, chunk, META_LENGTH, chunkSize);
@@ -92,7 +85,7 @@ public class PacketChunker {
 	public byte[] getBytes(Packet250CustomPayload packet) throws IOException {
 
 		DataInputStream inputStream1 = new DataInputStream(new ByteArrayInputStream(packet.data));
-
+		inputStream1.skipBytes(1);
 		// how many total chunks in this packet
 		byte chunkLength = inputStream1.readByte();
 
@@ -110,7 +103,7 @@ public class PacketChunker {
 		// the current stack
 		byte[][] stack = packetStack.get(incomingPacketId);
 
-		byte[] remainingBytes = new byte[packet.data.length - 3];
+		byte[] remainingBytes = new byte[packet.data.length - 4];
 		inputStream1.read(remainingBytes, 0, remainingBytes.length);
 		stack[chunkIndex] = remainingBytes;
 
