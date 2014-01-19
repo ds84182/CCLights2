@@ -17,7 +17,7 @@ public interface IComputerAccess
 	 * Mount a mount onto the computers' file system in a read only mode.<br>
 	 * @param desiredLoction The location on the computer's file system where you would like the mount to be mounted.
 	 * @param mount The mount object to mount on the computer. These can be obtained by calling ComputerCraftAPI.createSaveDirMount(), ComputerCraftAPI.createResourceMount() or by creating your own objects that implement the IMount interface.
-	 * @return The location on the computer's file system where you the mount was actually mounted, this may be different from desiredLocation if there was already a file in the desired location. Store this value if you wish to unmount the mount later.
+	 * @return The location on the computer's file system where you the mount mounted, or null if there was already a file in the desired location. Store this value if you wish to unmount the mount later.
 	 * @see ComputerCraftAPI#createSaveDirMount(World, String)
 	 * @see ComputerCraftAPI#createResourceMount(Class, String, String)
 	 * @see #mountWritable(String, IWritableMount)
@@ -30,7 +30,7 @@ public interface IComputerAccess
 	 * Mount a mount onto the computers' file system in a writable mode.<br>
 	 * @param desiredLoction The location on the computer's file system where you would like the mount to be mounted.
 	 * @param mount The mount object to mount on the computer. These can be obtained by calling ComputerCraftAPI.createSaveDirMount() or by creating your own objects that implement the IWritableMount interface.
-	 * @return The location on the computer's file system where you the mount was actually mounted, this may be different from desiredLocation if there was already a file in the desired location. Store this value if you wish to unmount the mount later.
+	 * @return The location on the computer's file system where you the mount mounted, or null if there was already a file in the desired location. Store this value if you wish to unmount the mount later.
 	 * @see ComputerCraftAPI#createSaveDirMount(World, String)
 	 * @see ComputerCraftAPI#createResourceMount(Class, String, String)
 	 * @see #mount(String, IMount)

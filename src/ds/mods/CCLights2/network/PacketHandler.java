@@ -40,7 +40,7 @@ public class PacketHandler implements IPacketHandler {
 	static final byte NET_GPUKEY = 4;
 	static final byte NET_GPUTILE = 5;
 	static final byte NET_GPUINIT = 6;
-	public static final byte NET_LIGHT = 7;
+	static final byte NET_LIGHT = 7;
 	static final byte NET_SPLITPACKET = 8;
 
 	static boolean doThreadding = true;
@@ -292,15 +292,15 @@ public class PacketHandler implements IPacketHandler {
 								thread.draws.get(tile.gpu).addLast(cmd);
 							}
 						}
-						//int n = -1;
-						//int ind = 0;
-						//for (int i = 0; i < most.length; i++) {
-							//if (n < most[i]) {
-								//n = most[i];
-								//ind = i;
-							//}
-						//}
-						// System.out.println("Most used drawcmd: "+(ind-1)+" with "+n+" uses");
+						/*int n = -1;
+						int ind = 0;
+						for (int i = 0; i < most.length; i++) {
+							if (n < most[i]) {
+								n = most[i];
+								ind = i;
+							}
+						}
+						 System.out.println("Most used drawcmd: "+(ind-1)+" with "+n+" uses");*/
 					}
 					break;
 				}
