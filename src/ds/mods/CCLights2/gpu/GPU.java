@@ -206,14 +206,6 @@ public class GPU {
 					bindedTexture.line(color,(int) cmd.args[0],(int) cmd.args[1],(int) cmd.args[2],(int) cmd.args[3]);
 					break;
 				}
-				case 4:
-				{
-					throw new Exception("Transparency is depreciated.");
-				}
-				case 5:
-				{
-					throw new Exception("Transparency is depreciated.");
-				}
 				case 6:
 				{
 					//New Texture//
@@ -247,10 +239,6 @@ public class GPU {
 				{
 					bindedTexture.filledRect(color,(int) cmd.args[0],(int) cmd.args[1],(int) cmd.args[2],(int) cmd.args[3]);
 					break;
-				}
-				case 11:
-				{
-					throw new Exception("Bit Depths are depricated.");
 				}
 				case 12:
 				{

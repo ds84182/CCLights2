@@ -142,23 +142,21 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 	@Override
 	public String[] getMethodNames() {
 		return new String[] {
-				"fill", "createTexture", "getFreeMemory",
-				"getTotalMemory", "getUsedMemory", "bindTexture",
-				"setColorRGB", "plot", "drawTexture", "freeTexture", "line",
-				"getSize", "getTextureSize", "setTransparent",
-				"setTransparencyColor", "getColorRGB", "getPixel", "rectangle",
-				"filledRectangle", "setBPP", "getBindedTexture", "getBPP",
-				"getNativePixel", "setPixels", "setPixelsYX", "flipTextureV",
-				"import", "export", "drawText", "getTextWidth", "setColor", "getColor",
-				"translate", "rotate", "rotateAround", "scale", "push", "pop",
-				"getMonitor", "blur", "startFrame", "endFrame", "clearRect" };
+                "fill", "createTexture", "getFreeMemory",
+				"getTotalMemory", "getUsedMemory", "bindTexture", "plot",
+				"drawTexture", "freeTexture", "line", "getSize",
+				"getPixels", "rectangle", "filledRectangle",
+				"getBindedTexture", "setPixelsRaw", "setPixelsRawYX",
+				"flipTextureV", "import", "export", "drawText", "getTextWidth",
+				"setColor", "getColor", "translate", "rotate", "rotateAround",
+				"scale", "push", "pop", "getMonitor", "blur", "startFrame",
+				"endFrame", "clearRect" };
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
 	public synchronized Object[] callMethod(IComputerAccess computer,
 			ILuaContext context, int method, Object[] args) throws Exception {
-		//System.out.println(getMethodNames()[method]);
 		switch (method) {
 		case 0: {
 			//fill
@@ -222,9 +220,8 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			}
 			break;
 		}
-		case 6:
-		case 7: {
-			//plot and setColorRGB
+		case 6: {
+			//was plot and setColorRGB is now plot
 			if (args.length >= 2) {
 				int x = ConvertInteger.convert(args[0]);
 				int y = ConvertInteger.convert(args[1]);
@@ -244,11 +241,11 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			}
 			else
 			{
-				throw new Exception("plot/setColorRGB: argument error: number, number expected");
+				throw new Exception("setPixels: argument error: number, number expected");
 			}
 			break;
 		}
-		case 8: {
+		case 7: {
 			//drawTexture
 			if (args.length == 3) {
 				DrawCMD cmd = new DrawCMD();
@@ -275,7 +272,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			}
 			break;
 		}
-		case 9: {
+		case 8: {
 			//freeTexture
 			if (args.length == 1) {
 				DrawCMD cmd = new DrawCMD();
@@ -291,7 +288,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			}
 			break;
 		}
-		case 10: {
+		case 9: {
 			//line
 			if (args.length > 3) {
 				DrawCMD cmd = new DrawCMD();
@@ -309,29 +306,20 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			}
 			break;
 		}
-		case 11:
-		case 12: {
-			//getSize and getTextureSize
+		case 10: {
+			//getSize
 			int tex = gpu.bindedSlot;
 			if (args.length >= 1)
 			{
 				tex = ConvertInteger.convert(args[0]);
 			}
 			if (gpu.textures[tex] == null)
-				throw new Exception("getTextureSize: texture does not exist");
+				throw new Exception("getMonitorSize: texture does not exist");
 			Texture texture = gpu.textures[tex];
-			return new Object[] { texture.getWidth(),
-					texture.getHeight() };
+			return new Object[] { texture.getWidth(),texture.getHeight() };
 		}
-		case 13: {
-			throw new Exception("Transparency is depreciated.");
-		}
-		case 14: {
-			throw new Exception("Transparency is depreciated.");
-		}
-		case 15:
-		case 16: {
-			//getPixel and getColorRGB
+		case 11: {
+			//getPixelColor
 			if (args.length > 1) {
 				int x = ConvertInteger.convert(args[0]);
 				int y = ConvertInteger.convert(args[1]);
@@ -340,10 +328,10 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			}
 			else
 			{
-				throw new Exception("getPixel/getColorRGB: argument error: number, number expected");
+				throw new Exception("getPixelColor: argument error: number, number expected");
 			}
 		}
-		case 17: {
+		case 12: {
 			//rectangle
 			if (args.length > 3) {
 				DrawCMD cmd = new DrawCMD();
@@ -361,8 +349,8 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			}
 			break;
 		}
-		case 18: {
-			//filledRectangle
+		case 13: {
+			//filledrectangle
 			if (args.length > 3) {
 				DrawCMD cmd = new DrawCMD();
 				double[] nargs = new double[] { ConvertInteger.convert(args[0]),
@@ -379,19 +367,12 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			}
 			break;
 		}
-		case 19: {
-			throw new Exception("Bit Depths are depricated.");
-		}
-		case 20: {
+		case 14: {
+			//getBindedTexture
 			return new Object[] { gpu.bindedSlot };
 		}
-		case 21: {
-			throw new Exception("Bit Depths are depeciated.");
-		}
-		case 22: {
-			throw new Exception("getPixelNative is disfunctional.");
-		}
-		case 23: {
+		case 15: {
+			//setPixelsRaw
 			if (args.length < 4) {
 				throw new Exception("w, h, x, y, {[r,g,b]}... expected");
 			} else {
@@ -416,7 +397,8 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				return ret;
 			}
 		}
-		case 24: {
+		case 16: {
+			//setPixelsRawYX
 			if (args.length < 4) {
 				throw new Exception("w, h, x, y, [r,g,b]... expected");
 			} else {
@@ -441,7 +423,8 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				return ret;
 			}
 		}
-		case 25: {
+		case 17: {
+			//flipTextureV
 			if (args.length > 0) {
 				DrawCMD cmd = new DrawCMD();
 				double[] nargs = new double[] { ConvertInteger.convert(args[0]) };
@@ -452,7 +435,8 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				return ret;
 			}
 		}
-		case 26: {
+		case 18: {
+			//import
 			if (args.length > 1) {
 				int size = 0;
 				//One of the things I hate is that ComputerCraft uses Doubles for all their values
@@ -465,12 +449,9 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 					else
 						break;
 				}
-				//System.out.println("SIze "+size);
 				byte[] data = new byte[size];
 				for (double i = 0; i<data.length; i++)
 				{
-					//System.out.println("AT"+i);
-					//System.out.println(((Double)m.get(i+1D)).byteValue());
 					data[(int) i] = ((Double)m.get(i+1D)).byteValue();
 				}
 				CCLights2.debug("Moved data");
@@ -485,7 +466,6 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				int i = 2;
 				for (int x = 0; x<img.getWidth(); x++)
 				{
-					//System.out.println(x);
 					for (int y = 0; y<img.getHeight(); y++)
 					{
 						nargs[i++] = img.getRGB(x, y);
@@ -498,8 +478,9 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				return ret;
 			}
 		}
-		case 27:
+		case 19:
 		{
+			//export
 			if (args.length > 1)
 			{
 				int texid = ConvertInteger.convert(args[0]);
@@ -520,8 +501,9 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				return new Object[]{out};
 			}
 		}
-		case 28:
+		case 20:
 		{
+			//Drawtext
 			if (args.length > 2)
 			{
 				String str = ConvertString.convert(args[0]);
@@ -553,16 +535,18 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				return ret;
 			}
 		}
-		case 29:
+		case 21:
 		{
+			//getTextWidth
 			if (args.length > 0)
 			{
 				String str = ConvertString.convert(args[0]);
 				return new Object[]{Texture.getStringWidth(str)};
 			}
 		}
-		case 30:
+		case 22:
 		{
+			//setColor
 			if (args.length > 2)
 			{
 				DrawCMD cmd = new DrawCMD();
@@ -586,12 +570,14 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				throw new Exception("int, int, int[, int] expected");
 			}
 		}
-		case 31:
+		case 23:
 		{
+			//getColor
 			return new Object[]{gpu.color.getRed(),gpu.color.getGreen(),gpu.color.getBlue(),gpu.color.getAlpha()};
 		}
-		case 32:
+		case 24:
 		{
+			//transelate
 			double x = ConvertDouble.convert(args[0]);
 			double y = ConvertDouble.convert(args[1]);
 			DrawCMD cmd = new DrawCMD();
@@ -604,8 +590,9 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			gpu.drawlist.push(cmd);
 			break;
 		}
-		case 33:
+		case 25:
 		{
+			//rotate
 			double r = ConvertDouble.convert(args[0]);
 			DrawCMD cmd = new DrawCMD();
 			double[] nargs = new double[1];
@@ -616,8 +603,9 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			gpu.drawlist.push(cmd);
 			break;
 		}
-		case 34:
+		case 26:
 		{
+			//rotateAround
 			double r = ConvertDouble.convert(args[0]);
 			double x = ConvertDouble.convert(args[1]);
 			double y = ConvertDouble.convert(args[2]);
@@ -632,8 +620,9 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			gpu.drawlist.push(cmd);
 			break;
 		}
-		case 35:
+		case 27:
 		{
+			//scale
 			double x = ConvertDouble.convert(args[0]);
 			double y = ConvertDouble.convert(args[1]);
 			DrawCMD cmd = new DrawCMD();
@@ -646,27 +635,30 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			gpu.drawlist.push(cmd);
 			break;
 		}
-		case 36:
+		case 28:
 		{
+			//push
 			DrawCMD cmd = new DrawCMD();
 			cmd.cmd = 20;
 			Object[] ret = gpu.processCommand(cmd);
 			gpu.drawlist.push(cmd);
 			break;
 		}
-		case 37:
+		case 29:
 		{
+			//pop
 			DrawCMD cmd = new DrawCMD();
 			cmd.cmd = 21;
 			Object[] ret = gpu.processCommand(cmd);
 			gpu.drawlist.push(cmd);
 			break;
 		}
-		case 38:
+		case 30:
 		{
+			//getMonitor
 			return new Object[]{gpu.currentMonitor.obj};
 		}
-		case 39:
+		case 31:
 		{
 			//blur
 			if (args.length > 0) {
@@ -683,20 +675,21 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				throw new Exception("blur: argument error: number expected");
 			}
 		}
-		case 40:
+		case 32:
 		{
 			//startFrame
 			frame = true;
 			break;
 		}
-		case 41:
+		case 33:
 		{
 			//endFrame
 			frame = false;
 			break;
 		}
-		case 42:
+		case 34:
 		{
+			//clearRect
 			if (args.length >= 4) {
 				DrawCMD cmd = new DrawCMD();
 				double[] nargs = new double[] { ConvertInteger.convert(args[0]),ConvertInteger.convert(args[1]),ConvertInteger.convert(args[2]),ConvertInteger.convert(args[3]) };

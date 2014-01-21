@@ -109,7 +109,7 @@ public abstract class CommonProxy {
 			registerVanillaRecipes(gpu, monitor, monitorBig, light, advancedlight, ttrans, ram, tablet);
 		}
 		if (Loader.isModLoaded("IC2") && Config.IC2) {
-			this.registerIC2Recipes(gpu, monitor, monitorBig, light, advancedlight, ttrans, ram, tablet);
+			registerIC2Recipes(gpu, monitor, monitorBig, light, advancedlight, ttrans, ram, tablet);
 		}
 	}
 	
