@@ -12,7 +12,7 @@ import net.minecraftforge.common.MinecraftForge;
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.network.NetworkRegistry;
@@ -54,9 +54,9 @@ public class CCLights2 {
 	}
 
 	@Mod.EventHandler
-	public void load(FMLInitializationEvent event) {
+	public void load(FMLPostInitializationEvent event) {
 		proxy.registerRenderInfo();
-        NetworkRegistry.instance().registerGuiHandler(CCLights2.class, new GuiHandler());
+        NetworkRegistry.instance().registerGuiHandler(this, new GuiHandler());
 		MinecraftForge.EVENT_BUS.register(new Events());
 	}
 

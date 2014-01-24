@@ -106,7 +106,5 @@ public class ItemTablet extends Item {
 	//stuff loads faster when forge is satisfied at load
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IconRegister par1IconRegister)
-    {
-        this.itemIcon = par1IconRegister.registerIcon("cclights:Tablet"); // yes it errors. :P
-    }
+    {}
 }
