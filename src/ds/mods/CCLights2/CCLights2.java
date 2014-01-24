@@ -20,7 +20,7 @@ import ds.mods.CCLights2.gpu.imageLoader.GeneralImageLoader;
 import ds.mods.CCLights2.gpu.imageLoader.ImageLoader;
 import ds.mods.CCLights2.network.PacketHandler;
 
-@Mod(modid = "CCLights2", name = "CCLights2", version = "0.4",dependencies="required-after:ComputerCraft;required-after:CCTurtle")
+@Mod(modid = "CCLights2", name = "CCLights2", version = "0.4-63",dependencies="required-after:ComputerCraft;required-after:CCTurtle")
 @NetworkMod(clientSideRequired = true, serverSideRequired = true, channels = { "CCLights2" }, packetHandler = PacketHandler.class)
 public class CCLights2 {
 	@Mod.Instance("CCLights2")
@@ -48,7 +48,7 @@ public class CCLights2 {
 		logger = event.getModLog();
 		logger.setParent(FMLLog.getLogger());
 		
-		proxy.init();
+		proxy.registerBlocks();
         
 		logger.log(Level.INFO, "STANDING BY");
 	}
