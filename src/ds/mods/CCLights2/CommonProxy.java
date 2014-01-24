@@ -22,10 +22,13 @@ import ds.mods.CCLights2.item.ItemRAM;
 import ds.mods.CCLights2.item.ItemTablet;
 import ds.mods.CCLights2.utils.RegisterHelper;
 
-public abstract class CommonProxy {
+public class CommonProxy {
 	public static int modelID;
 	
-	public abstract void registerRenderInfo();
+	public void registerRenderInfo()
+	{
+		
+	}
 	
 	public void init()
 	{
