@@ -4,6 +4,9 @@ import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -155,6 +158,8 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 	@Override
 	public synchronized Object[] callMethod(IComputerAccess computer,
 			ILuaContext context, int method, Object[] args) throws Exception {
+		try
+		{
 		switch (method) {
 		case 0: {
 			//fill
@@ -436,24 +441,43 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 		case 18: {
 			//import
 			if (args.length > 1) {
-				int size = 0;
-				//One of the things I hate is that ComputerCraft uses Doubles for all their values
-				Map m = (Map)args[0];
-				String format = (String)args[1];
-				for (double i = 1; i<Double.MAX_VALUE; i++)
+				BufferedImage img = null;
+				if (args[0] instanceof Map)
 				{
-					if (m.containsKey(i))
-						size = (int) i;
-					else
-						break;
+					int size = 0;
+					//One of the things I hate is that ComputerCraft uses Doubles for all their values
+					Map m = (Map)args[0];
+					String format = (String)args[1];
+					for (double i = 1; i<Double.MAX_VALUE; i++)
+					{
+						if (m.containsKey(i))
+							size = (int) i;
+						else
+							break;
+					}
+					byte[] data = new byte[size];
+					for (double i = 0; i<data.length; i++)
+					{
+						data[(int) i] = ((Double)m.get(i+1D)).byteValue();
+					}
+					CCLights2.debug("Moved data");
+					img = ImageLoader.load(data, format);
 				}
-				byte[] data = new byte[size];
-				for (double i = 0; i<data.length; i++)
+				else if (args[0] instanceof String)
 				{
-					data[(int) i] = ((Double)m.get(i+1D)).byteValue();
+					String file = (String)args[0];
+					String format = (String)args[1];
+					File f = new File(CCLights2.proxy.getWorldDir(worldObj),"/"+computer.getID()+"/"+file);
+					FileInputStream in = new FileInputStream(f);
+					byte[] data = new byte[(int)in.getChannel().size()];
+					in.read(data);
+					in.close();
+					img = ImageLoader.load(data, format);
 				}
-				CCLights2.debug("Moved data");
-				BufferedImage img = ImageLoader.load(data, format);
+				else
+				{
+					throw new Exception("Invalid import arguments");
+				}
 				CCLights2.debug("Imaged loaded "+img);
 				int w = img.getWidth();
 				int h =  img.getHeight();
@@ -698,6 +722,11 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				return ret;
 			}
 		}
+		}
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			throw e;
 		}
 		return null;
 	}

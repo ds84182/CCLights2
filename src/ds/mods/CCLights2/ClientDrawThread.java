@@ -39,6 +39,7 @@ public class ClientDrawThread extends Thread {
 									e1.printStackTrace();
 								}
 							}
+							e.getKey().currentMonitor.tex.texUpdate();
 							e.getKey().currentMonitor.tex.renderLock = false;
 							e.getKey().currentMonitor.tex.notifyAll();
 						}

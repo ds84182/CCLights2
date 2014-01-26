@@ -1,9 +1,14 @@
 package ds.mods.CCLights2;
 
+import java.io.File;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
+import net.minecraftforge.common.DimensionManager;
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.registry.GameRegistry;
 import ds.mods.CCLights2.block.BlockAdvancedLight;
@@ -160,4 +165,9 @@ public class CommonProxy {
 	public void registerIC2Recipes(boolean gpu, boolean monitor,boolean monitorBig, boolean light, boolean advancedlight,boolean ttrans, boolean ram, boolean tablet) {
 		// do some stuff to fak over recipes here kthxbai
 	}
+	
+	public File getWorldDir(World world)
+	  {
+	    return new File(FMLCommonHandler.instance().getMinecraftServerInstance().getFile("."), DimensionManager.getWorld(0).getSaveHandler().getWorldDirectoryName());
+	  }
 }

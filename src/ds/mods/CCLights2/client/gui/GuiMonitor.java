@@ -2,6 +2,7 @@ package ds.mods.CCLights2.client.gui;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.texture.TextureUtil;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -39,8 +40,6 @@ public class GuiMonitor extends GuiScreen {
 		if (tex == null)
 			throw new RuntimeException("OpenGL texture setup failed!");
 		CCLights2.debug("Created textures");
-		tex.img.getRGB(0, 0, tex.getWidth(), tex.getHeight(), TabletRenderer.dyntex_data, 0, 16*32);
-		TabletRenderer.dyntex.updateDynamicTexture();
 		Keyboard.enableRepeatEvents(true);
 	}
 	
@@ -103,9 +102,8 @@ public class GuiMonitor extends GuiScreen {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			tex.img.getRGB(0, 0, tex.getWidth(), tex.getHeight(), TabletRenderer.dyntex_data, 0, 16*32);
 		}
-		TabletRenderer.dyntex.updateDynamicTexture();
+		TextureUtil.uploadTexture(TabletRenderer.dyntex.getGlTextureId(), tex.rgb, 16*32, 9*32);
 		this.drawTexturedModalRect(unapplyXOffset(0), unapplyYOffset(0), mon.getWidth(), mon.getHeight());
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
 		

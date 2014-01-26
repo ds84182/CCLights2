@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.item.ItemStack;
@@ -37,10 +38,12 @@ public class TabletRenderer implements IItemRenderer {
 	{
 		dyntex_data = dyntex.getTextureData();
 		
+		defaultTexture.rgb = new int[16*32*9*32];
 		defaultTexture.fill(Color.blue);
 		defaultTexture.drawText("Hello, World!", 0, 0, Color.white);
 		defaultTexture.drawText("Please configure the tablet with a Tablet Transmitter.", 0, 9, Color.white);
 		defaultTexture.drawText("You can do this by right clicking it with your tablet.", 0, 18, Color.white);
+		defaultTexture.texUpdate();
 	}
 
 	@Override
@@ -142,15 +145,7 @@ public class TabletRenderer implements IItemRenderer {
 					nbt.setBoolean("canDisplay", false);
 			}
 			GL11.glTranslatef(0F, -0.0001F, 0F);
-			if (tex == defaultTexture)
-			{
-				defaultTexture.fill(Color.blue);
-				defaultTexture.drawText("Hello, World!", 0, 0, Color.white);
-				defaultTexture.drawText("Please configure the tablet with a Tablet Transmitter.", 0, 9, Color.white);
-				defaultTexture.drawText("You can do this by right clicking it with your tablet.", 0, 18, Color.white);
-			}
-			tex.img.getRGB(0, 0, tex.getWidth(), tex.getHeight(), dyntex_data, 0, 16*32);
-			dyntex.updateDynamicTexture();
+			TextureUtil.uploadTexture(dyntex.getGlTextureId(), tex.rgb, 16*32, 9*32);
 			Tessellator tess = Tessellator.instance;
 			tess.startDrawingQuads();
 			GL11.glDisable(GL11.GL_LIGHTING);

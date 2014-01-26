@@ -102,7 +102,7 @@ public class TileEntityAdvancedlight  extends TileEntity implements IPeripheral 
 	    }
 	    @Override
 	    public void updateEntity() {
-	    	if ((++ticksSinceSync % 20) * 4 == 0) {
+	    	if ((++ticksSinceSync % 20) == 0) {
 	    		colorChange();
 	    	}
 	    }

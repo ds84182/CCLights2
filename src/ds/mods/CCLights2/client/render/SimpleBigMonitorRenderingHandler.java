@@ -20,6 +20,7 @@ public class SimpleBigMonitorRenderingHandler implements
 		tile.mon.tex.fill(Color.blue);
 		tile.mon.tex.drawText("Hello,", 0, 0, Color.white);
 		tile.mon.tex.drawText("World!", 0, 9, Color.white); //Yes, the fake ass wrap trick
+		tile.mon.tex.texUpdate();
 	}
 
 	@Override

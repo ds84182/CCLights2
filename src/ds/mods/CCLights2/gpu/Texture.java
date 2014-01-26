@@ -33,6 +33,8 @@ public class Texture {
 	
 	static int[] aint;
 	
+	public int[] rgb; //This is only init for monitor textures
+	
 	public Texture(int w, int h)
 	{
 		img = new BufferedImage(w,h,2);
@@ -343,5 +345,13 @@ public class Texture {
 	}
 	public void blur() {
 		filter.filter(img, img);
+	}
+	
+	public void texUpdate()
+	{
+		if (rgb != null)
+		{
+			img.getRGB(0, 0, width, height, rgb, 0, 16*32);
+		}
 	}
 }

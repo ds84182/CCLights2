@@ -5,6 +5,7 @@ import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
@@ -48,8 +49,6 @@ public class GuiTablet extends GuiScreen {
 	public void initGui()
 	{
 		CCLights2.debug("Created textures");
-		tex.img.setRGB(0, 0, tex.getWidth(), tex.getHeight(), TabletRenderer.dyntex_data, 0, 16*32);
-		TabletRenderer.dyntex.updateDynamicTexture();
 		Keyboard.enableRepeatEvents(true);
 	}
 	
@@ -113,9 +112,8 @@ public class GuiTablet extends GuiScreen {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			tex.img.getRGB(0, 0, tex.getWidth(), tex.getHeight(), TabletRenderer.dyntex_data, 0, 16*32);
 		}
-		TabletRenderer.dyntex.updateDynamicTexture();
+		TextureUtil.uploadTexture(TabletRenderer.dyntex.getGlTextureId(), tex.rgb, 16*32, 9*32);
 		this.drawTexturedModalRect(applyXOffset(0)*4, applyYOffset(0)*4, tex.getWidth(), tex.getHeight());
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
     }
