@@ -26,7 +26,6 @@ import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.converter.ConvertDouble;
 import ds.mods.CCLights2.converter.ConvertInteger;
 import ds.mods.CCLights2.converter.ConvertString;
-import ds.mods.CCLights2.debug.DebugWindow;
 import ds.mods.CCLights2.gpu.DrawCMD;
 import ds.mods.CCLights2.gpu.GPU;
 import ds.mods.CCLights2.gpu.Monitor;
@@ -46,7 +45,6 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 	public int[] addedType = new int[1025];
 	public boolean frame = false;
 	private boolean sentOnce = false;
-	public DebugWindow wind;
 
 	public TileEntityGPU() {
 		gpu = new GPU(1024 * 8);
