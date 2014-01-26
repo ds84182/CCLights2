@@ -87,12 +87,14 @@ public class TileEntityBigMonitorRenderer extends TileEntitySpecialRenderer {
 			}
 		}
 		TextureUtil.uploadTexture(texture.getGlTextureId(), tex.rgb, 16*32, 9*32);
+		GL11.glDisable(GL11.GL_LIGHTING);
 		t.startDrawingQuads();
 		t.addVertexWithUV(-0.5F, 0.5F, 0.501F, 0F, (m.m_height*32F)/(9*32F));
 		t.addVertexWithUV(0.5F, 0.5F, 0.501F, (m.m_width*32F)/(16*32F), (m.m_height*32F)/(9*32F));
 		t.addVertexWithUV(0.5F, 1.5F, 0.501F, (m.m_width*32F)/(16*32F), 0F);
 		t.addVertexWithUV(-0.5F, 1.5F, 0.501F, 0F, 0F);
 		t.draw();
+		GL11.glEnable(GL11.GL_LIGHTING);
 	}
 
 }

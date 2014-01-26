@@ -467,7 +467,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				{
 					String file = (String)args[0];
 					String format = (String)args[1];
-					File f = new File(CCLights2.proxy.getWorldDir(worldObj),"/"+computer.getID()+"/"+file);
+					File f = new File(CCLights2.proxy.getWorldDir(worldObj),"computer/"+computer.getID()+"/"+file);
 					FileInputStream in = new FileInputStream(f);
 					byte[] data = new byte[(int)in.getChannel().size()];
 					in.read(data);
