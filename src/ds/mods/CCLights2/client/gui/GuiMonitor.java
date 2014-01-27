@@ -103,7 +103,7 @@ public class GuiMonitor extends GuiScreen {
 				e.printStackTrace();
 			}
 		}
-		TextureUtil.uploadTexture(TabletRenderer.dyntex.getGlTextureId(), tex.rgb, 16*32, 9*32);
+		TextureUtil.uploadTexture(TabletRenderer.dyntex.getGlTextureId(), tex.rgbCache, 16*32, 9*32);
 		this.drawTexturedModalRect(unapplyXOffset(0), unapplyYOffset(0), mon.getWidth(), mon.getHeight());
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
 		

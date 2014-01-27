@@ -113,7 +113,7 @@ public class GuiTablet extends GuiScreen {
 				e.printStackTrace();
 			}
 		}
-		TextureUtil.uploadTexture(TabletRenderer.dyntex.getGlTextureId(), tex.rgb, 16*32, 9*32);
+		TextureUtil.uploadTexture(TabletRenderer.dyntex.getGlTextureId(), tex.rgbCache, 16*32, 9*32);
 		this.drawTexturedModalRect(applyXOffset(0)*4, applyYOffset(0)*4, tex.getWidth(), tex.getHeight());
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
     }

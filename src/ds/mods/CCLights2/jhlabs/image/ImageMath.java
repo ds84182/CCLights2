@@ -256,7 +256,7 @@ public class ImageMath {
 	 * Bilinear interpolation of ARGB values.
 	 * @param x the X interpolation parameter 0..1
 	 * @param y the y interpolation parameter 0..1
-	 * @param rgb array of four ARGB values in the order NW, NE, SW, SE
+	 * @param rgbCache array of four ARGB values in the order NW, NE, SW, SE
 	 * @return the interpolated value
 	 */
 	public static int bilinearInterpolate(float x, float y, int[] p) {

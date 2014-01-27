@@ -1,7 +1,5 @@
 package ds.mods.CCLights2.client.render;
 
-import java.nio.IntBuffer;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -24,8 +22,6 @@ public class TileEntityBigMonitorRenderer extends TileEntitySpecialRenderer {
 	public DynamicTexture texture;
 	
 	TextureManager re;
-	
-	public IntBuffer temp;
 	
 	public TileEntityBigMonitorRenderer()
 	{
@@ -86,7 +82,7 @@ public class TileEntityBigMonitorRenderer extends TileEntitySpecialRenderer {
 				e.printStackTrace();
 			}
 		}
-		TextureUtil.uploadTexture(texture.getGlTextureId(), tex.rgb, 16*32, 9*32);
+		TextureUtil.uploadTexture(texture.getGlTextureId(), tex.rgbCache, 16*32, 9*32);
 		GL11.glDisable(GL11.GL_LIGHTING);
 		t.startDrawingQuads();
 		t.addVertexWithUV(-0.5F, 0.5F, 0.501F, 0F, (m.m_height*32F)/(9*32F));

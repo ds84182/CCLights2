@@ -16,25 +16,66 @@ import ds.mods.CCLights2.jhlabs.image.BoxBlurFilter;
 
 
 public class Texture {
+	/**
+	 * BufferedImage for image stuff
+	 */
 	public BufferedImage img;
+	/**
+	 * Graphics2D context for drawing
+	 */
 	public Graphics2D graphics;
 	
+	/**
+	 * Texture width
+	 */
 	private int width;
+	/**
+	 * Texture height
+	 */
 	private int height;
+	/**
+	 * Renderlock for non flickery rendering
+	 */
 	public boolean renderLock = false;
 	
+	/**
+	 * BufferedImage for font
+	 */
 	public static BufferedImage font;
 	
+	/**
+	 * Transformation for render
+	 */
 	public AffineTransform transform = new AffineTransform();
+	/**
+	 * The transformation to reset to
+	 */
 	public static AffineTransform resetTransform = new AffineTransform();
+	/**
+	 * Temporary 512x512 texture
+	 */
 	public static Texture temp;
 	
+	/**
+	 * Character widths for text rendering
+	 */
 	private static int[] charWidth = new int[256];
 	
+	/**
+	 * Font data
+	 */
 	static int[] aint;
 	
-	public int[] rgb; //This is only init for monitor textures
+	/**
+	 * Cache for monitors to remove render lag
+	 */
+	public int[] rgbCache;
 	
+	/**
+	 * Default constructor for Texture
+	 * @param w
+	 * @param h
+	 */
 	public Texture(int w, int h)
 	{
 		img = new BufferedImage(w,h,2);
@@ -105,19 +146,37 @@ public class Texture {
 		}
 	}
 	
+	/**
+	 * Returns the width of the texture
+	 * @return The width of the texture
+	 */
 	public int getWidth() {
 		return width;
 	}
 	
+	/**
+	 * Returns the height of the texture
+	 * @return The height of the texture
+	 */
 	public int getHeight() {
 		return height;
 	}
 	
+	/**
+	 * Returns the amount of virtual memory the texture uses
+	 * @return The used memory in bytes
+	 */
 	public int getMemoryUse()
 	{
 		return (width*height)/32;
 	}
 	
+	/**
+	 * Plots a single pixel on the screen of the Color c
+	 * @param c
+	 * @param x
+	 * @param y
+	 */
 	public void plot(Color c, int x, int y)
 	{
 		graphics.setTransform(transform);
@@ -126,6 +185,14 @@ public class Texture {
 		graphics.setTransform(resetTransform);
 	}
 	
+	/**
+	 * Creates a filled rectangle at x and y with a width and height of w and h
+	 * @param c
+	 * @param x
+	 * @param y
+	 * @param w
+	 * @param h
+	 */
 	public void filledRect(Color c, int x, int y, int w, int h)
 	{
 		graphics.setTransform(transform);
@@ -134,6 +201,14 @@ public class Texture {
 		graphics.setTransform(resetTransform);
 	}
 	
+	/**
+	 * Creates a outlined rectangle at x and y with a width and height of w and h
+	 * @param c
+	 * @param x
+	 * @param y
+	 * @param w
+	 * @param h
+	 */
 	public void rect(Color c, int x, int y, int w, int h)
 	{
 		graphics.setTransform(transform);
@@ -141,7 +216,15 @@ public class Texture {
 		graphics.drawRect(x, y, w, h);
 		graphics.setTransform(resetTransform);
 	}
-	// draw a line from point x1,y1 into x2,y2
+	
+	/**
+	 * draw a line from point x1,y1 into x2,y2
+	 * @param c
+	 * @param x1
+	 * @param y1
+	 * @param x2
+	 * @param y2
+	 */
 	public void line(Color c, int x1, int y1, int x2, int y2) { 
 		graphics.setTransform(transform);
 		graphics.setColor(c);
@@ -149,6 +232,9 @@ public class Texture {
 		graphics.setTransform(resetTransform);
 	}
 	
+	/**
+	 * Flip the texture vertically (this may not work at all)
+	 */
 	public void flipV()
 	{
 		AffineTransform trans = new AffineTransform();
@@ -156,6 +242,13 @@ public class Texture {
 		graphics.drawImage(img, trans, null);
 	}
 	
+	/**
+	 * Draws a texture on the graphics canvas
+	 * @param tex
+	 * @param x
+	 * @param y
+	 * @param c
+	 */
 	public void drawTexture(Texture tex, int x, int y, Color c)
 	{
 		if (tex == null)
@@ -166,6 +259,17 @@ public class Texture {
 		drawTexture(tex,x,y,0,0,tex.width,tex.height, c);
 	}
 	
+	/**
+	 * Draws a texture on the screen using some weird resize thing
+	 * @param tex
+	 * @param x
+	 * @param y
+	 * @param tx
+	 * @param ty
+	 * @param w
+	 * @param h
+	 * @param c
+	 */
 	public void drawTexture(Texture tex, int x, int y, int tx, int ty, int w, int h, Color c)
 	{
 		if (tex == null)
@@ -184,12 +288,23 @@ public class Texture {
 		graphics.setTransform(resetTransform);
 	}
 	
+	/**
+	 * Fill the screen with the Color c
+	 * @param c
+	 */
 	public void fill(Color c)
 	{
 		graphics.setBackground(c);
 		graphics.clearRect(0, 0, width, height);
 	}
 	
+	/**
+	 * Draw a polygon with the Color c
+	 * @param xPoints
+	 * @param yPoints
+	 * @param nPoints
+	 * @param c
+	 */
 	public void polygon(int[] xPoints, int[] yPoints, int nPoints, Color c)
 	{
 		graphics.setColor(c);
@@ -198,6 +313,13 @@ public class Texture {
 		graphics.setTransform(resetTransform);
 	}
 	
+	/**
+	 * Draw a filled polygon with the Color c
+	 * @param xPoints
+	 * @param yPoints
+	 * @param nPoints
+	 * @param c
+	 */
 	public void filledPolygon(int[] xPoints, int[] yPoints, int nPoints, Color c)
 	{
 		graphics.setColor(c);
@@ -205,13 +327,24 @@ public class Texture {
 		graphics.drawPolygon(xPoints, yPoints, nPoints);
 		graphics.setTransform(resetTransform);
 	}
-
+	
+	/**
+	 * Get the RGB value at pixel x and y
+	 * @param x
+	 * @param y
+	 * @return A int array full of RGBA values
+	 */
 	public int[] getRGB(int x, int y) {
 		x = x%width;
 		y = y%height;
 		return img.getData().getPixel(x, y, new int[4]);
 	}
 	
+	/**
+	 * Returns the width of the character
+	 * @param par1
+	 * @return the width of the character
+	 */
 	public static int getCharWidth(char par1)
     {
         if (par1 == 167)
@@ -237,6 +370,11 @@ public class Texture {
         }
     }
 	
+	/**
+	 * Returns the width of the string
+	 * @param par1Str
+	 * @return the width of the string
+	 */
 	public static int getStringWidth(String par1Str)
     {
         if (par1Str == null)
@@ -285,6 +423,13 @@ public class Texture {
         }
     }
 	
+	/**
+	 * Draws the String text on the screen at x and y with the Color c
+	 * @param text
+	 * @param x
+	 * @param y
+	 * @param c
+	 */
 	public void drawText(String text, int x, int y, Color c)
 	{
 		for (int i = 0; i<text.length(); i++)
@@ -312,6 +457,11 @@ public class Texture {
 		}
 	}
 
+	/**
+	 * Resize the texture for awesome stuff
+	 * @param w
+	 * @param h
+	 */
 	public void resize(int w, int h) {
 		dispose();
 		img = new BufferedImage(w,h,2);
@@ -320,12 +470,18 @@ public class Texture {
 		height = h;
 	}
 	
+	/**
+	 * Dispose of the thinggy when it is needed and stuff
+	 */
 	@Override
 	protected void finalize() throws Throwable {
 		CCLights2.debug("Texture is being discarded...");
 		dispose();
 	}
 
+	/**
+	 * Dispose of the thinggy when it is needed and stuff
+	 */
 	public void dispose()
 	{
 		graphics.dispose();
@@ -333,25 +489,42 @@ public class Texture {
 		img = null;
 	}
 	
+	/**
+	 * Clears a rectangle to the exact Color of c
+	 * @param c
+	 * @param x
+	 * @param y
+	 * @param w
+	 * @param h
+	 */
 	public void clearRect(Color c, int x, int y, int w, int h)
 	{
 		graphics.setBackground(c);
 		graphics.clearRect(x, y, w, h);
 	}
 	
+	/**
+	 * Box blur filter and initalizer for awesome stuff
+	 */
 	public static BoxBlurFilter filter = new BoxBlurFilter();
 	{
 		filter.setRadius(2);
 	}
+	/**
+	 * Perform a box blur on the texture
+	 */
 	public void blur() {
 		filter.filter(img, img);
 	}
 	
+	/**
+	 * Update the texture content if rgbCache is initialized
+	 */
 	public void texUpdate()
 	{
-		if (rgb != null)
+		if (rgbCache != null)
 		{
-			img.getRGB(0, 0, width, height, rgb, 0, 16*32);
+			img.getRGB(0, 0, width, height, rgbCache, 0, 16*32);
 		}
 	}
 }

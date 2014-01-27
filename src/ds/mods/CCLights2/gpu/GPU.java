@@ -128,13 +128,11 @@ public class GPU {
 	
 	public void pop()
 	{
-		//System.out.println("pop");
 		transform = transformStack.pop();
 	}
 	
 	public void translate(double x, double y)
 	{
-		//System.out.println("translate "+x+", "+y);
 		transform.translate(x, y);
 	}
 	

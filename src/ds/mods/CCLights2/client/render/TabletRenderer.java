@@ -38,7 +38,7 @@ public class TabletRenderer implements IItemRenderer {
 	{
 		dyntex_data = dyntex.getTextureData();
 		
-		defaultTexture.rgb = new int[16*32*9*32];
+		defaultTexture.rgbCache = new int[16*32*9*32];
 		defaultTexture.fill(Color.blue);
 		defaultTexture.drawText("Hello, World!", 0, 0, Color.white);
 		defaultTexture.drawText("Please configure the tablet with a Tablet Transmitter.", 0, 9, Color.white);
@@ -145,7 +145,7 @@ public class TabletRenderer implements IItemRenderer {
 					nbt.setBoolean("canDisplay", false);
 			}
 			GL11.glTranslatef(0F, -0.0001F, 0F);
-			TextureUtil.uploadTexture(dyntex.getGlTextureId(), tex.rgb, 16*32, 9*32);
+			TextureUtil.uploadTexture(dyntex.getGlTextureId(), tex.rgbCache, 16*32, 9*32);
 			Tessellator tess = Tessellator.instance;
 			tess.startDrawingQuads();
 			GL11.glDisable(GL11.GL_LIGHTING);
