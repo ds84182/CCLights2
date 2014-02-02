@@ -82,7 +82,6 @@ public class PacketHandler implements IPacketHandler {
 						}
 					}
 				}
-				CCLights2.logger.info(x+","+y+","+z);
 				TileEntityMonitor mtile = (TileEntityMonitor) world.getBlockTileEntity(x, y, z);
 				if (mtile != null) {
 					int cmd = maindat.readInt();
