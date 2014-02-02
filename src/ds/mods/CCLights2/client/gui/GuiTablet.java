@@ -120,7 +120,7 @@ public class GuiTablet extends GuiScreen {
 		synchronized (tex)
 		{
 			try {
-				if (tex.renderLock) {tex.wait(1L);System.out.println("renderlk");}
+				if (tex.renderLock) {tex.wait(1L);}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -178,7 +178,6 @@ public class GuiTablet extends GuiScreen {
 		{
 			if (par3 == mouseButton)
 			{
-				System.out.println(par1+","+par2);
 				CCLights2.debug("Mouse up! "+par3);
 				isMouseDown = false;
                 PacketSenders.mouseEventUp(tile);
