@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.nbt.NBTTagCompound;
@@ -34,6 +35,8 @@ public class GuiTablet extends GuiScreen {
 	public int mx;
 	public int my;
 	
+	public int oldScale;
+	
 	public GuiTablet(NBTTagCompound n, World world)
 	{
 		nbt = n;
@@ -50,26 +53,35 @@ public class GuiTablet extends GuiScreen {
 	{
 		CCLights2.debug("Created textures");
 		Keyboard.enableRepeatEvents(true);
+		if (oldScale == 0)
+		{
+			oldScale = Minecraft.getMinecraft().gameSettings.guiScale;
+			Minecraft.getMinecraft().gameSettings.guiScale = 1;
+			ScaledResolution scaledresolution = new ScaledResolution(this.mc.gameSettings, this.mc.displayWidth, this.mc.displayHeight);
+	        int j = scaledresolution.getScaledWidth();
+	        int k = scaledresolution.getScaledHeight();
+	        this.setWorldAndResolution(this.mc, j, k);
+		}
 	}
 	
 	public int applyXOffset(int x)
 	{
-		return x-((width/2)-tex.getWidth()/2);
+		return x-((width/4)-tex.getWidth()/4)*2;
 	}
 	
 	public int applyYOffset(int y)
 	{
-		return y-((height/2)-tex.getHeight()/2);
+		return y-((height/4)-tex.getHeight()/4)*2;
 	}
 	
 	public int unapplyXOffset(int x)
 	{
-		return x+((width/2)-tex.getWidth()/2);
+		return x+((width/4)-tex.getWidth()/4)*2;
 	}
 	
 	public int unapplyYOffset(int y)
 	{
-		return y+((height/2)-tex.getHeight()/2);
+		return y+((height/4)-tex.getHeight()/4)*2;
 	}
 	
 	public void drawScreen(int par1, int par2, float par3)
@@ -108,13 +120,13 @@ public class GuiTablet extends GuiScreen {
 		synchronized (tex)
 		{
 			try {
-				if (tex.renderLock) tex.wait(1L);
+				if (tex.renderLock) {tex.wait(1L);System.out.println("renderlk");}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
 		TextureUtil.uploadTexture(TabletRenderer.dyntex.getGlTextureId(), tex.rgbCache, 16*32, 9*32);
-		this.drawTexturedModalRect(applyXOffset(0)*4, applyYOffset(0)*4, tex.getWidth(), tex.getHeight());
+		this.drawTexturedModalRect(unapplyXOffset(0), unapplyYOffset(0), tex.getWidth(), tex.getHeight());
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
     }
 	
@@ -126,7 +138,7 @@ public class GuiTablet extends GuiScreen {
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         float var3 = 256.0F;
         GL11.glPushMatrix();
-        GL11.glScaled(0.5D, 0.5D, 1D);
+        GL11.glScaled(1D, 1D, 1D);
         var2.startDrawingQuads();
         //var2.setColorOpaque_I(4210752);
         var2.addVertexWithUV((double) x, (double) y, this.zLevel, 0.0D, 0D);
@@ -166,6 +178,7 @@ public class GuiTablet extends GuiScreen {
 		{
 			if (par3 == mouseButton)
 			{
+				System.out.println(par1+","+par2);
 				CCLights2.debug("Mouse up! "+par3);
 				isMouseDown = false;
                 PacketSenders.mouseEventUp(tile);
@@ -186,6 +199,11 @@ public class GuiTablet extends GuiScreen {
 	{
 		Keyboard.enableRepeatEvents(false);
 		nbt.setBoolean("gui", false);
+		Minecraft.getMinecraft().gameSettings.guiScale = oldScale;
+		ScaledResolution scaledresolution = new ScaledResolution(this.mc.gameSettings, this.mc.displayWidth, this.mc.displayHeight);
+        int j = scaledresolution.getScaledWidth();
+        int k = scaledresolution.getScaledHeight();
+        this.setWorldAndResolution(this.mc, j, k);
 	}
 	
 	public boolean doesGuiPauseGame()

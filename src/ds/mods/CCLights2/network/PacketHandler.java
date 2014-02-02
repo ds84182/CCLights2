@@ -12,6 +12,7 @@ import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
+import net.minecraftforge.common.DimensionManager;
 
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
@@ -48,7 +49,6 @@ public class PacketHandler implements IPacketHandler {
 	{
 		if (doThreadding) {
 			thread = new ClientDrawThread();
-			CCLights2.debug("Start thread");
 			thread.start();
 		}
 	}
@@ -71,47 +71,53 @@ public class PacketHandler implements IPacketHandler {
 				int z = maindat.readInt();
 				int dim = maindat.readInt();
 				World world = null;
-				for (int i = 0; i < MinecraftServer.getServer().worldServers.length; i++) {
-					if (MinecraftServer.getServer().worldServers[i] != null) {
-						if (MinecraftServer.getServer().worldServers[i].provider.dimensionId == dim) {
+				for (int i = 0; i<MinecraftServer.getServer().worldServers.length; i++)
+				{
+					if (MinecraftServer.getServer().worldServers[i] != null)
+					{
+						if (MinecraftServer.getServer().worldServers[i].provider.dimensionId == dim)
+						{
 							world = MinecraftServer.getServer().worldServers[i];
-							TileEntityMonitor mtile = (TileEntityMonitor) world.getBlockTileEntity(x, y, z);
-							if (mtile != null) {
-								int cmd = maindat.readInt();
-								switch (cmd) {
-								case 0: {
-									// MouseStart//
-									int button = maindat.readInt();
-									int mx = maindat.readInt();
-									int my = maindat.readInt();
-									for (GPU g : mtile.mon.gpu) {
-										TileEntityGPU tile = g.tile;
-										if (tile != null)tile.startClick(player, button, mx,my);
-									}
-									break;
-								}
-								case 1: {
-									// MouseMove//
-									int mx = maindat.readInt();
-									int my = maindat.readInt();
-									for (GPU g : mtile.mon.gpu) {
-										TileEntityGPU tile = g.tile;
-										if (tile != null)
-											tile.moveClick(player, mx, my);
-									}
-									break;
-								}
-								case 2: {
-									// MouseEnd//
-									for (GPU g : mtile.mon.gpu) {
-										TileEntityGPU tile = g.tile;
-										if (tile != null)
-											tile.endClick(player);
-									}
-								}
-								}
-							}
+							break;
 						}
+					}
+				}
+				CCLights2.logger.info(x+","+y+","+z);
+				TileEntityMonitor mtile = (TileEntityMonitor) world.getBlockTileEntity(x, y, z);
+				if (mtile != null) {
+					int cmd = maindat.readInt();
+					switch (cmd) {
+					case 0: {
+						// MouseStart//
+						int button = maindat.readInt();
+						int mx = maindat.readInt();
+						int my = maindat.readInt();
+						for (GPU g : mtile.mon.gpu) {
+							System.out.println(g.tile);
+							TileEntityGPU tile = g.tile;
+							if (tile != null)tile.startClick(player, button, mx,my);
+						}
+						break;
+					}
+					case 1: {
+						// MouseMove//
+						int mx = maindat.readInt();
+						int my = maindat.readInt();
+						for (GPU g : mtile.mon.gpu) {
+							TileEntityGPU tile = g.tile;
+							if (tile != null)
+								tile.moveClick(player, mx, my);
+						}
+						break;
+					}
+					case 2: {
+						// MouseEnd//
+						for (GPU g : mtile.mon.gpu) {
+							TileEntityGPU tile = g.tile;
+							if (tile != null)
+								tile.endClick(player);
+						}
+					}
 					}
 				}
 			}

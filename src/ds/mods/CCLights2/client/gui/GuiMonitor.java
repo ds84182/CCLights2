@@ -98,7 +98,7 @@ public class GuiMonitor extends GuiScreen {
 		synchronized (tex)
 		{
 			try {
-				if (tex.renderLock) tex.wait(1L);
+				if (tex.renderLock) {tex.wait(1L);System.out.println("renderlk");}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

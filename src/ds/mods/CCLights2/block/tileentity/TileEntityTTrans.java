@@ -174,6 +174,7 @@ public class TileEntityTTrans extends TileEntityMonitor implements IPeripheral {
 			pkt.xPosition = xCoord;
 			pkt.yPosition = yCoord;
 			pkt.zPosition = zCoord;
+			writeToNBT(pkt.data);
 			PacketDispatcher.sendPacketToAllAround(xCoord, yCoord, zCoord, 64, worldObj.provider.dimensionId, pkt);
 		}
 	}

@@ -53,6 +53,7 @@ public class Monitor {
 		{
 			removeGPU(g);
 		}
+		gpu.clear();
 	}
 	public int getWidth() {
 		return width;

@@ -124,6 +124,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 						tile.connect(this.gpu);
 						tile.mon.tex.fill(Color.black);
 						tile.mon.tex.drawText("Monitor connected", 0, 0, Color.white);
+						tile.mon.tex.texUpdate();
 						gpu.setMonitor(tile.mon);
 						return;
 					}
