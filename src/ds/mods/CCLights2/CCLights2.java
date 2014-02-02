@@ -61,7 +61,7 @@ public class CCLights2 {
 	}
 
 	public static void debug(String debugmsg) {
-		if (!Config.DEBUGS) {
+		if (Config.DEBUGS) {
 			Level level = Level.INFO;
 			logger.log(level, debugmsg);
 		}
