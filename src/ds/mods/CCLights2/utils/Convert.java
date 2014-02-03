@@ -78,12 +78,8 @@ public class Convert {
 	public static int[] to24from256(int color)
 	{
 		int r = (color << 5)&0xE0;
-		//r = (r/0xE0)*255;
 		int g = (color << 2)&0xE0;
-		//g = (g/0xE0)*255;
 		int b = (color)&0xC0;
-		//b = (b/0xC0)*255;
-		//System.out.println("R: "+r+" G: "+g+" B: "+b+" Color: "+color);
 		return new int[]{r, g, b};
 	}
 	
@@ -95,7 +91,6 @@ public class Convert {
 		g = g<<2;
 		int b = color&0x1F;
 		b = b<<3;
-		//System.out.println("R: "+r+" G: "+g+" B: "+b+" Color: "+color);
 		return new int[]{r, g, b};
 	}
 	

@@ -24,7 +24,7 @@ public class BlockColorLight extends BlockContainer {
 	}
 
 	@SideOnly(Side.CLIENT)
-	public Icon getIcon(int par1, int par2) {
+	public Icon getIcon(int side, int meta) {
 		return this.blockIcon;
 	}
 	
@@ -37,7 +37,7 @@ public class BlockColorLight extends BlockContainer {
         return 1;
     }
 
-    public TileEntity createNewTileEntity(World var1)
+    public TileEntity createNewTileEntity(World world)
     {
         return new TileEntityColorLight();
     }

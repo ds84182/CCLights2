@@ -277,7 +277,6 @@ public class Texture {
 			CCLights2.debug("Texture to draw is null.");
 			return;
 		}
-		//System.out.println("Drawing texture");
 		graphics.setTransform(transform);
 		graphics.setClip(new Rectangle(x, y, w, h));
 		float[] scales = new float[]{c.getRed()/255f,c.getGreen()/255f,c.getBlue()/255f,c.getAlpha()/255f};//rgba

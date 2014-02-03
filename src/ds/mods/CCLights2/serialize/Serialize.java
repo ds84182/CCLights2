@@ -23,7 +23,6 @@ public class Serialize {
 	public static void serialize(ByteArrayDataOutput dat, Object o)
 	{
 		Class<?> clazz = o.getClass();
-		//System.out.println(clazz.getName());
 		int i = 0;
 		for (Object[] ol : classToSerializer)
 		{

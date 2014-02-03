@@ -100,17 +100,11 @@ public class TileEntityExternalMonitor extends TileEntityMonitor implements IPer
 	}
 
 	public void rebuildTerminal(Monitor copyFrom) {
-		// //synchronized (this.mon)
-		// {
 		int termWidth = this.m_width * 32;
 		int termHeight = this.m_height * 32;
-		/*
-		 * if (copyFrom != null) { this.m_terminal.copyFrom(copyFrom); }
-		 */
 		this.mon.resize(termWidth, termHeight);
 		this.mon.removeAllGPUs();
 		propogateTerminal();
-		// }
 	}
 
 	@Override
@@ -129,10 +123,8 @@ public class TileEntityExternalMonitor extends TileEntityMonitor implements IPer
 			for (int x = 0; x < this.m_width; x++) {
 				TileEntityExternalMonitor monitor = getNeighbour(x, y);
 				if (monitor != null) {
-					// synchronized (monitor.mon)
 					{
 						if ((x != 0) || (y != 0)) {
-							// monitor.m_terminal.delete();
 							monitor.mon.removeAllGPUs();
 							monitor.mon = originTerminal;
 						}
@@ -255,22 +247,8 @@ public class TileEntityExternalMonitor extends TileEntityMonitor implements IPer
 		}
 
 		this.m_totalConnections = totalConnections;
-		// if (totalConnections > 0)
-		{
-			// //synchronized (this.mon)
-			{
-				rebuildTerminal(existingTerminal);
-			}
-		}
-		// else
-		{
-			// synchronized (this.mon)
-			{
-				// this.m_textScale = 2;
-				// destroyTerminal();
-			}
-		}
-
+		rebuildTerminal(existingTerminal);
+		
 		this.worldObj.markBlockRangeForRenderUpdate(this.xCoord, this.yCoord,
 				this.zCoord, this.xCoord + rightX * width,
 				this.yCoord + height, this.zCoord + rightZ * width);
@@ -291,9 +269,7 @@ public class TileEntityExternalMonitor extends TileEntityMonitor implements IPer
 	}
 
 	public boolean mergeRight() {
-		// System.out.println("Right");
 		TileEntityExternalMonitor right = getNeighbour(this.m_width, 0);
-		// System.out.println(right);
 		if ((right != null) && (right.m_yIndex == 0)
 				&& (right.m_height == this.m_height)) {
 			int width = this.m_width + right.m_width;
@@ -307,9 +283,7 @@ public class TileEntityExternalMonitor extends TileEntityMonitor implements IPer
 	}
 
 	public boolean mergeUp() {
-		// System.out.println("Up");
 		TileEntityExternalMonitor above = getNeighbour(0, this.m_height);
-		// System.out.println(above);
 		if ((above != null) && (above.m_xIndex == 0)
 				&& (above.m_width == this.m_width)) {
 			int height = above.m_height + this.m_height;
@@ -323,9 +297,7 @@ public class TileEntityExternalMonitor extends TileEntityMonitor implements IPer
 	}
 
 	public boolean mergeDown() {
-		// System.out.println("Down");
 		TileEntityExternalMonitor below = getNeighbour(0, -1);
-		// System.out.println(below);
 		if ((below != null) && (below.m_xIndex == 0)
 				&& (below.m_width == this.m_width)) {
 			int height = this.m_height + below.m_height;
@@ -474,7 +446,6 @@ public class TileEntityExternalMonitor extends TileEntityMonitor implements IPer
 	@Override
 	public void updateEntity() {
 		if (dirty || m_tts-- < 0) {
-			//propogateTerminal();
 			// Send update packet
 			PacketSenders.ExternalMonitorUpdate(xCoord, yCoord, zCoord, worldObj.provider.dimensionId,m_width, m_height,m_xIndex,m_yIndex,m_dir);
 			dirty = false;

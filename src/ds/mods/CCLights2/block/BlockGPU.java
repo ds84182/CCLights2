@@ -55,11 +55,6 @@ public class BlockGPU extends Block {
 			}
 			return true;
 		}
-		/*
-		 * if (par1World.isRemote) { TileEntityGPU tile = (TileEntityGPU)
-		 * par1World.getBlockTileEntity(par2, par3, par4); tile.wind = new
-		 * DebugWindow(tile); }
-		 */
 		return false;
 	}
 

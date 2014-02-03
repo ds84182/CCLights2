@@ -35,8 +35,6 @@ public class PacketChunker {
 		byte[] data = dataToCompress.toByteArray();
 		dataToCompress.close();
 		
-		//CCLights2.debug("packetsender: "+(data.length-input.length));
-		
 		int start = 0;
 		short maxChunkSize = Short.MAX_VALUE - 100;
 		byte numChunks = (byte)Math.ceil(data.length / (double)maxChunkSize);

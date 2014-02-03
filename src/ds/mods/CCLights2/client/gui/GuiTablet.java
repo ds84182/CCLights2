@@ -23,19 +23,19 @@ import ds.mods.CCLights2.network.PacketSenders;
 import ds.mods.CCLights2.utils.TabMesg;
 
 public class GuiTablet extends GuiScreen {
-	public Monitor mon;
-	public Texture tex = TabletRenderer.defaultTexture;
-	public NBTTagCompound nbt;
-	public TileEntityMonitor tile;
+	Monitor mon;
+	Texture tex = TabletRenderer.defaultTexture;
+    NBTTagCompound nbt;
+	TileEntityMonitor tile;
 	
-	public boolean isMouseDown = false;
-	public int mouseButton = 0;
-	public int mlx;
-	public int mly;
-	public int mx;
-	public int my;
+	boolean isMouseDown = false;
+	int mouseButton = 0;
+	int mlx;
+	int mly;
+	int mx;
+	int my;
 	
-	public int oldScale;
+	private int oldScale = Minecraft.getMinecraft().gameSettings.guiScale;
 	
 	public GuiTablet(NBTTagCompound n, World world)
 	{
@@ -58,9 +58,7 @@ public class GuiTablet extends GuiScreen {
 			oldScale = Minecraft.getMinecraft().gameSettings.guiScale;
 			Minecraft.getMinecraft().gameSettings.guiScale = 1;
 			ScaledResolution scaledresolution = new ScaledResolution(this.mc.gameSettings, this.mc.displayWidth, this.mc.displayHeight);
-	        int j = scaledresolution.getScaledWidth();
-	        int k = scaledresolution.getScaledHeight();
-	        this.setWorldAndResolution(this.mc, j, k);
+	        this.setWorldAndResolution(this.mc, scaledresolution.getScaledWidth(), scaledresolution.getScaledHeight());
 		}
 	}
 	
@@ -84,24 +82,23 @@ public class GuiTablet extends GuiScreen {
 		return y+((height/4)-tex.getHeight()/4)*2;
 	}
 	
-	public void drawScreen(int par1, int par2, float par3)
+	public void drawScreen(int x, int y, float par3)
     {
-		nbt.setBoolean("gui", true);
-		par1 = applyXOffset(par1);
-		par2 = applyYOffset(par2);
+		x = applyXOffset(x);
+		y = applyYOffset(y);
 		if (nbt.getBoolean("canDisplay"))
 		{
 			int wheel = Mouse.getDWheel();
 			if (wheel != 0)
 			{
-              PacketSenders.GPUEvent(par1, par2, tile, wheel);
+              PacketSenders.GPUEvent(x, y, tile, wheel);
 			}
 			if (isMouseDown)
 			{
-				if (par1 > -1 & par2 > -1 & par1 < mon.getWidth()+1 & par2 < mon.getHeight()+1)
+				if (x > -1 & y > -1 & x < mon.getWidth()+1 & y < mon.getHeight()+1)
 				{
-					mx = par1;
-					my = par2;
+					mx = x;
+					my = y;
 					if (mlx != mx | mly != my)
 					{
 						CCLights2.debug("Moused move!");
@@ -112,7 +109,7 @@ public class GuiTablet extends GuiScreen {
 				}
 				else
 				{
-					mouseMovedOrUp(unapplyXOffset(par1)/2, unapplyYOffset(par2)/2, mouseButton);
+					mouseMovedOrUp(unapplyXOffset(x)/2, unapplyYOffset(y)/2, mouseButton);
 				}
 			}
 		}
@@ -140,7 +137,6 @@ public class GuiTablet extends GuiScreen {
         GL11.glPushMatrix();
         GL11.glScaled(1D, 1D, 1D);
         var2.startDrawingQuads();
-        //var2.setColorOpaque_I(4210752);
         var2.addVertexWithUV((double) x, (double) y, this.zLevel, 0.0D, 0D);
         var2.addVertexWithUV(x, (double)h+y, this.zLevel, 0.0D, h/(9*32D));
         var2.addVertexWithUV((double)w+x, (double)h+y, this.zLevel, w/(16*32D), h/(9*32D));
@@ -197,12 +193,9 @@ public class GuiTablet extends GuiScreen {
 	public void onGuiClosed()
 	{
 		Keyboard.enableRepeatEvents(false);
-		nbt.setBoolean("gui", false);
 		Minecraft.getMinecraft().gameSettings.guiScale = oldScale;
 		ScaledResolution scaledresolution = new ScaledResolution(this.mc.gameSettings, this.mc.displayWidth, this.mc.displayHeight);
-        int j = scaledresolution.getScaledWidth();
-        int k = scaledresolution.getScaledHeight();
-        this.setWorldAndResolution(this.mc, j, k);
+        this.setWorldAndResolution(this.mc, scaledresolution.getScaledWidth(), scaledresolution.getScaledHeight());
 	}
 	
 	public boolean doesGuiPauseGame()

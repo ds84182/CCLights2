@@ -8,7 +8,6 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.Configuration;
-import net.minecraftforge.common.MinecraftForge;
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
@@ -21,7 +20,7 @@ import ds.mods.CCLights2.gpu.imageLoader.ImageLoader;
 import ds.mods.CCLights2.network.PacketHandler;
 
 @Mod(modid = "CCLights2", name = "CCLights2", version = "0.4-63",dependencies="required-after:ComputerCraft;required-after:CCTurtle")
-@NetworkMod(clientSideRequired = true, serverSideRequired = true, channels = { "CCLights2" }, packetHandler = PacketHandler.class)
+@NetworkMod(clientSideRequired = true, serverSideRequired = true, channels = { "CCLights2" }, packetHandler = PacketHandler.class,connectionHandler = ds.mods.CCLights2.network.OnJoin.class)
 public class CCLights2 {
 	@Mod.Instance("CCLights2")
 	public static CCLights2 instance;
@@ -57,7 +56,6 @@ public class CCLights2 {
 	public void load(FMLPostInitializationEvent event) {
 		proxy.registerRenderInfo();
         NetworkRegistry.instance().registerGuiHandler(this, new GuiHandler());
-		MinecraftForge.EVENT_BUS.register(new Events());
 	}
 
 	public static void debug(String debugmsg) {

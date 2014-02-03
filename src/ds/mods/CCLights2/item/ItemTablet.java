@@ -35,17 +35,9 @@ public class ItemTablet extends Item {
 
 	@Override
 	public ItemStack onItemRightClick(ItemStack par1ItemStack, World par3World, EntityPlayer par2EntityPlayer) {
-		
-		//TODO: Make Wireless Transmitter
-		//System.out.println("Output.");
-		//If canDisplay then show gui end
-		NBTTagCompound nbt = getNBT(par1ItemStack,par3World);
-		if (!nbt.getBoolean("gui")) //Dunno how the second part is possible, but meh
-		{
-			//Show GUI
-			CCLights2.debug("Show GUI");
-			par2EntityPlayer.openGui(CCLights2.instance, 1, par3World, 0, 0, 0);
-		}
+		//Show GUI
+		CCLights2.debug("Show GUI");
+		par2EntityPlayer.openGui(CCLights2.instance, 1, par3World, 0, 0, 0);
 		return par1ItemStack;
 	}
 
@@ -105,6 +97,5 @@ public class ItemTablet extends Item {
     }
 	//stuff loads faster when forge is satisfied at load
 	@SideOnly(Side.CLIENT)
-	public void registerIcons(IconRegister par1IconRegister)
-    {}
+	public void registerIcons(IconRegister par1IconRegister){}
 }

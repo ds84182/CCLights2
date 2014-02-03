@@ -39,7 +39,6 @@ public final class PacketSenders {
 				DrawCMD c = drawlist.removeLast();
 				outputStream.writeInt(c.cmd);
 				outputStream.writeInt(c.args.length);
-				// System.out.println("CMD:"+c.cmd+"lent"+c.args.length+"len: "+drawlist.size()+1);
 				for (int g = 0; g < c.args.length; g++) {
 					outputStream.writeDouble(c.args[g]);
 				}
@@ -64,7 +63,6 @@ public final class PacketSenders {
 		out.writeInt(tile.xCoord);
 		out.writeInt(tile.yCoord);
 		out.writeInt(tile.zCoord);
-		out.writeInt(tile.worldObj.provider.dimensionId);
 		out.writeUTF("monitor_scroll");
 		out.writeInt(3);
 
@@ -143,7 +141,6 @@ public final class PacketSenders {
 		outputStream.writeInt(tile.xCoord);
 		outputStream.writeInt(tile.yCoord);
 		outputStream.writeInt(tile.zCoord);
-		outputStream.writeInt(tile.worldObj.provider.dimensionId);
 		outputStream.writeInt(0);
 		outputStream.writeInt(par3);
 		outputStream.writeInt(mx);
@@ -157,7 +154,6 @@ public final class PacketSenders {
 		outputStream.writeInt(tile.xCoord);
 		outputStream.writeInt(tile.yCoord);
 		outputStream.writeInt(tile.zCoord);
-		outputStream.writeInt(tile.worldObj.provider.dimensionId);
 		outputStream.writeInt(1);
 		outputStream.writeInt(mx);
 		outputStream.writeInt(my);
@@ -170,7 +166,6 @@ public final class PacketSenders {
 		outputStream.writeInt(tile.xCoord);
 		outputStream.writeInt(tile.yCoord);
 		outputStream.writeInt(tile.zCoord);
-		outputStream.writeInt(tile.worldObj.provider.dimensionId);
 		outputStream.writeInt(2);
 		createPacketAndSend(outputStream);
 	}
@@ -181,7 +176,6 @@ public final class PacketSenders {
 		outputStream.writeInt(tile.xCoord);
 		outputStream.writeInt(tile.yCoord);
 		outputStream.writeInt(tile.zCoord);
-		outputStream.writeInt(tile.worldObj.provider.dimensionId);
 		outputStream.writeUTF("key");
 		outputStream.writeInt(1);
 		outputStream.writeInt(0);
@@ -194,7 +188,6 @@ public final class PacketSenders {
 			outputStream1.writeInt(tile.xCoord);
 			outputStream1.writeInt(tile.yCoord);
 			outputStream1.writeInt(tile.zCoord);
-			outputStream1.writeInt(tile.worldObj.provider.dimensionId);
 			outputStream1.writeUTF("char");
 			outputStream1.writeInt(1);
 			outputStream1.writeInt(2);
@@ -236,7 +229,6 @@ public final class PacketSenders {
 		outputStream.writeInt(xCoord);
 		outputStream.writeInt(yCoord);
 		outputStream.writeInt(zCoord);
-		outputStream.writeInt(dimId);
 		CCLights2.debug("Sent DL Request to server!");
 		createPacketAndSend(outputStream);
 	}
@@ -247,6 +239,19 @@ public final class PacketSenders {
 		packet.data = mergeStream.toByteArray();
 		packet.length = packet.data.length;
 		PacketDispatcher.sendPacketToServer(packet);
+	}
+
+	public static void SYNC(int monitorWidth, int monitorHeight,Player player) {
+		ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
+		 		outputStream.writeByte(PacketHandler.NET_SYNC);
+		 		outputStream.writeShort(monitorWidth);
+		 		outputStream.writeShort(monitorHeight);
+		 		CCLights2.debug("Sent crap no one cares about to client");
+		 		Packet250CustomPayload packet = new Packet250CustomPayload();
+		 		packet.channel = "CCLights2";
+		    	packet.data = outputStream.toByteArray();
+		 		packet.length = packet.data.length;
+		 		PacketDispatcher.sendPacketToPlayer(packet, player);
 	}
 
 }

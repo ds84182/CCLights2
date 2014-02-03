@@ -133,7 +133,6 @@ public class VariableBlurFilter extends AbstractBufferedImageOp {
                 tr += r[i1] - r[i2];
                 tg += g[i1] - g[i2];
                 tb += b[i1] - b[i2];
-//if ( y == 0 && pass == 1 )System.out.println(x+": "+i1+" "+i2+" "+r[i1]+" "+r[i2]+" "+tr);
                 out[ outIndex ] = ((ta/divisor) << 24) | ((tr/divisor) << 16) | ((tg/divisor) << 8) | (tb/divisor);
 
                 outIndex += height;

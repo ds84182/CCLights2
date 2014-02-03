@@ -29,7 +29,7 @@ public class GPUSerializer implements ISerializer {
 		int z = dat.readInt();
 		int d = dat.readInt();
 		
-		//System.out.printf("GPU in dim %d at %d, %d, %d\n", d, x, y, z);
+		//CCLights2.debug("GPU in dim %d at %d, %d, %d\n", d, x, y, z);
 		
 		World world = ClientProxy.getClientWorld();
 		

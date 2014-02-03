@@ -33,20 +33,20 @@ public class BlockExternalMonitor extends Block {
 	}
 
 	@Override
-	public boolean onBlockActivated(World par1World, int par2, int par3, int par4, EntityPlayer par5EntityPlayer, int par6, float par7,
-			float par8, float par9) {
-		TileEntityExternalMonitor tile = (TileEntityExternalMonitor) par1World.getBlockTileEntity(par2,par3,par4);
-		CCLights2.debug(par7+","+par8+","+par9+","+tile.m_dir);
+	public boolean onBlockActivated(World world, int par2, int par3, int par4, EntityPlayer par5EntityPlayer, int par6, float vecX,
+			float vecY, float vecZ) {
+		TileEntityExternalMonitor tile = (TileEntityExternalMonitor) world.getBlockTileEntity(par2,par3,par4);
+		CCLights2.debug(vecX+","+vecY+","+vecZ+","+tile.m_dir);
 		float x = 0f;
 		float y = 0f;
 		switch (tile.m_dir)
 		{
 			case 0:
 			{
-				if (par9 == 0.0f)
+				if (vecZ == 0.0f)
 				{
-					x = 1F-par7;
-					y = par8;
+					x = 1F-vecX;
+					y = vecY;
 				}
 				else
 				{
@@ -56,10 +56,10 @@ public class BlockExternalMonitor extends Block {
 			}
 			case 1:
 			{
-				if (par7 == 1.0f)
+				if (vecX == 1.0f)
 				{
-					x = par8;
-					y = par9;
+					x = vecY;
+					y = vecZ;
 				}
 				else
 				{
@@ -69,10 +69,10 @@ public class BlockExternalMonitor extends Block {
 			}
 			case 2:
 			{
-				if (par9 == 1.0f)
+				if (vecZ == 1.0f)
 				{
-					x = par7;
-					y = par8;
+					x = vecX;
+					y = vecY;
 				}
 				else
 				{
@@ -82,10 +82,10 @@ public class BlockExternalMonitor extends Block {
 			}
 			case 3:
 			{
-				if (par7 == 0.0f)
+				if (vecX == 0.0f)
 				{
-					x = par8;
-					y = par9;
+					x = vecY;
+					y = vecZ;
 				}
 				else
 				{
@@ -100,7 +100,7 @@ public class BlockExternalMonitor extends Block {
 		px+=(tile.m_width-tile.m_xIndex-1)*32;
 		py+=(tile.m_height-tile.m_yIndex-1)*32;
 		CCLights2.debug(px+","+py);
-		if (!par1World.isRemote)
+		if (!world.isRemote)
 		{
 			//Send it to the tileentity!
 			if (tile.mon != null && tile.mon.gpu != null)
@@ -140,7 +140,6 @@ public class BlockExternalMonitor extends Block {
 		CCLights2.debug("Placed.");
 		 tile.setDir(l);
 		tile.contractNeighbours();
-        //monitor.setDir(dir);
         tile.contract();
         tile.expand();
 	}

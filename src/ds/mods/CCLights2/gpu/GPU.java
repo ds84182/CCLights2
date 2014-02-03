@@ -214,7 +214,6 @@ public class GPU {
 					//Bind Texture//
 					bindedTexture = textures[(int) cmd.args[0]];
 					bindedSlot = (int) cmd.args[0];
-					//System.out.println("Binded texture "+cmd.args[0]);
 					break;
 				}
 				case 8:

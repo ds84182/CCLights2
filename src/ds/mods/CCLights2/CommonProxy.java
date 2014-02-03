@@ -63,7 +63,7 @@ public class CommonProxy {
 			monitorBig = true;
 		}
 		
-		if (RegisterHelper.canRegisterBlock(Config.light, "Light")) {
+		/*if (RegisterHelper.canRegisterBlock(Config.light, "Light")) {
 			CCLights2.light = new BlockColorLight(Config.light, Material.iron);
 																				
 			GameRegistry.registerBlock(CCLights2.light, "CCLLIGHT");
@@ -78,7 +78,7 @@ public class CommonProxy {
 			GameRegistry.registerTileEntity(TileEntityAdvancedlight.class, "CCLAdvLight");
 			
 			advancedlight = true;
-		}
+		}*/
 
 		if (RegisterHelper.canRegisterBlock(Config.TTrans, "TableTransciever")) {
 			CCLights2.ttrans = new BlockTabletTransceiver(Config.TTrans, Material.iron);
@@ -147,7 +147,6 @@ public class CommonProxy {
 				for (int x = 0; x < 8; x++) {
 					int total = i + x;
 					if (total <= 8 && i != total && x != total) {
-						CCLights2.debug(i + "+" + x + "=" + total);
 						GameRegistry.addShapelessRecipe(new ItemStack( CCLights2.ram, 1, total + 1), new ItemStack(CCLights2.ram, 1, i),
 								new ItemStack(CCLights2.ram, 1, x));
 					}
