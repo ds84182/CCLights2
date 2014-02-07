@@ -10,12 +10,10 @@ import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.CommonProxy;
-import ds.mods.CCLights2.block.tileentity.TileEntityAdvancedlight;
 import ds.mods.CCLights2.block.tileentity.TileEntityExternalMonitor;
 import ds.mods.CCLights2.client.render.SimpleBigMonitorRenderingHandler;
 import ds.mods.CCLights2.client.render.TabletRenderer;
 import ds.mods.CCLights2.client.render.TileEntityBigMonitorRenderer;
-import ds.mods.CCLights2.client.render.TileEntityLightRenderer;
 
 public class ClientProxy extends CommonProxy {
 	

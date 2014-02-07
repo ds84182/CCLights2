@@ -14,7 +14,6 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
-import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
 import ds.mods.CCLights2.client.render.TabletRenderer;
 import ds.mods.CCLights2.gpu.Monitor;
@@ -51,15 +50,15 @@ public class GuiTablet extends GuiScreen {
 	
 	public void initGui()
 	{
-		CCLights2.debug("Created textures");
-		Keyboard.enableRepeatEvents(true);
-		if (oldScale == 0)
+		if (oldScale != 1)
 		{
 			oldScale = Minecraft.getMinecraft().gameSettings.guiScale;
 			Minecraft.getMinecraft().gameSettings.guiScale = 1;
 			ScaledResolution scaledresolution = new ScaledResolution(this.mc.gameSettings, this.mc.displayWidth, this.mc.displayHeight);
-	        this.setWorldAndResolution(this.mc, scaledresolution.getScaledWidth(), scaledresolution.getScaledHeight());
+	        this.width  = scaledresolution.getScaledWidth();
+	        this.height = scaledresolution.getScaledHeight();
 		}
+		Keyboard.enableRepeatEvents(true);
 	}
 	
 	public int applyXOffset(int x)
@@ -101,7 +100,6 @@ public class GuiTablet extends GuiScreen {
 					my = y;
 					if (mlx != mx | mly != my)
 					{
-						CCLights2.debug("Moused move!");
                         PacketSenders.mouseEventMove(mx, my, tile);
 					}
 					mlx = mx;
@@ -153,7 +151,6 @@ public class GuiTablet extends GuiScreen {
 		par2 = applyYOffset(par2);
 		if (par1 > -1 & par2 > -1 & par1 < mon.getWidth()+1 & par2 < mon.getHeight()+1)
 		{
-			CCLights2.debug("Mouse click! "+par3);
 			isMouseDown = true;
 			mouseButton = par3;
 			mlx = par1;
@@ -174,7 +171,6 @@ public class GuiTablet extends GuiScreen {
 		{
 			if (par3 == mouseButton)
 			{
-				CCLights2.debug("Mouse up! "+par3);
 				isMouseDown = false;
                 PacketSenders.mouseEventUp(tile);
 			}
@@ -184,7 +180,7 @@ public class GuiTablet extends GuiScreen {
 	protected void keyTyped(char par1, int par2)
     {
         super.keyTyped(par1, par2);
-        if (par2 != 1 && nbt.getBoolean("canDisplay"))
+        if (par2 > 1 && nbt.getBoolean("canDisplay"))
         {
 			  PacketSenders.sendKeyEvent(par1, par2,tile);
         }
@@ -194,8 +190,6 @@ public class GuiTablet extends GuiScreen {
 	{
 		Keyboard.enableRepeatEvents(false);
 		Minecraft.getMinecraft().gameSettings.guiScale = oldScale;
-		ScaledResolution scaledresolution = new ScaledResolution(this.mc.gameSettings, this.mc.displayWidth, this.mc.displayHeight);
-        this.setWorldAndResolution(this.mc, scaledresolution.getScaledWidth(), scaledresolution.getScaledHeight());
 	}
 	
 	public boolean doesGuiPauseGame()
