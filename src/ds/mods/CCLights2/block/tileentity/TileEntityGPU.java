@@ -244,7 +244,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			}
 			else
 			{
-				throw new Exception("setPixels: argument error: number, number expected");
+				throw new Exception("plot: argument error: number, number expected");
 			}
 			break;
 		}
@@ -495,7 +495,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				}
 				cmd.cmd = 14;
 				cmd.args = nargs;
-				Object[] ret = gpu.processCommand(cmd);
+				Object[] ret = {(Integer) gpu.processCommand(cmd)[0],w,h};
 				gpu.drawlist.push(cmd);
 				return ret;
 			}
