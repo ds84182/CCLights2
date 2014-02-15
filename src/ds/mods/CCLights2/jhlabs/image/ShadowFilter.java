@@ -105,8 +105,7 @@ public class ShadowFilter extends AbstractBufferedImageOp {
 		}
 	}
 
-    @Override
-	public BufferedImage filter( BufferedImage src, BufferedImage dst ) {
+    public BufferedImage filter( BufferedImage src, BufferedImage dst ) {
         int width = src.getWidth();
         int height = src.getHeight();
 
@@ -147,7 +146,6 @@ public class ShadowFilter extends AbstractBufferedImageOp {
         return dst;
 	}
 
-	@Override
 	public String toString() {
 		return "Stylize/Drop Shadow...";
 	}

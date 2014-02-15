@@ -12,8 +12,7 @@ public class BoxBlurFilter extends AbstractBufferedImageOp {
 	private int vRadius;
 	private int iterations = 1;
 	
-    @Override
-	public BufferedImage filter( BufferedImage src, BufferedImage dst ) {
+    public BufferedImage filter( BufferedImage src, BufferedImage dst ) {
         int width = src.getWidth();
         int height = src.getHeight();
 
@@ -109,7 +108,6 @@ public class BoxBlurFilter extends AbstractBufferedImageOp {
 		return iterations;
 	}
 	
-	@Override
 	public String toString() {
 		return "Blur/Box Blur...";
 	}
