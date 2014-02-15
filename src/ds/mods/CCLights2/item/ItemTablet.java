@@ -19,7 +19,7 @@ import ds.mods.CCLights2.utils.TabMesg.Message;
 public class ItemTablet extends Item {
 
 	public ItemTablet(int par1) {
-		super(par1-256);
+		super(par1);
 		this.setMaxStackSize(1);
 		this.setNoRepair();
 		this.setUnlocalizedName("tablet");
@@ -96,6 +96,7 @@ public class ItemTablet extends Item {
 		return true;
     }
 	//stuff loads faster when forge is satisfied at load
+	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IconRegister par1IconRegister){}
 }

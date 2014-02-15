@@ -17,7 +17,7 @@ public class Config {
 	    TTrans = config.get("Blocks and item ids", "TTrans", 544).getInt(544);
 	    MonitorBig = config.get("Blocks and item ids", "Big Monitor", 545).getInt(545);
 	    Ram = config.get("Blocks and item ids", "Ram", 4097-256).getInt(4097-256);
-	    Tablet = config.get("Blocks and item ids", "Tablet", 4098).getInt(4098);
+	    Tablet = config.get("Blocks and item ids", "Tablet", 4098-256).getInt(4098-256);
 	    light = config.get("Blocks and item ids", "Light", 546).getInt(546);
 	    advlight = config.get("Blocks and item ids", "Advanced Light", 547).getInt(547);
 	    DEBUGS = config.get("Misc", "DEBUG", false).getBoolean(false);

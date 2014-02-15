@@ -21,22 +21,27 @@ public class BlockAdvancedLight extends BlockContainer
 		this.setHardness(0.6F).setStepSound(soundStoneFootstep);
     }
     
-    public int quantityDropped(Random random)
+    @Override
+	public int quantityDropped(Random random)
     {
         return 1;
     }
     
-    public boolean isOpaqueCube() {
+    @Override
+	public boolean isOpaqueCube() {
 	  return false;
 	}
+	@Override
 	public boolean renderAsNormalBlock() {
 	  return false;
 	}
+	@Override
 	public int getRenderType() {
 	  return CommonProxy.modelID;
 	}
 
-    public TileEntity createNewTileEntity(World var1)
+    @Override
+	public TileEntity createNewTileEntity(World var1)
     {
         return new TileEntityAdvancedlight();
     }
