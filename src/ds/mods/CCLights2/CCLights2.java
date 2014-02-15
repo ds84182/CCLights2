@@ -36,7 +36,7 @@ public class CCLights2 {
 		@Override
 		public ItemStack getIconItemStack() {
 			this.getTranslatedTabLabel();
-			return new ItemStack(Config.Tablet, 1, 0);
+			return new ItemStack(tablet.itemID, 1, 0);
 		}
 	};
 

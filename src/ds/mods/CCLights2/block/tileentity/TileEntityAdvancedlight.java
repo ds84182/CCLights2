@@ -21,18 +21,22 @@ public class TileEntityAdvancedlight  extends TileEntity implements IPeripheral 
 	    public float b = 255;
 		private int ticksSinceSync;
 
-	    public synchronized void detach(IComputerAccess icomputeraccess) // tried sync and without
+	    @Override
+		public synchronized void detach(IComputerAccess icomputeraccess) // tried sync and without
 	    {
 	    }
 	    
+		@Override
 		public void attach(IComputerAccess computer) {}
 
-	    public String getType()
+	    @Override
+		public String getType()
 	    {
 	        return "LightAdv";
 	    }
 
-	    public String[] getMethodNames()
+	    @Override
+		public String[] getMethodNames()
 	    {
 	        return (new String[] { "setColorRGB", "getColorRGB"});
 	    }
@@ -48,9 +52,9 @@ public class TileEntityAdvancedlight  extends TileEntity implements IPeripheral 
 	            {
 	            	throw new Exception("Invalid RGB!");
 	            }
-	        	this.r = (float) r;
-	            this.g = (float) g;
-	            this.b = (float) b;
+	        	this.r = r;
+	            this.g = g;
+	            this.b = b;
 	            colorChange();
 	            return null;
 	        }
@@ -62,7 +66,8 @@ public class TileEntityAdvancedlight  extends TileEntity implements IPeripheral 
 	        return null;
 	    }
 
-	    public boolean canAttachToSide(int i)
+	    @Override
+		public boolean canAttachToSide(int i)
 	    {
 	        return true;
 	    }

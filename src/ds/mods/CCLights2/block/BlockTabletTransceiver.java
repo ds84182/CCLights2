@@ -24,9 +24,10 @@ public class BlockTabletTransceiver extends Block {
 		this.setHardness(0.6F).setStepSound(soundStoneFootstep);
 	}
 	
+	@Override
 	public void onBlockPlacedBy(World par1World, int par2, int par3, int par4,
 			EntityLivingBase par5EntityLivingBase, ItemStack par6ItemStack) {
-		int l = MathHelper.floor_double((double) (par5EntityLivingBase.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
+		int l = MathHelper.floor_double(par5EntityLivingBase.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
 		int i1 = par1World.getBlockMetadata(par2, par3, par4) >> 2;
 		++l;
 		l %= 4;
