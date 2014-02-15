@@ -34,7 +34,6 @@ public class GuiMonitor extends GuiScreen {
 		tile = mon;
 	}
 	
-	@Override
 	public void initGui()
 	{
 		Texture tex = mon.tex;
@@ -64,7 +63,6 @@ public class GuiMonitor extends GuiScreen {
 		return y+((height/4)-mon.getHeight()/4)*2;
 	}
 	
-	@Override
 	public void drawScreen(int par1, int par2, float par3)
     {
 		par1 = applyXOffset(par1);
@@ -124,7 +122,7 @@ public class GuiMonitor extends GuiScreen {
         GL11.glScaled(1D, 1D, 1D);
         var2.startDrawingQuads();
         //var2.setColorOpaque_I(4210752);
-        var2.addVertexWithUV(x, y, this.zLevel, 0.0D, 0D);
+        var2.addVertexWithUV((double) x, (double) y, this.zLevel, 0.0D, 0D);
         var2.addVertexWithUV(x, (double)h+y, this.zLevel, 0.0D, h/(9*32D));
         var2.addVertexWithUV((double)w+x, (double)h+y, this.zLevel, w/(16*32D), h/(9*32D));
         var2.addVertexWithUV((double)w+x, y, this.zLevel, w/(16*32D), 0D);
@@ -132,7 +130,6 @@ public class GuiMonitor extends GuiScreen {
         GL11.glPopMatrix();
     }
 	
-	@Override
 	protected void mouseClicked(int par1, int par2, int par3)
     {
 		par1 = applyXOffset(par1);
@@ -150,7 +147,6 @@ public class GuiMonitor extends GuiScreen {
 		}
     }
 	
-	@Override
 	protected void mouseMovedOrUp(int par1, int par2, int par3)
     {
 		par1 = applyXOffset(par1);
@@ -166,7 +162,6 @@ public class GuiMonitor extends GuiScreen {
 		}
     }
 
-	@Override
 	protected void keyTyped(char par1, int par2)
     {
         super.keyTyped(par1, par2);
@@ -176,13 +171,11 @@ public class GuiMonitor extends GuiScreen {
         }
     }
 	
-	@Override
 	public void onGuiClosed()
 	{
 		Keyboard.enableRepeatEvents(false);
 	}
 	
-	@Override
 	public boolean doesGuiPauseGame()
     {
         return false;

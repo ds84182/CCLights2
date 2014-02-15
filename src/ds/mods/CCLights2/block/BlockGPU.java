@@ -27,7 +27,6 @@ public class BlockGPU extends Block {
 		this.setHardness(0.6F).setStepSound(soundStoneFootstep);
 	}
 
-	@Override
 	@SideOnly(Side.CLIENT)
 	public Icon getIcon(int side, int meta) {
 		if (side == 0 || side == 1) {
@@ -36,7 +35,6 @@ public class BlockGPU extends Block {
 		return sides;
 	}
 
-	@Override
 	public boolean onBlockActivated(World par1World, int par2, int par3,
 			int par4, EntityPlayer par5EntityPlayer, int par6, float par7,
 			float par8, float par9) {
@@ -60,7 +58,6 @@ public class BlockGPU extends Block {
 		return false;
 	}
 
-	@Override
 	public void breakBlock(World par1World, int par2, int par3, int par4,
 			int par5, int par6) {
 		TileEntityGPU tile = (TileEntityGPU) par1World.getBlockTileEntity(par2,
@@ -79,15 +76,15 @@ public class BlockGPU extends Block {
 					}
 					n -= stacksize;
 					EntityItem var14 = new EntityItem(par1World,
-							par2 + 0.5,
-							par3 + 0.5,
-							par4 + 0.5, new ItemStack(
+							(double) ((float) par2 + 0.5),
+							(double) ((float) par3 + 0.5),
+							(double) ((float) par4 + 0.5), new ItemStack(
 									CCLights2.ram, stacksize, i));
 					float var15 = 0.05F;
-					var14.motionX = (float) rand.nextGaussian() * var15;
-					var14.motionY = (float) rand.nextGaussian()
-							* var15 + 0.2F;
-					var14.motionZ = (float) rand.nextGaussian() * var15;
+					var14.motionX = (double) ((float) rand.nextGaussian() * var15);
+					var14.motionY = (double) ((float) rand.nextGaussian()
+							* var15 + 0.2F);
+					var14.motionZ = (double) ((float) rand.nextGaussian() * var15);
 					par1World.spawnEntityInWorld(var14);
 				}
 			}
@@ -106,7 +103,6 @@ public class BlockGPU extends Block {
 		return new TileEntityGPU();
 	}
 
-	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IconRegister par1IconRegister) {
 		this.blockIcon = par1IconRegister.registerIcon("cclights:gpufront");
