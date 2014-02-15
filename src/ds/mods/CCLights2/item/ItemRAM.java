@@ -19,14 +19,12 @@ public class ItemRAM extends Item {
 		this.setCreativeTab(CCLights2.ccltab);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, @SuppressWarnings("rawtypes") List par3List, boolean par4)
 	{
 		int ramammt = (par1ItemStack.getItemDamage()+1);
 		par3List.add(ramammt+"K");
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void getSubItems(int par1, CreativeTabs par2CreativeTabs, @SuppressWarnings("rawtypes") List par3List)
     {
 		super.getSubItems(par1, par2CreativeTabs, par3List);
@@ -35,6 +33,7 @@ public class ItemRAM extends Item {
 			par3List.add(new ItemStack(par1, 1, i));
 		}
     }
+	
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IconRegister par1IconRegister)
     {

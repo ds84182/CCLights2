@@ -86,7 +86,7 @@ public class Texture {
 		if (font == null)
 		{
 			try {
-				font = ImageIO.read(CCLights2.class.getResourceAsStream("ascii.png"));
+				font = ImageIO.read(CCLights2.class.getResourceAsStream("/assets/cclights/textures/gui/ascii.png"));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

@@ -19,7 +19,7 @@ import ds.mods.CCLights2.utils.TabMesg.Message;
 public class ItemTablet extends Item {
 
 	public ItemTablet(int par1) {
-		super(par1-256);
+		super(par1);
 		this.setMaxStackSize(1);
 		this.setNoRepair();
 		this.setUnlocalizedName("tablet");
@@ -35,7 +35,6 @@ public class ItemTablet extends Item {
 
 	@Override
 	public ItemStack onItemRightClick(ItemStack par1ItemStack, World par3World, EntityPlayer par2EntityPlayer) {
-		//Show GUI
 		CCLights2.debug("Show GUI");
 		par2EntityPlayer.openGui(CCLights2.instance, 1, par3World, 0, 0, 0);
 		return par1ItemStack;

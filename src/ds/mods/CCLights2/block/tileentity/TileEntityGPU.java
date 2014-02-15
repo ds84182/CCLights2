@@ -27,7 +27,6 @@ import dan200.computer.api.IPeripheral;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.converter.ConvertDouble;
 import ds.mods.CCLights2.converter.ConvertInteger;
-import ds.mods.CCLights2.converter.ConvertString;
 import ds.mods.CCLights2.gpu.DrawCMD;
 import ds.mods.CCLights2.gpu.GPU;
 import ds.mods.CCLights2.gpu.Monitor;
@@ -506,7 +505,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			if (args.length > 1)
 			{
 				int texid = ConvertInteger.convert(args[0]);
-				String format = ConvertString.convert(args[1]);
+				String format = args[1].toString();
 				if (texid<0 || texid>gpu.textures.length || gpu.textures[texid] == null)
 				{
 					throw new Exception("Texture does not exist.");
@@ -528,7 +527,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			//Drawtext
 			if (args.length > 2)
 			{
-				String str = ConvertString.convert(args[0]);
+				String str = args[0].toString();
 				int x = ConvertInteger.convert(args[1]);
 				int y = ConvertInteger.convert(args[2]);
 				Point2D point = gpu.transform.transform(new Point2D.Double(x, y),null);
@@ -562,7 +561,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			//getTextWidth
 			if (args.length > 0)
 			{
-				String str = ConvertString.convert(args[0]);
+				String str = args[0].toString();
 				return new Object[]{Texture.getStringWidth(str)};
 			}
 		}
