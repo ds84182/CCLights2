@@ -300,7 +300,7 @@ public class PacketHandler implements IPacketHandler {
 			TileEntityAdvancedlight tile = (TileEntityAdvancedlight) ClientProxy.getClientWorld()
 					.getBlockTileEntity(x, y, z);
 			if (tile != null) {
-				TileEntityAdvancedlight ntile = tile;
+				TileEntityAdvancedlight ntile = (TileEntityAdvancedlight) tile;
 				ntile.r = PacketData.readFloat();
 				ntile.g = PacketData.readFloat();
 				ntile.b = PacketData.readFloat();

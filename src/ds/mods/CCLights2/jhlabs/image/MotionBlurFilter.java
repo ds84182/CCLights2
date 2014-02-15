@@ -64,8 +64,7 @@ public class MotionBlurFilter extends AbstractBufferedImageOp {
 		return wrapEdges;
 	}
 
-    @Override
-	public BufferedImage filter( BufferedImage src, BufferedImage dst ) {
+    public BufferedImage filter( BufferedImage src, BufferedImage dst ) {
         int width = src.getWidth();
         int height = src.getHeight();
 
@@ -136,10 +135,10 @@ public class MotionBlurFilter extends AbstractBufferedImageOp {
 				if (count == 0) {
 					outPixels[index] = inPixels[index];
 				} else {
-					a = PixelUtils.clamp(a/count);
-					r = PixelUtils.clamp(r/count);
-					g = PixelUtils.clamp(g/count);
-					b = PixelUtils.clamp(b/count);
+					a = PixelUtils.clamp((int)(a/count));
+					r = PixelUtils.clamp((int)(r/count));
+					g = PixelUtils.clamp((int)(g/count));
+					b = PixelUtils.clamp((int)(b/count));
 					outPixels[index] = (a << 24) | (r << 16) | (g << 8) | b;
 				}
 				index++;
@@ -150,7 +149,6 @@ public class MotionBlurFilter extends AbstractBufferedImageOp {
         return dst;
     }
 
-	@Override
 	public String toString() {
 		return "Blur/Motion Blur...";
 	}

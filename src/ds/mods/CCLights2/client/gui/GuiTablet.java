@@ -50,7 +50,6 @@ public class GuiTablet extends GuiScreen {
 		}
 	}
 
-	@Override
 	public void initGui() {
 		if (oldScale != 1) {
 			oldScale = Minecraft.getMinecraft().gameSettings.guiScale;
@@ -80,7 +79,6 @@ public class GuiTablet extends GuiScreen {
 		return y + ((height / 4) - tex.getHeight() / 4) * 2;
 	}
 
-	@Override
 	public void drawScreen(int x, int y, float par3) {
 		x = applyXOffset(x);
 		y = applyYOffset(y);
@@ -131,7 +129,7 @@ public class GuiTablet extends GuiScreen {
 		GL11.glPushMatrix();
 		GL11.glScaled(1D, 1D, 1D);
 		var2.startDrawingQuads();
-		var2.addVertexWithUV(x, y, this.zLevel, 0.0D, 0D);
+		var2.addVertexWithUV((double) x, (double) y, this.zLevel, 0.0D, 0D);
 		var2.addVertexWithUV(x, (double) h + y, this.zLevel, 0.0D, h
 				/ (9 * 32D));
 		var2.addVertexWithUV((double) w + x, (double) h + y, this.zLevel, w
@@ -141,7 +139,6 @@ public class GuiTablet extends GuiScreen {
 		GL11.glPopMatrix();
 	}
 
-	@Override
 	protected void mouseClicked(int par1, int par2, int par3) {
 		if (!nbt.getBoolean("canDisplay"))
 			return;
@@ -159,7 +156,6 @@ public class GuiTablet extends GuiScreen {
 		}
 	}
 
-	@Override
 	protected void mouseMovedOrUp(int par1, int par2, int par3) {
 		if (!nbt.getBoolean("canDisplay"))
 			return;
@@ -173,7 +169,6 @@ public class GuiTablet extends GuiScreen {
 		}
 	}
 
-	@Override
 	protected void keyTyped(char par1, int par2) {
 		super.keyTyped(par1, par2);
 		if (par2 > 2 && nbt.getBoolean("canDisplay")) {
@@ -181,13 +176,11 @@ public class GuiTablet extends GuiScreen {
 		}
 	}
 
-	@Override
 	public void onGuiClosed() {
 		Keyboard.enableRepeatEvents(false);
 		Minecraft.getMinecraft().gameSettings.guiScale = oldScale;
 	}
 
-	@Override
 	public boolean doesGuiPauseGame() {
 		return false;
 	}

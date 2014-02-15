@@ -95,7 +95,6 @@ public class ItemTablet extends Item {
 		return true;
     }
 	//stuff loads faster when forge is satisfied at load
-	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IconRegister par1IconRegister){}
 }
