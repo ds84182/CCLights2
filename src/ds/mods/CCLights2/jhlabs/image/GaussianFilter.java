@@ -51,7 +51,8 @@ public class GaussianFilter extends ConvolveFilter {
 		return radius;
 	}
 
-    public BufferedImage filter( BufferedImage src, BufferedImage dst ) {
+    @Override
+	public BufferedImage filter( BufferedImage src, BufferedImage dst ) {
         int width = src.getWidth();
         int height = src.getHeight();
 
@@ -142,6 +143,7 @@ public class GaussianFilter extends ConvolveFilter {
 		return new Kernel(rows, 1, matrix);
 	}
 
+	@Override
 	public String toString() {
 		return "Blur/Gaussian Blur...";
 	}

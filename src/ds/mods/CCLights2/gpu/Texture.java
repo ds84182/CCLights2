@@ -98,7 +98,7 @@ public class Texture {
 	        int k = j / 16;
 	        int l = i / 16;
 	        byte b0 = 1;
-	        float f = 8.0F / (float)l;
+	        float f = 8.0F / l;
 	        int i1 = 0;
 
 	        while (i1 < 256)
@@ -138,7 +138,7 @@ public class Texture {
 	                }
 
 	                ++l1;
-	                Texture.charWidth[i1] = (int)(0.5D + (double)((float)l1 * f)) + b0;
+	                Texture.charWidth[i1] = (int)(0.5D + l1 * f) + b0;
 	                ++i1;
 	                break;
 	            }

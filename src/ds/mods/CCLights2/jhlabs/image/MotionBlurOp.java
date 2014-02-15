@@ -95,12 +95,13 @@ public class MotionBlurOp extends AbstractBufferedImageOp {
         return log2n;
     }
 
-    public BufferedImage filter( BufferedImage src, BufferedImage dst ) {
+    @Override
+	public BufferedImage filter( BufferedImage src, BufferedImage dst ) {
         if ( dst == null )
             dst = createCompatibleDestImage( src, null );
         BufferedImage tsrc = src;
-        float cx = (float)src.getWidth() * centreX;
-        float cy = (float)src.getHeight() * centreY;
+        float cx = src.getWidth() * centreX;
+        float cy = src.getHeight() * centreY;
         float imageRadius = (float)Math.sqrt( cx*cx + cy*cy );
         float translateX = (float)(distance * Math.cos( angle ));
         float translateY = (float)(distance * -Math.sin( angle ));
@@ -150,6 +151,7 @@ public class MotionBlurOp extends AbstractBufferedImageOp {
         return dst;
     }
     
+	@Override
 	public String toString() {
 		return "Blur/Motion Blur...";
 	}

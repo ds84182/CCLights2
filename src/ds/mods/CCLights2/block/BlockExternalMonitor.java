@@ -135,7 +135,7 @@ public class BlockExternalMonitor extends Block {
 	@Override
 	public void onBlockPlacedBy(World world, int i, int j, int k, EntityLivingBase entityliving, ItemStack item)
 	{
-		int l = MathHelper.floor_double((double)(entityliving.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
+		int l = MathHelper.floor_double(entityliving.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
 		TileEntityExternalMonitor tile = (TileEntityExternalMonitor) world.getBlockTileEntity(i, j, k);
 		CCLights2.debug("Placed.");
 		 tile.setDir(l);
@@ -158,6 +158,7 @@ public class BlockExternalMonitor extends Block {
 	public boolean isOpaqueCube() {
 		return false;
 	}
+	@Override
 	public void registerIcons(IconRegister par1IconRegister)
     {
         this.blockIcon = par1IconRegister.registerIcon("cclights:monitorsides");

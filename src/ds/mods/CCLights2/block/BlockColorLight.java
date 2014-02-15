@@ -23,21 +23,25 @@ public class BlockColorLight extends BlockContainer {
 		this.setCreativeTab(CCLights2.ccltab);
 	}
 
+	@Override
 	@SideOnly(Side.CLIENT)
 	public Icon getIcon(int side, int meta) {
 		return this.blockIcon;
 	}
 	
+	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IconRegister par1IconRegister) {
        par1IconRegister.registerIcon("CCLights:light");
 	}
+	@Override
 	public int quantityDropped(Random random)
     {
         return 1;
     }
 
-    public TileEntity createNewTileEntity(World world)
+    @Override
+	public TileEntity createNewTileEntity(World world)
     {
         return new TileEntityColorLight();
     }
