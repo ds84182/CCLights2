@@ -235,7 +235,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				if (tx<0 || ty<0 || tx>w || ty>h) //Don't draw if out of bounds!
 					return null;
 				DrawCMD cmd = new DrawCMD();
-				double[] nargs = new double[] { x, y };
+				double[] nargs = new double[] {x,y};
 				cmd.cmd = 1;
 				cmd.args = nargs;
 				gpu.processCommand(cmd);
@@ -441,7 +441,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			//import
 			if (args.length > 1) {
 				BufferedImage img = null;
-				if (args[0] instanceof Map)
+				if (args[0] instanceof Map && args[1] instanceof String)
 				{
 					int size = 0;
 					//One of the things I hate is that ComputerCraft uses Doubles for all their values
@@ -462,7 +462,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 					CCLights2.debug("Moved data");
 					img = ImageLoader.load(data, format);
 				}
-				else if (args[0] instanceof String)
+				else if (args[0] instanceof String && args[1] instanceof String)
 				{
 					String file = (String)args[0];
 					String format = (String)args[1];
@@ -502,10 +502,10 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 		case 19:
 		{
 			//export
-			if (args.length > 1)
+			if (args.length > 1 && args[1] instanceof String)
 			{
 				int texid = ConvertInteger.convert(args[0]);
-				String format = args[1].toString();
+				String format = args[1].toString() ;
 				if (texid<0 || texid>gpu.textures.length || gpu.textures[texid] == null)
 				{
 					throw new Exception("Texture does not exist.");
@@ -525,7 +525,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 		case 20:
 		{
 			//Drawtext
-			if (args.length > 2)
+			if (args.length > 2 && args[0] instanceof String)
 			{
 				String str = args[0].toString();
 				int x = ConvertInteger.convert(args[1]);
@@ -559,7 +559,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 		case 21:
 		{
 			//getTextWidth
-			if (args.length > 0)
+			if (args.length > 0 && args[0] instanceof String)
 			{
 				String str = args[0].toString();
 				return new Object[]{Texture.getStringWidth(str)};
