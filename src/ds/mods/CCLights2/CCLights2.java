@@ -19,7 +19,7 @@ import ds.mods.CCLights2.gpu.imageLoader.GeneralImageLoader;
 import ds.mods.CCLights2.gpu.imageLoader.ImageLoader;
 import ds.mods.CCLights2.network.PacketHandler;
 
-@Mod(modid = "CCLights2", name = "CCLights2", version = "0.4.1-73",dependencies="required-after:ComputerCraft;required-after:CCTurtle",acceptedMinecraftVersions = "[1.6.0,1.6.4]")
+@Mod(modid = "CCLights2", name = "CCLights2", version = "0.4.1-72",dependencies="required-after:ComputerCraft;required-after:CCTurtle",acceptedMinecraftVersions = "[1.6.0,1.6.4]")
 @NetworkMod(clientSideRequired = true, serverSideRequired = true, channels = { "CCLights2" }, packetHandler = PacketHandler.class,connectionHandler = ds.mods.CCLights2.network.OnJoin.class)
 public class CCLights2 {
 	@Mod.Instance("CCLights2")
