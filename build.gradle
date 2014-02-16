@@ -22,9 +22,8 @@ else if (ENV.TRAVIS_BUILD_NUMBER)
 buildNum = ENV.TRAVIS_BUILD_NUMBER
 
 else
-buildNum = config.build_number
+buildNum = 1
 
-apply plugin: 'java'
 apply plugin: 'forge'
 
 
