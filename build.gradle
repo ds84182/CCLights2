@@ -40,12 +40,12 @@ configFile.withReader {
 }
 
 version = config.mod_version + "-" + buildNum
-group= "ds.mods"
+group= "CCLights2"
 archivesBaseName = "CCLights2"
 
 minecraft {
 	version = config.minecraft_version + "-" + config.forge_version
-	
+	assetDir = "run/assets"
 	replace "@VERSION@", project.version
 	replace "@AUTHOR@", config.author_name
 }
