@@ -7,22 +7,22 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:1.0-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:1.1-SNAPSHOT'
     }
 }
 ENV = System.getenv()
 
 if(ENV.DRONE_BUILD_NUMBER)
-buildNum = ENV.DRONE_BUILD_NUMBER + " - drone"
+buildNum = ENV.DRONE_BUILD_NUMBER
 
 else if (ENV.BUILD_NUMBER)
-buildNum = ENV.BUILD_NUMBER + "- jenkins"
+buildNum = ENV.BUILD_NUMBER
 
 else if (ENV.TRAVIS_BUILD_NUMBER)
-buildNum = ENV.TRAVIS_BUILD_NUMBER + "- travis"
+buildNum = ENV.TRAVIS_BUILD_NUMBER
 
 else
-buildNum = config.build_number + "- manual"
+buildNum = config.build_number
 
 apply plugin: 'java'
 apply plugin: 'forge'
@@ -40,7 +40,7 @@ configFile.withReader {
     ext.config = new ConfigSlurper().parse prop
 }
 
-version = config.mod_version + "." + buildNum
+version = config.mod_version + "-" + buildNum
 group= "ds.mods"
 archivesBaseName = "CCLights2"
 
