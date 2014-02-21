@@ -9,17 +9,6 @@ buildscript {
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:1.0-SNAPSHOT'
     }
-    
-    sourceSets {
-    main {
-        java {
-            srcDir 'src/ds'
-        }
-        resources {
-            srcDir 'assets'
-        }
-    }
-}
 }
 ENV = System.getenv()
 
@@ -37,8 +26,16 @@ buildNum = 1
 
 apply plugin: 'forge'
 
-
-targetCompatibility = JavaVersion.VERSION_1_7
+   sourceSets {
+    main {
+        java {
+            srcDir 'src/ds'
+        }
+        resources {
+            srcDir 'assets'
+        }
+    }
+}
 
 // define the properties file
 ext.configFile = file "build.properties"
