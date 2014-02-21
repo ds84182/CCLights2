@@ -32,7 +32,7 @@ apply plugin: 'forge'
             srcDir 'src'
         }
         resources {
-            srcDir ''
+            srcDir '/'
         }
     }
 }
