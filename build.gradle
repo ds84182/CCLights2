@@ -60,7 +60,7 @@ minecraft {
 processResources
 {
     // replace stuff in mcmod.info, nothing else
-    from(sourceSets.main.resources.srcDirs) {
+    from('/', '/') {
 		include 'mcmod.info'
                 
         expand 'version' : project.version, 'mcversion' : project.minecraft.version
