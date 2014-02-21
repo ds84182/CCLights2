@@ -9,6 +9,17 @@ buildscript {
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:1.0-SNAPSHOT'
     }
+    
+    sourceSets {
+    main {
+        java {
+            srcDir 'src/ds'
+        }
+        resources {
+            srcDir 'assets'
+        }
+    }
+}
 }
 ENV = System.getenv()
 
@@ -45,7 +56,6 @@ archivesBaseName = "CCLights2"
 
 minecraft {
 	version = config.minecraft_version + "-" + config.forge_version
-	assetDir = "run/assets"
 	replace "@VERSION@", project.version
 	replace "@AUTHOR@", config.author_name
 }
