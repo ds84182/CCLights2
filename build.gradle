@@ -32,7 +32,7 @@ apply plugin: 'forge'
             srcDir 'src'
         }
         resources {
-            srcDir 'assets'
+            srcDir ''
         }
     }
 }
@@ -60,7 +60,7 @@ minecraft {
 processResources
 {
     // replace stuff in mcmod.info, nothing else
-    from('/') {
+    from(sourceSets.main.resources.srcDirs) {
 		include 'mcmod.info'
                 
         expand 'version' : project.version, 'mcversion' : project.minecraft.version
@@ -68,9 +68,7 @@ processResources
         
     // copy everything else, thats not the mcmod.info
     from(sourceSets.main.resources.srcDirs) {
-        exclude '**/*.lang'
-        exclude '**/*.info'
-        exclude '**/*.properties'
+        include 'assets'
     }
 }
 
