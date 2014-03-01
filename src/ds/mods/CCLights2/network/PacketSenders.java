@@ -1,9 +1,15 @@
 package ds.mods.CCLights2.network;
 
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Deque;
 import java.util.Iterator;
+
+import javax.imageio.ImageIO;
 
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet250CustomPayload;
@@ -168,6 +174,35 @@ public final class PacketSenders {
 		outputStream.writeInt(tile.zCoord);
 		outputStream.writeInt(2);
 		createPacketAndSend(outputStream);
+	}
+	
+	public static void screenshot(TileEntityMonitor tile, BufferedImage screenshot) {
+		ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
+		outputStream.writeByte(PacketHandler.NET_SCREENSHOT);
+		outputStream.writeInt(tile.xCoord);
+		outputStream.writeInt(tile.yCoord);
+		outputStream.writeInt(tile.zCoord);
+		Image scaledshot = screenshot.getScaledInstance(256, 144, 1);
+		BufferedImage ScaledScreenshot = new BufferedImage(scaledshot.getWidth(null), scaledshot.getHeight(null), BufferedImage.TYPE_INT_RGB);
+		    // Draw the image on to the buffered image
+		  Graphics2D bGr = ScaledScreenshot.createGraphics();
+		   bGr.drawImage(scaledshot, 0, 0, null);
+		    bGr.dispose();
+		 
+		 ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		 try {
+			ImageIO.write(ScaledScreenshot, "jpg", baos);
+		    byte[] screenshotArray = baos.toByteArray();
+		    outputStream.writeShort(screenshotArray.length);
+			outputStream.write(screenshotArray);
+			
+			Packet[] packets = PacketChunker.instance.createPackets("CCLights2", outputStream.toByteArray());
+			for (int g = 0; g < packets.length; g++) {
+				PacketDispatcher.sendPacketToServer(packets[g]);
+			}
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 	}
 
 	public static void sendKeyEvent(char par1, int par2, TileEntityMonitor tile) {

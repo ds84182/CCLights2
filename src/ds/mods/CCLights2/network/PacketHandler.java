@@ -5,11 +5,17 @@ import java.awt.geom.AffineTransform;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayDeque;
+import java.util.HashMap;
 import java.util.zip.GZIPInputStream;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.INetworkManager;
+import net.minecraft.network.NetLoginHandler;
+import net.minecraft.network.packet.NetHandler;
+import net.minecraft.network.packet.Packet1Login;
 import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.server.MinecraftServer;
 
@@ -17,22 +23,25 @@ import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.network.IConnectionHandler;
 import cpw.mods.fml.common.network.IPacketHandler;
 import cpw.mods.fml.common.network.Player;
 import cpw.mods.fml.relauncher.Side;
 import dan200.computer.api.IComputerAccess;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.ClientDrawThread;
+import ds.mods.CCLights2.Config;
 import ds.mods.CCLights2.block.tileentity.TileEntityAdvancedlight;
 import ds.mods.CCLights2.block.tileentity.TileEntityExternalMonitor;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
+import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
 import ds.mods.CCLights2.client.ClientProxy;
 import ds.mods.CCLights2.gpu.DrawCMD;
 import ds.mods.CCLights2.gpu.GPU;
 import ds.mods.CCLights2.gpu.Texture;
 
-public class PacketHandler implements IPacketHandler {
+public class PacketHandler implements IPacketHandler,IConnectionHandler {
 	static final byte NET_GPUDRAWLIST = 0;
 	static final byte NET_GPUEVENT = 1;
 	static final byte NET_GPUDOWNLOAD = 2;
@@ -43,6 +52,7 @@ public class PacketHandler implements IPacketHandler {
 	static final byte NET_LIGHT = 7;
 	static final byte NET_SPLITPACKET = 8;
     static final byte NET_SYNC = 9;
+    static final byte NET_SCREENSHOT = 10;
 	static boolean doThreadding = true;
 	static ClientDrawThread thread;
 	{
@@ -194,6 +204,34 @@ public class PacketHandler implements IPacketHandler {
 						}
 						break;
 					}
+		case (NET_SCREENSHOT): {
+			int x = PacketData.readInt();
+			int y = PacketData.readInt();
+			int z = PacketData.readInt();
+			short len = PacketData.readShort();
+			byte[] arr = new byte[len];
+			PacketData.readFully(arr);
+			CCLights2.debug("Got Screenshot packet from client!");
+			TileEntityTTrans tile = (TileEntityTTrans) MinecraftServer.getServer().worldServers[playr.dimension].getBlockTileEntity(x, y, z);
+			if (tile != null) {//CCLights2.debug("found TTtrans to submit image to!");
+				for (GPU g : tile.mon.gpu) {
+					TileEntityGPU gtile = g.tile;
+					if (gtile != null) {
+						for (IComputerAccess c : gtile.comp)
+							if (c != null) {
+								ByteArrayInputStream in = new ByteArrayInputStream(arr);
+							    Object[] wolo;
+								try {
+									ObjectInputStream is = new ObjectInputStream(in);
+									wolo = (Object[]) is.readObject();
+									c.queueEvent("TABLET_IMAGE",wolo);
+									c.
+								} catch (ClassNotFoundException e) {} catch (IOException e) {}
+							}
+					}
+				}
+			}
+		}
 		}
 	}
 
@@ -337,4 +375,30 @@ public class PacketHandler implements IPacketHandler {
 			matrix[i] = dat.readDouble();
 		}
 	}
+	
+	@Override
+	public void playerLoggedIn(Player player, NetHandler netHandler, INetworkManager manager)
+    {
+		   if(Config.monitorSize[0] != 256 || Config.monitorSize[1] != 144){
+			   if(MinecraftServer.getServer().isDedicatedServer()){
+           PacketSenders.SYNC(Config.monitorSize[0], Config.monitorSize[1],player);}
+		   }
+	 }
+	@Override
+	public void clientLoggedIn(NetHandler clientHandler,INetworkManager manager, Packet1Login login) 
+	{
+		if(Minecraft.getMinecraft().isSingleplayer())
+		{
+			CCLights2.debug("Singleplayer detected, sync not needed");
+		}
+		else{
+		 Config.setDefaults();
+		 CCLights2.debug("PREP'd for SYNC");
+		}
+	}
+	
+	public String connectionReceived(NetLoginHandler netHandler,INetworkManager manager) {return null;}
+	public void connectionOpened(NetHandler netClientHandler, String server,int port, INetworkManager manager) {}
+	public void connectionOpened(NetHandler netClientHandler,MinecraftServer server, INetworkManager manager) {}
+	public void connectionClosed(INetworkManager manager) {}
 }
