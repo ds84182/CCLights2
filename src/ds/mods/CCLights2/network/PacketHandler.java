@@ -2,13 +2,18 @@ package ds.mods.CCLights2.network;
 
 import java.awt.Color;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.OutputStream;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.zip.GZIPInputStream;
+
+import javax.imageio.ImageIO;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -28,6 +33,7 @@ import cpw.mods.fml.common.network.IPacketHandler;
 import cpw.mods.fml.common.network.Player;
 import cpw.mods.fml.relauncher.Side;
 import dan200.computer.api.IComputerAccess;
+import dan200.computer.api.IWritableMount;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.ClientDrawThread;
 import ds.mods.CCLights2.Config;
@@ -220,13 +226,14 @@ public class PacketHandler implements IPacketHandler,IConnectionHandler {
 						for (IComputerAccess c : gtile.comp)
 							if (c != null) {
 								ByteArrayInputStream in = new ByteArrayInputStream(arr);
-							    Object[] wolo;
+								File directory = new File(CCLights2.proxy.getWorldDir(playr.worldObj)+"//computer//"+c.getID()+"//screenshot.jpg");
 								try {
-									ObjectInputStream is = new ObjectInputStream(in);
-									wolo = (Object[]) is.readObject();
-									c.queueEvent("TABLET_IMAGE",wolo);
-									c.
-								} catch (ClassNotFoundException e) {} catch (IOException e) {}
+									ImageIO.write(ImageIO.read(in),"jpg",directory);
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+									c.queueEvent("TABLET_IMAGE",null);
+									CCLights2.debug("QUEUED EVENT");
 							}
 					}
 				}
