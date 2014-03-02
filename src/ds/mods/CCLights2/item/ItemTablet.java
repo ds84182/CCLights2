@@ -16,6 +16,7 @@ import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
 import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
 import ds.mods.CCLights2.client.ClientProxy;
+import ds.mods.CCLights2.client.ClientTickHandler;
 import ds.mods.CCLights2.utils.TabMesg;
 import ds.mods.CCLights2.utils.TabMesg.Message;
 
@@ -41,16 +42,16 @@ public class ItemTablet extends Item {
 		if(Player.isSneaking()){
 			if (par1ItemStack.getTagCompound().getBoolean("canDisplay")) {
 				UUID trans = UUID.fromString(par1ItemStack.getTagCompound().getString("trans"));
-				TileEntityMonitor tile = (TileEntityMonitor) Minecraft.getMinecraft().theWorld.getBlockTileEntity(
+				TileEntityMonitor tile = (TileEntityMonitor) par3World.getBlockTileEntity(
 								(Integer) TabMesg.getTabVar(trans, "x"),
 								(Integer) TabMesg.getTabVar(trans, "y"),
 								(Integer) TabMesg.getTabVar(trans, "z"));
-				ClientProxy.takeScreenshot(tile);
+				ClientTickHandler.tile = tile;
 			}
 		}
 		else{
-		CCLights2.debug("Show GUI");
-		Player.openGui(CCLights2.instance, 1, par3World, 0, 0, 0);
+			CCLights2.debug("Show GUI");
+			Player.openGui(CCLights2.instance, 1, par3World, 0, 0, 0);
 		}
 		return par1ItemStack;
 	}

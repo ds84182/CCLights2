@@ -2,14 +2,18 @@ package ds.mods.CCLights2.gpu;
 
 import java.awt.Color;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Stack;
 import java.util.UUID;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
+import ds.mods.CCLights2.gpu.imageLoader.ImageLoader;
 import ds.mods.CCLights2.network.PacketSenders;
 
 public class GPU {
@@ -169,7 +173,7 @@ public class GPU {
 			{
 				case -1:
 				{
-					color = cmd.args.length == 3 ? new Color((int) cmd.args[0],(int) cmd.args[1],(int) cmd.args[2]) : new Color((int) cmd.args[0],(int) cmd.args[1],(int) cmd.args[2],(int) cmd.args[3]);
+					color = cmd.args.length == 3 ? new Color((Integer) cmd.args[0],(Integer) cmd.args[1],(Integer) cmd.args[2]) : new Color((Integer) cmd.args[0],(Integer) cmd.args[1],(Integer) cmd.args[2],(Integer) cmd.args[3]);
 					break;
 				}
 				case 0:
@@ -181,83 +185,83 @@ public class GPU {
 				case 1:
 				{
 					//Plot//
-					bindedTexture.plot(color,(int) cmd.args[0],(int) cmd.args[1]);
+					bindedTexture.plot(color,(Integer) cmd.args[0],(Integer) cmd.args[1]);
 					break;
 				}
 				case 2:
 				{
 					//drawTexture//
-					if (cmd.args[0] == 0)
+					if ((Integer)cmd.args[0] == 0)
 					{
 						//Small version//
-						bindedTexture.drawTexture(textures[(int) cmd.args[1]], (int) cmd.args[2],(int) cmd.args[3], color);
+						bindedTexture.drawTexture(textures[(Integer) cmd.args[1]], (Integer) cmd.args[2],(Integer) cmd.args[3], color);
 					}
 					else
 					{
-						bindedTexture.drawTexture(textures[(int) cmd.args[1]], (int) cmd.args[2],(int) cmd.args[3], (int) cmd.args[4],(int) cmd.args[5], (int) cmd.args[6],(int) cmd.args[7],color);
+						bindedTexture.drawTexture(textures[(Integer) cmd.args[1]], (Integer) cmd.args[2],(Integer) cmd.args[3], (Integer) cmd.args[4],(Integer) cmd.args[5], (Integer) cmd.args[6],(Integer) cmd.args[7],color);
 					}
 					break;
 				}
 				case 3:
 				{
 					//line//
-					bindedTexture.line(color,(int) cmd.args[0],(int) cmd.args[1],(int) cmd.args[2],(int) cmd.args[3]);
+					bindedTexture.line(color,(Integer) cmd.args[0],(Integer) cmd.args[1],(Integer) cmd.args[2],(Integer) cmd.args[3]);
 					break;
 				}
 				case 6:
 				{
 					//New Texture//
-					return new Object[]{newTexture((int) cmd.args[0],(int) cmd.args[1])};
+					return new Object[]{newTexture((Integer) cmd.args[0],(Integer) cmd.args[1])};
 				}
 				case 7:
 				{
 					//Bind Texture//
-					bindedTexture = textures[(int) cmd.args[0]];
-					bindedSlot = (int) cmd.args[0];
+					bindedTexture = textures[(Integer) cmd.args[0]];
+					bindedSlot = (Integer) cmd.args[0];
 					break;
 				}
 				case 8:
 				{
 					//Delete Texture//
-					if (bindedTexture == textures[(int) cmd.args[0]])
+					if (bindedTexture == textures[(Integer) cmd.args[0]])
 					{
 						bindedTexture = textures[0];
 						bindedSlot = 0;
 					}
-					textures[(int) cmd.args[0]] = null;
+					textures[(Integer) cmd.args[0]] = null;
 					break;
 				}
 				case 9:
 				{
-					bindedTexture.rect(color,(int) cmd.args[0],(int) cmd.args[1],(int) cmd.args[2],(int) cmd.args[3]);
+					bindedTexture.rect(color,(Integer) cmd.args[0],(Integer) cmd.args[1],(Integer) cmd.args[2],(Integer) cmd.args[3]);
 					break;
 				}
 				case 10:
 				{
-					bindedTexture.filledRect(color,(int) cmd.args[0],(int) cmd.args[1],(int) cmd.args[2],(int) cmd.args[3]);
+					bindedTexture.filledRect(color,(Integer) cmd.args[0],(Integer) cmd.args[1],(Integer) cmd.args[2],(Integer) cmd.args[3]);
 					break;
 				}
 				case 12:
 				{
 					int i = 5;
-					int type = (int) cmd.args[0];
+					int type = (Integer) cmd.args[0];
 					if (type == 0)
 					{
-						for (int x = 0; x<cmd.args[1]; x++)
+						for (int x = 0; x<(Integer)cmd.args[1]; x++)
 						{
-							for (int y = 0; y<cmd.args[2]; y++)
+							for (int y = 0; y<(Integer)cmd.args[2]; y++)
 							{
-								bindedTexture.plot(new Color((int) cmd.args[i++], (int) cmd.args[i++], (int) cmd.args[i++]), (int) (x+cmd.args[3]), (int) (y+cmd.args[4]));
+								bindedTexture.plot(new Color((Integer) cmd.args[i++], (Integer) cmd.args[i++], (Integer) cmd.args[i++]), x+(Integer)cmd.args[3], y+(Integer)cmd.args[4]);
 							}
 						}
 					}
 					else
 					{
-						for (int y = 0; y<cmd.args[2]; y++)
+						for (int y = 0; y<(Integer)cmd.args[2]; y++)
 						{
-							for (int x = 0; x<cmd.args[1]; x++)
+							for (int x = 0; x<(Integer)cmd.args[1]; x++)
 							{
-								bindedTexture.plot(new Color((int) cmd.args[i++], (int) cmd.args[i++], (int) cmd.args[i++]), (int) (x+cmd.args[3]), (int) (y+cmd.args[4]));
+								bindedTexture.plot(new Color((Integer) cmd.args[i++], (Integer) cmd.args[i++], (Integer) cmd.args[i++]), x+(Integer)cmd.args[3], y+(Integer)cmd.args[4]);
 							}
 						}
 					}
@@ -265,27 +269,30 @@ public class GPU {
 				}
 				case 13:
 				{
-					textures[(int) cmd.args[0]].flipV();
+					textures[(Integer) cmd.args[0]].flipV();
 					break;
 				}
 				case 14:
 				{
-					int id = newTexture((int) cmd.args[0],(int) cmd.args[1]);
+					if (cmd.args[0] instanceof Object[])
+					{
+						Object[] old = (Object[]) cmd.args[0];
+						cmd.args[0] = new Byte[old.length];
+						Byte[] n = (Byte[]) cmd.args[0];
+						for (int i=0; i<old.length; i++)
+						{
+							n[i] = (Byte) old[i];
+						}
+					}
+					BufferedImage img = ImageLoader.load(ArrayUtils.toPrimitive((Byte[])cmd.args[0]), (String)cmd.args[1]);
+					int id = newTexture(img.getWidth(),img.getHeight());
 					if (id == -1) {
 						throw new Exception("Not enough memory for texture");
 					} else if (id == -2) {
 						throw new Exception("Not enough texture slots");
 					}
 					Texture tex = textures[id];
-					int i = 2;
-					for (int x = 0; x<cmd.args[0]; x++)
-					{
-						for (int y = 0; y<cmd.args[1]; y++)
-						{
-							int col = (int) cmd.args[i++];
-							tex.plot(new Color(col,true), x, y);
-						}
-					}
+					tex.graphics.drawImage(img, 0, 0, null);
 					return new Object[]{id};
 				}
 				case 15:
@@ -293,29 +300,29 @@ public class GPU {
 					String str = "";
 					for (int i = 0; i<cmd.args.length-2; i++)
 					{
-						str = str+String.valueOf((char)cmd.args[2+i]);
+						str = str+String.valueOf((Character)cmd.args[2+i]);
 					}
-					bindedTexture.drawText(str, (int) cmd.args[0], (int) cmd.args[1], color);
+					bindedTexture.drawText(str, (Integer) cmd.args[0], (Integer) cmd.args[1], color);
 					break;
 				}
 				case 16:
 				{
-					translate(cmd.args[0],cmd.args[1]);
+					translate((Double)cmd.args[0],(Double)cmd.args[1]);
 					break;
 				}
 				case 17:
 				{
-					rotate(cmd.args[0]);
+					rotate((Double)cmd.args[0]);
 					break;
 				}
 				case 18:
 				{
-					rotate(cmd.args[0],cmd.args[1],cmd.args[2]);
+					rotate((Double)cmd.args[0],(Double)cmd.args[1],(Double)cmd.args[2]);
 					break;
 				}
 				case 19:
 				{
-					scale(cmd.args[0],cmd.args[1]);
+					scale((Double)cmd.args[0],(Double)cmd.args[1]);
 					break;
 				}
 				case 20:
@@ -330,12 +337,12 @@ public class GPU {
 				}
 				case 22:
 				{
-					textures[(int) cmd.args[0]].blur();
+					textures[(Integer) cmd.args[0]].blur();
 					break;
 				}
 				case 23:
 				{
-					bindedTexture.clearRect(color,(int) cmd.args[0],(int) cmd.args[1],(int) cmd.args[2],(int) cmd.args[3]);
+					bindedTexture.clearRect(color,(Integer) cmd.args[0],(Integer) cmd.args[1],(Integer) cmd.args[2],(Integer) cmd.args[3]);
 					break;
 				}
 			}

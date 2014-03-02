@@ -46,6 +46,7 @@ import ds.mods.CCLights2.client.ClientProxy;
 import ds.mods.CCLights2.gpu.DrawCMD;
 import ds.mods.CCLights2.gpu.GPU;
 import ds.mods.CCLights2.gpu.Texture;
+import ds.mods.CCLights2.serialize.Serialize;
 
 public class PacketHandler implements IPacketHandler,IConnectionHandler {
 	static final byte NET_GPUDRAWLIST = 0;
@@ -57,8 +58,8 @@ public class PacketHandler implements IPacketHandler,IConnectionHandler {
 	static final byte NET_GPUINIT = 6;
 	static final byte NET_LIGHT = 7;
 	static final byte NET_SPLITPACKET = 8;
-    static final byte NET_SYNC = 9;
-    static final byte NET_SCREENSHOT = 10;
+	static final byte NET_SYNC = 9;
+	static final byte NET_SCREENSHOT = 10;
 	static boolean doThreadding = true;
 	static ClientDrawThread thread;
 	{
@@ -159,81 +160,90 @@ public class PacketHandler implements IPacketHandler,IConnectionHandler {
 			int x = PacketData.readInt();
 			int y = PacketData.readInt();
 			int z = PacketData.readInt();
-						TileEntityMonitor mtile = (TileEntityMonitor) MinecraftServer.getServer().worldServers[playr.dimension].getBlockTileEntity(x, y, z);
-						if (mtile != null) {
-							String event = PacketData.readUTF();
-							int len = PacketData.readInt();
-							Object[] args = new Object[len];
-							for (int i1 = 0; i1 < len; i1++) {
-								int type = PacketData.readInt();
-								switch (type) {
-								case 0: {
-									args[i1] = PacketData.readInt();
-									break;
-								}
-								case 1: {
-									args[i1] = PacketData.readUTF();
-									break;
-								}
-								case 2: {
-									args[i1] = String.valueOf(PacketData
-											.readChar());
-									break;
-								}
-								}
-							}
-							for (GPU g : mtile.mon.gpu) {
-								TileEntityGPU tile = g.tile;
-								if (tile != null) {
-									for (IComputerAccess c : tile.comp)
-										if (c != null) {
-											c.queueEvent(event, args);
-										}
-								}
-							}
-			}
+			TileEntityMonitor mtile = (TileEntityMonitor) MinecraftServer.getServer().worldServers[playr.dimension].getBlockTileEntity(x, y, z);
+			if (mtile != null) {
+				String event = PacketData.readUTF();
+				int len = PacketData.readInt();
+				Object[] args = new Object[len];
+				for (int i1 = 0; i1 < len; i1++) {
+					int type = PacketData.readInt();
+					switch (type) {
+					case 0: {
+						args[i1] = PacketData.readInt();
 						break;
+					}
+					case 1: {
+						args[i1] = PacketData.readUTF();
+						break;
+					}
+					case 2: {
+						args[i1] = String.valueOf(PacketData
+								.readChar());
+						break;
+					}
+					}
+				}
+				for (GPU g : mtile.mon.gpu) {
+					TileEntityGPU tile = g.tile;
+					if (tile != null) {
+						for (IComputerAccess c : tile.comp)
+							if (c != null) {
+								c.queueEvent(event, args);
+							}
+					}
+				}
+			}
+			break;
 		}
 		case (NET_GPUDOWNLOAD): {
 			int x = PacketData.readInt();
 			int y = PacketData.readInt();
 			int z = PacketData.readInt();
 			CCLights2.debug("Got DL packet from client!");
-						TileEntityGPU tile = (TileEntityGPU) MinecraftServer.getServer().worldServers[playr.dimension].getBlockTileEntity(x, y, z);
-						if (tile != null) {
-							PacketSenders.sendPacketToPlayer(x, y, z, tile,player);
-							for (int i1 = 0; i1 < tile.gpu.textures.length; i1++) {
-								if (tile.gpu.textures[i1] != null) {
-									PacketSenders.sendTextures(player,tile.gpu.textures[i1], i1, x, y, z);
-								}
-							}
-						}
-						break;
+			TileEntityGPU tile = (TileEntityGPU) MinecraftServer.getServer().worldServers[playr.dimension].getBlockTileEntity(x, y, z);
+			if (tile != null) {
+				PacketSenders.sendPacketToPlayer(x, y, z, tile,player);
+				for (int i1 = 0; i1 < tile.gpu.textures.length; i1++) {
+					if (tile.gpu.textures[i1] != null) {
+						PacketSenders.sendTextures(player,tile.gpu.textures[i1], i1, x, y, z);
 					}
+				}
+			}
+			break;
+		}
 		case (NET_SCREENSHOT): {
 			int x = PacketData.readInt();
 			int y = PacketData.readInt();
 			int z = PacketData.readInt();
-			short len = PacketData.readShort();
+			int len = PacketData.readInt();
 			byte[] arr = new byte[len];
 			PacketData.readFully(arr);
 			CCLights2.debug("Got Screenshot packet from client!");
 			TileEntityTTrans tile = (TileEntityTTrans) MinecraftServer.getServer().worldServers[playr.dimension].getBlockTileEntity(x, y, z);
 			if (tile != null) {//CCLights2.debug("found TTtrans to submit image to!");
+				HashMap<Double, Double> table = new HashMap<Double, Double>();
+				ByteArrayInputStream in = new ByteArrayInputStream(arr);
+				Double at = 1D;
+				int r;
+				while ((r = in.read()) != -1)
+				{
+					table.put(at++,(double) r);
+				}
+				
 				for (GPU g : tile.mon.gpu) {
 					TileEntityGPU gtile = g.tile;
 					if (gtile != null) {
 						for (IComputerAccess c : gtile.comp)
 							if (c != null) {
-								ByteArrayInputStream in = new ByteArrayInputStream(arr);
-								File directory = new File(CCLights2.proxy.getWorldDir(playr.worldObj)+"//computer//"+c.getID()+"//screenshot.jpg");
+								/*File directory = new File(CCLights2.proxy.getWorldDir(playr.worldObj)+"//computer//"+c.getID()+"//screenshot.jpg");
 								try {
 									ImageIO.write(ImageIO.read(in),"jpg",directory);
 								} catch (IOException e) {
 									e.printStackTrace();
-								}
-									c.queueEvent("TABLET_IMAGE",null);
-									CCLights2.debug("QUEUED EVENT");
+								}*/
+								//BAD ALEKOS! NO MASS FILE WRITES!
+								c.queueEvent("tablet_image",new Object[]{table});
+								CCLights2.debug("QUEUED EVENT");
 							}
 					}
 				}
@@ -253,18 +263,29 @@ public class PacketHandler implements IPacketHandler,IConnectionHandler {
 			if (tile != null) {
 				int len = PacketData.readInt();
 				GPU gpu = tile.gpu;
-				// TODO> alekso56: I might put clientside drawing in
-				// another thread so that Minecraft doesn't get
-				// stalled when a graphically intensive packet comes
 				// int[] most = new int[30];
 				for (int i = 0; i < len; i++) {
 					DrawCMD cmd = new DrawCMD();
 					cmd.cmd = PacketData.readInt();
 					// most[cmd.cmd + 1]++;
 					int lent = PacketData.readInt();
-					cmd.args = new double[lent];
+					cmd.args = new Object[lent];
 					for (int g = 0; g < lent; g++) {
-						cmd.args[g] = PacketData.readDouble();
+						if (PacketData.readByte() == -1)
+						{
+							int count = PacketData.readInt();
+							cmd.args[g] = new Object[count];
+							Object[] arr = (Object[]) cmd.args[g];
+							for (int e = 0; e<count; e++)
+							{
+								arr[e] = Serialize.unserialize(PacketData);
+							}
+						}
+						else
+						{
+							PacketData.skipBytes(-1);
+							cmd.args[g] = Serialize.unserialize(PacketData);
+						}
 					}
 					if (!doThreadding)
 						try {
@@ -382,15 +403,15 @@ public class PacketHandler implements IPacketHandler,IConnectionHandler {
 			matrix[i] = dat.readDouble();
 		}
 	}
-	
+
 	@Override
 	public void playerLoggedIn(Player player, NetHandler netHandler, INetworkManager manager)
-    {
-		   if(Config.monitorSize[0] != 256 || Config.monitorSize[1] != 144){
-			   if(MinecraftServer.getServer().isDedicatedServer()){
-           PacketSenders.SYNC(Config.monitorSize[0], Config.monitorSize[1],player);}
-		   }
-	 }
+	{
+		if(Config.monitorSize[0] != 256 || Config.monitorSize[1] != 144){
+			if(MinecraftServer.getServer().isDedicatedServer()){
+				PacketSenders.SYNC(Config.monitorSize[0], Config.monitorSize[1],player);}
+		}
+	}
 	@Override
 	public void clientLoggedIn(NetHandler clientHandler,INetworkManager manager, Packet1Login login) 
 	{
@@ -399,11 +420,11 @@ public class PacketHandler implements IPacketHandler,IConnectionHandler {
 			CCLights2.debug("Singleplayer detected, sync not needed");
 		}
 		else{
-		 Config.setDefaults();
-		 CCLights2.debug("PREP'd for SYNC");
+			Config.setDefaults();
+			CCLights2.debug("PREP'd for SYNC");
 		}
 	}
-	
+
 	public String connectionReceived(NetLoginHandler netHandler,INetworkManager manager) {return null;}
 	public void connectionOpened(NetHandler netClientHandler, String server,int port, INetworkManager manager) {}
 	public void connectionOpened(NetHandler netClientHandler,MinecraftServer server, INetworkManager manager) {}

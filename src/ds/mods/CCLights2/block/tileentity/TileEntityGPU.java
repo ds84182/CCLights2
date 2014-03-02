@@ -14,6 +14,8 @@ import java.util.TreeMap;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -173,7 +175,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			//createTexture
 			if (args.length > 1) {
 				DrawCMD cmd = new DrawCMD();
-				double[] nargs = new double[] { ConvertInteger.convert(args[0]),
+				Object[] nargs = new Object[] { ConvertInteger.convert(args[0]),
 						ConvertInteger.convert(args[1]) };
 				cmd.cmd = 6;
 				cmd.args = nargs;
@@ -211,7 +213,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				if (gpu.textures[ConvertInteger.convert(args[0])] == null)
 					throw new Exception("bindTexture: texture does not exist");
 				DrawCMD cmd = new DrawCMD();
-				double[] nargs = new double[] { ConvertInteger.convert(args[0]) };
+				Object[] nargs = new Object[] { ConvertInteger.convert(args[0]) };
 				cmd.cmd = 7;
 				cmd.args = nargs;
 				gpu.processCommand(cmd);
@@ -236,7 +238,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				if (tx<0 || ty<0 || tx>w || ty>h) //Don't draw if out of bounds!
 					return null;
 				DrawCMD cmd = new DrawCMD();
-				double[] nargs = new double[] { x, y };
+				Object[] nargs = new Object[] { x, y };
 				cmd.cmd = 1;
 				cmd.args = nargs;
 				gpu.processCommand(cmd);
@@ -252,7 +254,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			//drawTexture
 			if (args.length == 3) {
 				DrawCMD cmd = new DrawCMD();
-				double[] nargs = new double[] { 0, ConvertInteger.convert(args[0]),
+				Object[] nargs = new Object[] { 0, ConvertInteger.convert(args[0]),
 						ConvertInteger.convert(args[1]), ConvertInteger.convert(args[2]) };
 				cmd.cmd = 2;
 				cmd.args = nargs;
@@ -260,7 +262,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				gpu.drawlist.push(cmd);
 			} else if (args.length > 6) {
 				DrawCMD cmd = new DrawCMD();
-				double[] nargs = new double[] { 1, ConvertInteger.convert(args[0]),
+				Object[] nargs = new Object[] { 1, ConvertInteger.convert(args[0]),
 						ConvertInteger.convert(args[1]), ConvertInteger.convert(args[2]),
 						ConvertInteger.convert(args[3]), ConvertInteger.convert(args[4]),
 						ConvertInteger.convert(args[5]), ConvertInteger.convert(args[6]) };
@@ -279,7 +281,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			//freeTexture
 			if (args.length == 1) {
 				DrawCMD cmd = new DrawCMD();
-				double[] nargs = new double[] { ConvertInteger.convert(args[0]) };
+				Object[] nargs = new Object[] { ConvertInteger.convert(args[0]) };
 				cmd.cmd = 8;
 				cmd.args = nargs;
 				gpu.processCommand(cmd);
@@ -295,7 +297,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			//line
 			if (args.length > 3) {
 				DrawCMD cmd = new DrawCMD();
-				double[] nargs = new double[] { ConvertInteger.convert(args[0]),
+				Object[] nargs = new Object[] { ConvertInteger.convert(args[0]),
 						ConvertInteger.convert(args[1]), ConvertInteger.convert(args[2]),
 						ConvertInteger.convert(args[3]) };
 				cmd.cmd = 3;
@@ -338,7 +340,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			//rectangle
 			if (args.length > 3) {
 				DrawCMD cmd = new DrawCMD();
-				double[] nargs = new double[] { ConvertInteger.convert(args[0]),
+				Object[] nargs = new Object[] { ConvertInteger.convert(args[0]),
 						ConvertInteger.convert(args[1]), ConvertInteger.convert(args[2]),
 						ConvertInteger.convert(args[3]) };
 				cmd.cmd = 9;
@@ -356,7 +358,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			//filledrectangle
 			if (args.length > 3) {
 				DrawCMD cmd = new DrawCMD();
-				double[] nargs = new double[] { ConvertInteger.convert(args[0]),
+				Object[] nargs = new Object[] { ConvertInteger.convert(args[0]),
 						ConvertInteger.convert(args[1]), ConvertInteger.convert(args[2]),
 						ConvertInteger.convert(args[3]) };
 				cmd.cmd = 10;
@@ -377,21 +379,21 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 		case 15: {
 			//setPixelsRaw
 			if (args.length < 4) {
-				throw new Exception("w, h, x, y, {[r,g,b]}... expected");
+				throw new Exception("w, h, x, y, {[r,g,b,a]}... expected");
 			} else {
 				int w = ConvertInteger.convert(args[0]);
 				int h = ConvertInteger.convert(args[1]);
 				// We send the arguments straight to the GPU!
 				DrawCMD cmd = new DrawCMD();
-				double[] nargs = new double[(w * h * 3) + 4 + 1];
+				Object[] nargs = new Object[(w * h * 4) + 4 + 1];
 				nargs[0] = 0;
 				nargs[1] = w;
 				nargs[2] = h;
 				nargs[3] = ConvertInteger.convert(args[2]);
 				nargs[4] = ConvertInteger.convert(args[3]);
 				Map m = (Map) args[4];
-				for (int i = 0; i < (w * h * 3); i++) {
-					nargs[i + 4] = ConvertInteger.convert(m.get((double) i));
+				for (int i = 0; i < (w * h * 4); i++) {
+					nargs[i + 4] = ConvertInteger.convert(m.get((double) i)).shortValue();
 				}
 				cmd.cmd = 12;
 				cmd.args = nargs;
@@ -409,7 +411,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				int h = ConvertInteger.convert(args[1]);
 				// We send the arguments straight to the GPU!
 				DrawCMD cmd = new DrawCMD();
-				double[] nargs = new double[(w * h * 3) + 4 + 1];
+				Object[] nargs = new Object[(w * h * 3) + 4 + 1];
 				nargs[0] = 1;
 				nargs[1] = w;
 				nargs[2] = h;
@@ -417,7 +419,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				nargs[4] = ConvertInteger.convert(args[3]);
 				Map m = (Map) args[4];
 				for (int i = 0; i < (w * h * 3); i++) {
-					nargs[i + 4] = ConvertInteger.convert(m.get((double) i));
+					nargs[i + 4] = ConvertInteger.convert(m.get((double) i)).shortValue();
 				}
 				cmd.cmd = 12;
 				cmd.args = nargs;
@@ -430,7 +432,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			//flipTextureV
 			if (args.length > 0) {
 				DrawCMD cmd = new DrawCMD();
-				double[] nargs = new double[] { ConvertInteger.convert(args[0]) };
+				Object[] nargs = new Object[] { ConvertInteger.convert(args[0]) };
 				cmd.cmd = 13;
 				cmd.args = nargs;
 				Object[] ret = gpu.processCommand(cmd);
@@ -440,14 +442,16 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 		}
 		case 18: {
 			//import
+			double a = System.currentTimeMillis();
 			if (args.length > 1) {
-				BufferedImage img = null;
+				Byte[] data;
+				String format;
 				if (args[0] instanceof Map)
 				{
 					int size = 0;
 					//One of the things I hate is that ComputerCraft uses Doubles for all their values
 					Map m = (Map)args[0];
-					String format = (String)args[1];
+					format = (String)args[1];
 					for (double i = 1; i<Double.MAX_VALUE; i++)
 					{
 						if (m.containsKey(i))
@@ -455,48 +459,40 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 						else
 							break;
 					}
-					byte[] data = new byte[size];
+					data = new Byte[size];
 					for (double i = 0; i<data.length; i++)
 					{
 						data[(int) i] = ((Double)m.get(i+1D)).byteValue();
 					}
 					CCLights2.debug("Moved data");
-					img = ImageLoader.load(data, format);
 				}
 				else if (args[0] instanceof String)
 				{
 					String file = (String)args[0];
-					String format = (String)args[1];
+					format = (String)args[1];
 					File f = new File(CCLights2.proxy.getWorldDir(worldObj),"computer/"+computer.getID()+"/"+file);
 					FileInputStream in = new FileInputStream(f);
-					byte[] data = new byte[(int)in.getChannel().size()];
-					in.read(data);
+					byte[] b = new byte[(int)in.getChannel().size()];
+					in.read(b);
 					in.close();
-					img = ImageLoader.load(data, format);
+					data = ArrayUtils.toObject(b);
 				}
 				else
 				{
 					throw new Exception("Invalid import arguments");
 				}
-				CCLights2.debug("Imaged loaded "+img);
-				int w = img.getWidth();
-				int h =  img.getHeight();
 				DrawCMD cmd = new DrawCMD();
-				double[] nargs = new double[(w * h) + 2];
-				nargs[0] = w;
-				nargs[1] = h;
-				int i = 2;
-				for (int x = 0; x<img.getWidth(); x++)
-				{
-					for (int y = 0; y<img.getHeight(); y++)
-					{
-						nargs[i++] = img.getRGB(x, y);
-					}
-				}
+				Object[] nargs = new Object[2];
+				nargs[0] = data;
+				nargs[1] = format;
 				cmd.cmd = 14;
 				cmd.args = nargs;
-				Object[] ret = {(Integer) gpu.processCommand(cmd)[0],w,h};
+				int id = (Integer) gpu.processCommand(cmd)[0];
+				Texture tex = gpu.textures[id];
+				Object[] ret = {id,tex.getWidth(),tex.getHeight()};
 				gpu.drawlist.push(cmd);
+				double b = System.currentTimeMillis();
+				System.out.println("Import time: "+(b-a)+"ms");
 				return ret;
 			}
 		}
@@ -543,7 +539,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 					return null;
 				}
 				DrawCMD cmd = new DrawCMD();
-				double[] nargs = new double[2+str.length()];
+				Object[] nargs = new Object[2+str.length()];
 				nargs[0] = x;
 				nargs[1] = y;
 				for (int i=0; i<str.length(); i++)
@@ -572,12 +568,12 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			if (args.length > 2)
 			{
 				DrawCMD cmd = new DrawCMD();
-				double[] nargs = new double[4];
+				Object[] nargs = new Object[4];
 				for (int i=0; i<4; i++)
 				{
 					nargs[i] = args.length > i ? ConvertInteger.convert(args[i]) : 255;
 				}
-				if (gpu.color.getRed() == nargs[0] && gpu.color.getBlue() == nargs[1] && gpu.color.getGreen() == nargs[2] && gpu.color.getAlpha() == nargs[3])
+				if (gpu.color.getRed() == (Integer)nargs[0] && gpu.color.getBlue() == (Integer)nargs[1] && gpu.color.getGreen() == (Integer)nargs[2] && gpu.color.getAlpha() == (Integer)nargs[3])
 				{
 					break;
 				}
@@ -603,7 +599,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			double x = ConvertDouble.convert(args[0]);
 			double y = ConvertDouble.convert(args[1]);
 			DrawCMD cmd = new DrawCMD();
-			double[] nargs = new double[2];
+			Object[] nargs = new Object[2];
 			nargs[0] = x;
 			nargs[1] = y;
 			cmd.cmd = 16;
@@ -617,7 +613,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			//rotate
 			double r = ConvertDouble.convert(args[0]);
 			DrawCMD cmd = new DrawCMD();
-			double[] nargs = new double[1];
+			Object[] nargs = new Object[1];
 			nargs[0] = r;
 			cmd.cmd = 17;
 			cmd.args = nargs;
@@ -632,7 +628,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			double x = ConvertDouble.convert(args[1]);
 			double y = ConvertDouble.convert(args[2]);
 			DrawCMD cmd = new DrawCMD();
-			double[] nargs = new double[3];
+			Object[] nargs = new Object[3];
 			nargs[0] = r;
 			nargs[1] = x;
 			nargs[2] = y;
@@ -648,7 +644,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			double x = ConvertDouble.convert(args[0]);
 			double y = ConvertDouble.convert(args[1]);
 			DrawCMD cmd = new DrawCMD();
-			double[] nargs = new double[2];
+			Object[] nargs = new Object[2];
 			nargs[0] = x;
 			nargs[1] = y;
 			cmd.cmd = 19;
@@ -685,7 +681,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			//blur
 			if (args.length > 0) {
 				DrawCMD cmd = new DrawCMD();
-				double[] nargs = new double[] { ConvertInteger.convert(args[0]) };
+				Object[] nargs = new Object[] { ConvertInteger.convert(args[0]) };
 				cmd.cmd = 22;
 				cmd.args = nargs;
 				Object[] ret = gpu.processCommand(cmd);
@@ -714,7 +710,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			//clearRect
 			if (args.length >= 4) {
 				DrawCMD cmd = new DrawCMD();
-				double[] nargs = new double[] { ConvertInteger.convert(args[0]),ConvertInteger.convert(args[1]),ConvertInteger.convert(args[2]),ConvertInteger.convert(args[3]) };
+				Object[] nargs = new Object[] { ConvertInteger.convert(args[0]),ConvertInteger.convert(args[1]),ConvertInteger.convert(args[2]),ConvertInteger.convert(args[3]) };
 				cmd.cmd = 23;
 				cmd.args = nargs;
 				Object[] ret = gpu.processCommand(cmd);

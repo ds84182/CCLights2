@@ -8,8 +8,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.Locale;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet250CustomPayload;
@@ -25,6 +30,7 @@ import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
 import ds.mods.CCLights2.gpu.DrawCMD;
 import ds.mods.CCLights2.gpu.Texture;
+import ds.mods.CCLights2.serialize.Serialize;
 
 public final class PacketSenders {
 
@@ -34,23 +40,39 @@ public final class PacketSenders {
 			throw new IllegalArgumentException(
 					"GPU cannot send packet without Tile Entity!");
 		}
-		try {
-			ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
-			outputStream.writeByte(PacketHandler.NET_GPUDRAWLIST);
-			outputStream.writeInt(tile.xCoord);
-			outputStream.writeInt(tile.yCoord);
-			outputStream.writeInt(tile.zCoord);
-			outputStream.writeInt(drawlist.size());
-			while (!drawlist.isEmpty()) {
-				DrawCMD c = drawlist.removeLast();
-				outputStream.writeInt(c.cmd);
-				outputStream.writeInt(c.args.length);
-				for (int g = 0; g < c.args.length; g++) {
-					outputStream.writeDouble(c.args[g]);
+		ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
+		outputStream.writeByte(PacketHandler.NET_GPUDRAWLIST);
+		outputStream.writeInt(tile.xCoord);
+		outputStream.writeInt(tile.yCoord);
+		outputStream.writeInt(tile.zCoord);
+		outputStream.writeInt(drawlist.size());
+		while (!drawlist.isEmpty()) {
+			DrawCMD c = drawlist.removeLast();
+			outputStream.writeInt(c.cmd);
+			outputStream.writeInt(c.args.length);
+			for (int g = 0; g < c.args.length; g++) {
+				Object v = c.args[g];
+				if (v.getClass().isArray())
+				{
+					Object[] arr = (Object[]) v;
+					outputStream.writeByte(-1);
+					outputStream.writeInt(arr.length);
+					for (int i=0; i<arr.length; i++)
+					{
+						Serialize.serialize(outputStream, arr[i]);
+					}
+				}
+				else
+				{
+					outputStream.writeByte(0);
+					Serialize.serialize(outputStream, v);
 				}
 			}
+		}
+		try {
 			Packet[] packets = PacketChunker.instance.createPackets(
 					"CCLights2", outputStream.toByteArray());
+
 			for (int g = 0; g < packets.length; g++) {
 				PacketDispatcher.sendPacketToAllAround(tile.xCoord,
 						tile.yCoord, tile.zCoord, 4096.0D,
@@ -175,27 +197,33 @@ public final class PacketSenders {
 		outputStream.writeInt(2);
 		createPacketAndSend(outputStream);
 	}
-	
+
 	public static void screenshot(TileEntityMonitor tile, BufferedImage screenshot) {
 		ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
 		outputStream.writeByte(PacketHandler.NET_SCREENSHOT);
 		outputStream.writeInt(tile.xCoord);
 		outputStream.writeInt(tile.yCoord);
 		outputStream.writeInt(tile.zCoord);
-		Image scaledshot = screenshot.getScaledInstance(256, 144, 1);
+		Image scaledshot = screenshot.getScaledInstance(tile.mon.getWidth(), tile.mon.getHeight(), 1);
 		BufferedImage ScaledScreenshot = new BufferedImage(scaledshot.getWidth(null), scaledshot.getHeight(null), BufferedImage.TYPE_INT_RGB);
-		    // Draw the image on to the buffered image
-		  Graphics2D bGr = ScaledScreenshot.createGraphics();
-		   bGr.drawImage(scaledshot, 0, 0, null);
-		    bGr.dispose();
-		 
-		 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		 try {
-			ImageIO.write(ScaledScreenshot, "jpg", baos);
-		    byte[] screenshotArray = baos.toByteArray();
-		    outputStream.writeShort(screenshotArray.length);
+		// Draw the image on to the buffered image
+		Graphics2D bGr = ScaledScreenshot.createGraphics();
+		bGr.drawImage(scaledshot, 0, 0, null);
+		bGr.dispose();
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		try {
+			//ImageIO.write(ScaledScreenshot, "jpg", baos);
+			ImageWriter writer = ImageIO.getImageWritersByFormatName("jpg").next();
+			ImageWriteParam iwparam = new JPEGImageWriteParam(Locale.getDefault());
+			iwparam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+			iwparam.setCompressionQuality(0.5f);
+			writer.setOutput(ImageIO.createImageOutputStream(baos));
+			writer.write(null, new IIOImage(ScaledScreenshot, null, null), iwparam);
+			byte[] screenshotArray = baos.toByteArray();
+			outputStream.writeInt(screenshotArray.length);
 			outputStream.write(screenshotArray);
-			
+
 			Packet[] packets = PacketChunker.instance.createPackets("CCLights2", outputStream.toByteArray());
 			for (int g = 0; g < packets.length; g++) {
 				PacketDispatcher.sendPacketToServer(packets[g]);
@@ -278,15 +306,15 @@ public final class PacketSenders {
 
 	public static void SYNC(int monitorWidth, int monitorHeight,Player player) {
 		ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
-		 		outputStream.writeByte(PacketHandler.NET_SYNC);
-		 		outputStream.writeShort(monitorWidth);
-		 		outputStream.writeShort(monitorHeight);
-		 		CCLights2.debug("Sent crap no one cares about to client");
-		 		Packet250CustomPayload packet = new Packet250CustomPayload();
-		 		packet.channel = "CCLights2";
-		    	packet.data = outputStream.toByteArray();
-		 		packet.length = packet.data.length;
-		 		PacketDispatcher.sendPacketToPlayer(packet, player);
+		outputStream.writeByte(PacketHandler.NET_SYNC);
+		outputStream.writeShort(monitorWidth);
+		outputStream.writeShort(monitorHeight);
+		CCLights2.debug("Sent crap no one cares about to client");
+		Packet250CustomPayload packet = new Packet250CustomPayload();
+		packet.channel = "CCLights2";
+		packet.data = outputStream.toByteArray();
+		packet.length = packet.data.length;
+		PacketDispatcher.sendPacketToPlayer(packet, player);
 	}
 
 }

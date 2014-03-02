@@ -9,17 +9,18 @@ import ds.mods.CCLights2.gpu.GPU;
 
 public class Serialize {
 	public static Object[][] classToSerializer  = new Object[][]
-	{
-			{Byte.class,new Numbers.ByteSerializer()},
-			{Short.class,new Numbers.ShortSerializer()},
-			{Integer.class,new Numbers.IntegerSerializer()},
-			{Float.class,new Numbers.FloatSerializer()},
-			{Double.class,new Numbers.DoubleSerializer()},
-			{Long.class,new Numbers.LongSerializer()},
-			{Map.class,new MapSerializer()},
-			{GPU.class,new GPUSerializer()},
-	};
-	
+			{
+		{Byte.class,new Numbers.ByteSerializer()},
+		{Short.class,new Numbers.ShortSerializer()},
+		{Integer.class,new Numbers.IntegerSerializer()},
+		{Float.class,new Numbers.FloatSerializer()},
+		{Double.class,new Numbers.DoubleSerializer()},
+		{Long.class,new Numbers.LongSerializer()},
+		{Map.class,new MapSerializer()},
+		{GPU.class,new GPUSerializer()},
+		{String.class,new StringSerializer()},
+			};
+
 	public static void serialize(ByteArrayDataOutput dat, Object o)
 	{
 		Class<?> clazz = o.getClass();
@@ -29,7 +30,7 @@ public class Serialize {
 			Class<?> cla = (Class<?>) ol[0];
 			if (cla.equals(clazz))
 			{
-				dat.writeInt(i);
+				dat.writeByte(i);
 				ISerializer s = (ISerializer) ol[1];
 				s.write(o, dat);
 				return;
@@ -38,10 +39,10 @@ public class Serialize {
 		}
 		throw new IllegalArgumentException(clazz.getName()+" is not serializable!");
 	}
-	
+
 	public static Object unserialize(ByteArrayDataInput dat)
 	{
-		int typ = dat.readInt();
+		int typ = dat.readByte();
 		ISerializer s = (ISerializer) classToSerializer[typ][1];
 		return s.read(dat);
 	}
