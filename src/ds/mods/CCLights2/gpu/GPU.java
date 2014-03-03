@@ -17,20 +17,65 @@ import ds.mods.CCLights2.gpu.imageLoader.ImageLoader;
 import ds.mods.CCLights2.network.PacketSenders;
 
 public class GPU {
+	/**
+	 * Array of textures
+	 */
 	public Texture[] textures;
+	
+	/**
+	 * Maximum ammout of "gpu memory" can be used
+	 */
 	public int maxmem;
+	
+	/**
+	 * Draw list for server sending
+	 */
 	public Deque<DrawCMD> drawlist;
-	public int drawlisthash;
+	
+	/**
+	 * The current binded texture
+	 */
 	public Texture bindedTexture;
+	
+	/**
+	 * The slot that is binded
+	 */
 	public int bindedSlot;
+	
+	/**
+	 * List of connected monitors
+	 */
 	public ArrayList<Monitor> monitors = new ArrayList<Monitor>();
+	
+	/**
+	 * The current monitor
+	 */
 	public Monitor currentMonitor;
+	
+	/**
+	 * Tile entity that contains the GPU
+	 */
 	public TileEntityGPU tile;
-	public UUID uuid;
+	
+	/**
+	 * The current draw color
+	 */
 	public Color color = Color.white;
+	
+	/**
+	 * The transformation stack
+	 */
 	public Stack<AffineTransform> transformStack = new Stack<AffineTransform>();
+	
+	/**
+	 * The current transform
+	 */
 	public AffineTransform transform = new AffineTransform();
 
+	/**
+	 * Default constructor for the GPU
+	 * @param gfxmem The amount of "gpu memory" this GPU object has
+	 */
 	public GPU(int gfxmem)
 	{
 		textures = new Texture[8192];
@@ -38,17 +83,30 @@ public class GPU {
 		maxmem = gfxmem;
 	}
 	
+	/**
+	 * Returns the current monitor
+	 * @return the current monitor
+	 */
 	public Monitor getMonitor() {
 		return currentMonitor;
 	}
 	
+	/**
+	 * Adds a monitor to the monitor list and sets it as the current monitor.
+	 * @param mon The monitor to add
+	 */
 	public void addMonitor(Monitor mon)
 	{
 		monitors.add(mon);
 		currentMonitor = mon;
+		textures[0] = mon.tex;
 		CCLights2.debug("Added monitor "+mon.getWidth()+"x"+mon.getHeight()+" "+mon);
 	}
 	
+	/**
+	 * Removes a monitor from the monitor list, if it is the current monitor then it will select a new monitor
+	 * @param mon
+	 */
 	public void removeMonitor(Monitor mon)
 	{
 		monitors.remove(mon);
@@ -56,28 +114,41 @@ public class GPU {
 		if (currentMonitor == mon)
 		{
 			textures[0] = null;
-			bindedTexture = null;
 			currentMonitor = null;
 			for (Monitor m : monitors)
 			{
 				currentMonitor = m; break;
 			}
+			if (currentMonitor != null)
+			{
+				textures[0] = currentMonitor.tex;
+			}
 		}
 		mon.tex.fill(Color.black);
 	}
 
+	/**
+	 * Sets the monitor to mon, if it is not in the monitor list then it is added
+	 * @param mon The monitor to set
+	 */
 	public void setMonitor(Monitor mon) {
 		if (!monitors.contains(mon))
 		{
 			addMonitor(mon);
 		}
-		this.currentMonitor = mon;
+		currentMonitor = mon;
 		CCLights2.debug("Monitor set!");
-		bindedTexture = mon.getTex();
-		textures[0] = bindedTexture;
-		bindedSlot = 0;
+		if (bindedSlot == 0)
+		{
+			bindedTexture = mon.getTex();
+		}
+		textures[0] = mon.getTex();
 	}
 	
+	/**
+	 * Gets the ammout of used memory
+	 * @return The ammount of used memory
+	 */
 	public int getUsedMemory()
 	{
 		int used = 0;
@@ -91,22 +162,41 @@ public class GPU {
 		return used;
 	}
 	
+	/**
+	 * Gets the ammount of free memory
+	 * @return The amount of free memory
+	 */
 	public int getFreeMemory()
 	{
 		return maxmem-getUsedMemory();
 	}
 	
+	/**
+	 * Binds a texture, throws an exception if it doesn't exist
+	 * @param texid The texture to bind
+	 * @throws Exception
+	 */
 	public void bindTexture(int texid) throws Exception
 	{
+		if (texid < 0 && texid >= textures.length)
+			throw new Exception("Texture id out of range");
 		if (textures[texid] == null)
 			throw new Exception("Texture doesn't exist!");
 		bindedTexture = textures[texid];
 		bindedSlot = texid;
 	}
 	
+	/**
+	 * Creates a new texture with a width and height
+	 * @param w Width of the texture
+	 * @param h Height of the texture
+	 * @return Returns -1 if the free memory is too low for the texture
+	 * Returns -2 if all texture slots are exausted
+	 * Else, returns the texture id of the new texture
+	 */
 	public int newTexture(int w, int h)
 	{
-		if (getFreeMemory()<0)
+		if (getFreeMemory() <= 0)
 		{
 			return -1;
 		}
@@ -124,42 +214,78 @@ public class GPU {
 		}
 	}
 	
+	/**
+	 * Pushes the transform on the transformStack
+	 */
 	public void push()
 	{
 		transformStack.push(transform);
 		transform = (AffineTransform) transform.clone();
 	}
 	
+	/**
+	 * Pops the last transform off the stack
+	 */
 	public void pop()
 	{
 		transform = transformStack.pop();
 	}
 	
+	/**
+	 * Translates the transform by x and y
+	 * @param x The x coordinate to translate to
+	 * @param y The y coordinate to translate to
+	 */
 	public void translate(double x, double y)
 	{
 		transform.translate(x, y);
 	}
 	
+	/**
+	 * Rotates the transform by r
+	 * @param r The radians to rotate the transform by
+	 */
 	public void rotate(double r)
 	{
 		transform.rotate(r);
 	}
 	
+	/**
+	 * Rotates the transform by r about x and y
+	 * @param r
+	 * @param x
+	 * @param y
+	 */
 	public void rotate(double r, double x, double y)
 	{
 		transform.rotate(r,x,y);
 	}
 	
+	/**
+	 * Scales the transform by s in both directions
+	 * @param s
+	 */
 	public void scale(double s)
 	{
 		transform.scale(s, s);
 	}
 	
+	/**
+	 * Scales the transform by sx and sy
+	 * @param sx
+	 * @param sy
+	 */
 	public void scale(double sx, double sy)
 	{
 		transform.scale(sx, sy);
 	}
 	
+	/**
+	 * Process the DrawCMD, throws an exception if the command fails
+	 * @param cmd The command to process
+	 * @return Return values for ComputerCraft
+	 * @throws Exception
+	 */
 	public Object[] processCommand(DrawCMD cmd) throws Exception
 	{
 		if (cmd == null)
@@ -349,6 +475,9 @@ public class GPU {
 		return null;
 	}
 	
+	/**
+	 * Send the drawlist to the server and clear it
+	 */
 	public void processSendList()
 	{
 		if (!drawlist.isEmpty())
