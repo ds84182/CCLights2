@@ -52,7 +52,7 @@ public final class PacketSenders {
 			outputStream.writeInt(c.args.length);
 			for (int g = 0; g < c.args.length; g++) {
 				Object v = c.args[g];
-				if (v.getClass().isArray())
+				if (v != null && v.getClass().isArray())
 				{
 					Object[] arr = (Object[]) v;
 					outputStream.writeByte(-1);

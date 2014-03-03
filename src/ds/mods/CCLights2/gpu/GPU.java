@@ -410,16 +410,18 @@ public class GPU {
 							n[i] = (Byte) old[i];
 						}
 					}
-					BufferedImage img = ImageLoader.load(ArrayUtils.toPrimitive((Byte[])cmd.args[0]), (String)cmd.args[1]);
+					BufferedImage img = ImageLoader.load(ArrayUtils.toPrimitive((Byte[])cmd.args[0]));
+					//image loaded successfully time to create texture
 					int id = newTexture(img.getWidth(),img.getHeight());
 					if (id == -1) {
 						throw new Exception("Not enough memory for texture");
 					} else if (id == -2) {
 						throw new Exception("Not enough texture slots");
-					}
+					} else {
 					Texture tex = textures[id];
 					tex.graphics.drawImage(img, 0, 0, null);
 					return new Object[]{id};
+					}
 				}
 				case 15:
 				{

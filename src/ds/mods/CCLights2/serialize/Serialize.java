@@ -23,6 +23,7 @@ public class Serialize {
 
 	public static void serialize(ByteArrayDataOutput dat, Object o)
 	{
+		if(o != null){
 		Class<?> clazz = o.getClass();
 		int i = 0;
 		for (Object[] ol : classToSerializer)
@@ -38,6 +39,7 @@ public class Serialize {
 			i++;
 		}
 		throw new IllegalArgumentException(clazz.getName()+" is not serializable!");
+		}
 	}
 
 	public static Object unserialize(ByteArrayDataInput dat)

@@ -88,7 +88,7 @@ public class Texture {
 			try {
 				font = ImageIO.read(CCLights2.class.getResourceAsStream("/assets/cclights/textures/gui/ascii.png"));
 			} catch (IOException e) {
-				e.printStackTrace();
+				CCLights2.debug("failed to load typeface for cclights2 ;_; did you mess with the files?");
 			}
 			temp = new Texture(512, 512);
 			int i = font.getWidth();

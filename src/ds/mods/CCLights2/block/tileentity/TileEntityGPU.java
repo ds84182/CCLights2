@@ -445,13 +445,12 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			double a = System.currentTimeMillis();
 			if (args.length > 1) {
 				Byte[] data;
-				String format;
 				if (args[0] instanceof Map)
 				{
 					int size = 0;
-					//One of the things I hate is that ComputerCraft uses Doubles for all their values
+					//One of the things I hate is that ComputerCraft uses Doubles for all their values -ds84182
+					//double the fun! -alekso56
 					Map m = (Map)args[0];
-					format = (String)args[1];
 					for (double i = 1; i<Double.MAX_VALUE; i++)
 					{
 						if (m.containsKey(i))
@@ -464,12 +463,11 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 					{
 						data[(int) i] = ((Double)m.get(i+1D)).byteValue();
 					}
-					CCLights2.debug("Moved data");
+					CCLights2.debug("Converted data");
 				}
 				else if (args[0] instanceof String)
 				{
-					String file = (String)args[0];
-					format = (String)args[1];
+					String file = args[0].toString();
 					File f = new File(CCLights2.proxy.getWorldDir(worldObj),"computer/"+computer.getID()+"/"+file);
 					FileInputStream in = new FileInputStream(f);
 					byte[] b = new byte[(int)in.getChannel().size()];
@@ -484,7 +482,6 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				DrawCMD cmd = new DrawCMD();
 				Object[] nargs = new Object[2];
 				nargs[0] = data;
-				nargs[1] = format;
 				cmd.cmd = 14;
 				cmd.args = nargs;
 				int id = (Integer) gpu.processCommand(cmd)[0];
@@ -492,7 +489,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				Object[] ret = {id,tex.getWidth(),tex.getHeight()};
 				gpu.drawlist.push(cmd);
 				double b = System.currentTimeMillis();
-				System.out.println("Import time: "+(b-a)+"ms");
+				CCLights2.debug("Import time: "+(b-a)+"ms");
 				return ret;
 			}
 		}

@@ -11,7 +11,7 @@ public class ImageLoader {
 		loaders.add(load);
 	}
 	
-	public static BufferedImage load(byte[] data, String format)
+	public static BufferedImage load(byte[] data) throws Exception
 	{
 		if (loaders.size() == 0)
 		{
@@ -19,12 +19,12 @@ public class ImageLoader {
 		}
 		for (IImageLoader load : loaders)
 		{
-			BufferedImage img = load.loadImage(data, format);
+			BufferedImage img = load.loadImage(data);
 			if (img != null)
 			{
 				return img;
 			}
 		}
-		return null;
+		throw new Exception("failed to load image");
 	}
 }

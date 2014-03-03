@@ -9,13 +9,12 @@ import javax.imageio.ImageIO;
 public class GeneralImageLoader implements IImageLoader {
 
 	@Override
-	public BufferedImage loadImage(byte[] data, String format) {
+	public BufferedImage loadImage(byte[] data) {
 		try {
 			return ImageIO.read(new ByteArrayInputStream(data));
 		} catch (IOException e) {
-			e.printStackTrace();
+			return null;
 		}
-		return null;
 	}
 
 }

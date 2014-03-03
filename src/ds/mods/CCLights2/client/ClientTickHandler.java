@@ -12,41 +12,26 @@ import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
 public class ClientTickHandler implements ITickHandler {
 	public static TileEntityMonitor tile; //Invoke screenshot when this is here
 
-	public ClientTickHandler() {
-		
-	}
-
 	@Override
 	public void tickStart(EnumSet<TickType> type, Object... tickData) {
 		if (tile != null)
 		{
+			//get minecraft settings
 			Minecraft mc = Minecraft.getMinecraft();
 			GameSettings gs = mc.gameSettings;
 			boolean hideGuiState = gs.hideGUI;
 			int thirdPersonState = gs.thirdPersonView;
-
-			int heightState = mc.displayHeight;
-			int widthState = mc.displayWidth;
+			//start render instance
 			gs.hideGUI = true;
 			gs.thirdPersonView = 0;
-			//mc.displayWidth = tile.mon.getWidth();
-			//mc.displayHeight = tile.mon.getHeight();
-			
 			mc.entityRenderer.renderWorld(0, 0);
-			
 			gs.hideGUI = hideGuiState;
 			gs.thirdPersonView = thirdPersonState;
-			mc.displayHeight = heightState;
-			mc.displayWidth = widthState;
-			
+			//most of render we need is done, lets take a picture :DDDDDDDD
 			ClientProxy.takeScreenshot(tile);
+			//reset tileent so we can use it again.
 			tile = null;
 		}
-	}
-
-	@Override
-	public void tickEnd(EnumSet<TickType> type, Object... tickData) {
-		
 	}
 
 	@Override
@@ -58,5 +43,6 @@ public class ClientTickHandler implements ITickHandler {
 	public String getLabel() {
 		return "CCLights2 Render Tick Tracker";
 	}
-
+    
+	public void tickEnd(EnumSet<TickType> type, Object... tickData) {}
 }
