@@ -1,0 +1,10 @@
+gpu=peripheral.wrap("left")
+while true do
+ event,imagedata = os.pullEvent()
+ if event == "tablet_image" then
+  textureID = gpu.import(imagedata)
+  gpu.drawTexture(1,0,0)
+  print("Drew tabletimage from textureID:"..textureID)
+ end
+end
+
