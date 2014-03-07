@@ -147,8 +147,9 @@ public class TabletRenderer implements IItemRenderer {
 			GL11.glTranslatef(0F, -0.0001F, 0F);
 			TextureUtil.uploadTexture(dyntex.getGlTextureId(), tex.rgbCache, 16*32, 9*32);
 			Tessellator tess = Tessellator.instance;
-			tess.startDrawingQuads();
 			GL11.glDisable(GL11.GL_LIGHTING);
+			tess.startDrawingQuads();
+			tess.setBrightness(0xFF);
 			tess.addVertexWithUV(-8/16D, 0.5D-(2/16D), -(6/16D),0D,((double)tex.getHeight())/(9*32));
 			tess.addVertexWithUV(0.5D, 0.5D-(2/16D), -(6/16D),((double)tex.getWidth())/(16*32),((double)tex.getHeight())/(9*32));
 			tess.addVertexWithUV(0.5D, 0.5D-(2/16D), (3/16D),((double)tex.getWidth())/(16*32),0D);
