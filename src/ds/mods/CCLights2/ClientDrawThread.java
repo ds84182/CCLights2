@@ -19,29 +19,32 @@ public class ClientDrawThread extends Thread {
 			synchronized (draws)
 			{
 				Iterator<Entry<GPU,Deque<DrawCMD>>> iter = draws.entrySet().iterator();
-				while (iter.hasNext())
+				synchronized (iter)
 				{
-					Entry<GPU,Deque<DrawCMD>> e = iter.next();
-					synchronized (e.getValue())
+					while (iter.hasNext())
 					{
-						if (e.getKey().currentMonitor == null) continue;
-						synchronized (e.getKey().currentMonitor.tex)
+						Entry<GPU,Deque<DrawCMD>> e = iter.next();
+						synchronized (e.getValue())
 						{
-							e.getKey().currentMonitor.tex.renderLock = true;
-							Deque<DrawCMD> stack = e.getValue();
-							while (!stack.isEmpty())
+							if (e.getKey().currentMonitor == null) continue;
+							synchronized (e.getKey().currentMonitor.tex)
 							{
-								try {
-									DrawCMD d = stack.poll();
-									if (d == null) continue;
-									e.getKey().processCommand(d);
-								} catch (Exception e1) {
-									e1.printStackTrace();
+								e.getKey().currentMonitor.tex.renderLock = true;
+								Deque<DrawCMD> stack = e.getValue();
+								while (!stack.isEmpty())
+								{
+									try {
+										DrawCMD d = stack.poll();
+										if (d == null) continue;
+										e.getKey().processCommand(d);
+									} catch (Exception e1) {
+										e1.printStackTrace();
+									}
 								}
+								e.getKey().currentMonitor.tex.texUpdate();
+								e.getKey().currentMonitor.tex.renderLock = false;
+								e.getKey().currentMonitor.tex.notifyAll();
 							}
-							e.getKey().currentMonitor.tex.texUpdate();
-							e.getKey().currentMonitor.tex.renderLock = false;
-							e.getKey().currentMonitor.tex.notifyAll();
 						}
 					}
 				}
