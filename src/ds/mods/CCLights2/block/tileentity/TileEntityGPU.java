@@ -2,29 +2,37 @@ package ds.mods.CCLights2.block.tileentity;
 
 import java.awt.Color;
 import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Scanner;
+import java.util.SortedSet;
 import java.util.TreeMap;
 
 import javax.imageio.ImageIO;
-
-import org.apache.commons.lang3.ArrayUtils;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.ForgeDirection;
+
+import org.apache.commons.lang3.ArrayUtils;
+
+import com.google.common.collect.ImmutableSortedSet;
+
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.Player;
 import cpw.mods.fml.relauncher.Side;
 import dan200.computer.api.IComputerAccess;
 import dan200.computer.api.ILuaContext;
+import dan200.computer.api.IMount;
 import dan200.computer.api.IPeripheral;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.converter.ConvertDouble;
@@ -34,7 +42,6 @@ import ds.mods.CCLights2.gpu.DrawCMD;
 import ds.mods.CCLights2.gpu.GPU;
 import ds.mods.CCLights2.gpu.Monitor;
 import ds.mods.CCLights2.gpu.Texture;
-import ds.mods.CCLights2.gpu.imageLoader.ImageLoader;
 import ds.mods.CCLights2.network.PacketSenders;
 
 public class TileEntityGPU extends TileEntity implements IPeripheral {
@@ -730,11 +737,60 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 	@Override
 	public void attach(IComputerAccess computer) {
 		comp.add(computer);
+		computer.mount("cclights2", new IMount(){
+			private static final String RESOURCE_PATH = "/assets/cclights/lua/";
+			private final SortedSet<String> files;
+
+			{
+				ImmutableSortedSet.Builder<String> files = ImmutableSortedSet.naturalOrder();
+				InputStream fileList = getClass().getResourceAsStream(RESOURCE_PATH + "files.lst");
+				if (fileList != null) {
+					Scanner sc = new Scanner(fileList);
+
+					while (sc.hasNextLine()) {
+						String fileName = sc.nextLine();
+						files.add(fileName);
+					}
+
+					sc.close();
+				}
+
+				this.files = files.build();
+			}
+
+			@Override
+			public boolean exists(String path) throws IOException {
+				return path.isEmpty() || files.contains(path);
+			}
+
+			@Override
+			public boolean isDirectory(String path) throws IOException {
+				return path.isEmpty();
+			}
+
+			@Override
+			public void list(String path, List<String> contents) throws IOException {
+				contents.addAll(files);
+			}
+
+			@Override
+			public long getSize(String path) throws IOException {
+				return 0;
+			}
+
+			@Override
+			public InputStream openForRead(String path) throws IOException {
+				if (!files.contains(path)) throw new IOException();
+				return getClass().getResourceAsStream(RESOURCE_PATH + path);
+			}
+
+		});
 	}
 
 	@Override
 	public void detach(IComputerAccess computer) {
 		comp.remove(computer);
+		computer.unmount("cclights2");
 	}
 
 	@Override
