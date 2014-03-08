@@ -19,7 +19,6 @@ import ds.mods.CCLights2.item.ItemRAM;
 
 public class BlockGPU extends Block {
 	Icon sides = null;
-
 	public BlockGPU(int par1, Material par2Material) {
 		super(par1, par2Material);
 		this.setUnlocalizedName("gpu");
@@ -63,10 +62,9 @@ public class BlockGPU extends Block {
 	@Override
 	public void breakBlock(World par1World, int par2, int par3, int par4,
 			int par5, int par6) {
-		TileEntityGPU tile = (TileEntityGPU) par1World.getBlockTileEntity(par2,
-				par3, par4);
 		if (!par1World.isRemote) {
 			Random rand = new Random();
+			TileEntityGPU tile = (TileEntityGPU) par1World.getBlockTileEntity(par2, par3, par4);
 			if(tile != null && tile.addedType != null){
 			for (int i = 0; i < tile.addedType.length; i++) {
 				int n = tile.addedType[i];
@@ -94,6 +92,11 @@ public class BlockGPU extends Block {
 			}
 		}
 		super.breakBlock(par1World, par2, par3, par4, par5, par6);
+	}
+	@Override
+	public void onNeighborBlockChange(World par1World, int par2, int par3, int par4, int par5) {
+		TileEntityGPU tile = (TileEntityGPU) par1World.getBlockTileEntity(par2, par3, par4);
+		if(tile != null) tile.connectToMonitor();
 	}
 
 	@Override

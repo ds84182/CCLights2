@@ -46,15 +46,13 @@ import ds.mods.CCLights2.network.PacketSenders;
 
 public class TileEntityGPU extends TileEntity implements IPeripheral {
 	public GPU gpu;
-	public int ticks;
-	public ArrayList<DrawCMD> newarr = new ArrayList<DrawCMD>();
+    private ArrayList<DrawCMD> newarr = new ArrayList<DrawCMD>();
 	public ArrayList<IComputerAccess> comp = new ArrayList<IComputerAccess>();
-	public int emptyFor = 0;
-	public TreeMap<String, Integer> playerToClickMap = new TreeMap<String, Integer>();
-	public TreeMap<Integer, int[]> clickToDataMap = new TreeMap<Integer, int[]>();
-	public Random rand = new Random();
+	private TreeMap<String, Integer> playerToClickMap = new TreeMap<String, Integer>();
+	private TreeMap<Integer, int[]> clickToDataMap = new TreeMap<Integer, int[]>();
 	public int[] addedType = new int[1025];
-	public boolean frame = false;
+	private boolean frame = false;
+	private byte ticks = 0;
 	private boolean sentOnce = false;
 
 	public TileEntityGPU() {
@@ -63,9 +61,9 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 	}
 
 	public void startClick(Player player, int button, int x, int y) {
-		int id = rand.nextInt();
+		int id = new Random().nextInt();
 		while (playerToClickMap.containsValue(id)) {
-			id = rand.nextInt();
+			id = new Random().nextInt();
 		}
 		playerToClickMap.put(((EntityPlayer) player).username, id);
 		clickToDataMap.put(id, new int[] { button, x, y });
@@ -818,14 +816,13 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 
 	@Override
 	public synchronized void updateEntity() {
-		synchronized (this) {if (!frame){ gpu.processSendList();}}
-		ticks++;
-		if (ticks % 20 == 0)
-			connectToMonitor();
-		if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT && ticks % 20 == 0 && !sentOnce) {
+		synchronized (this){if(!sentOnce){ticks++;}
+		if (!frame){ gpu.processSendList();}
+		if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT && ticks > 25 && !sentOnce) {
+			ticks = 0;
+			sentOnce=true;
 			PacketSenders.GPUDOWNLOAD(xCoord, yCoord, zCoord, worldObj.provider.dimensionId);
-			this.sentOnce=true;
 		}
-
+		}
 	}
 }
