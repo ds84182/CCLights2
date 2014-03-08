@@ -19,26 +19,27 @@ public class Serialize {
 		{Map.class,new MapSerializer()},
 		{GPU.class,new GPUSerializer()},
 		{String.class,new StringSerializer()},
+		{Character.class, new Numbers.CharacterSerializer()},
 			};
 
 	public static void serialize(ByteArrayDataOutput dat, Object o)
 	{
 		if(o != null){
-		Class<?> clazz = o.getClass();
-		int i = 0;
-		for (Object[] ol : classToSerializer)
-		{
-			Class<?> cla = (Class<?>) ol[0];
-			if (cla.equals(clazz))
+			Class<?> clazz = o.getClass();
+			int i = 0;
+			for (Object[] ol : classToSerializer)
 			{
-				dat.writeByte(i);
-				ISerializer s = (ISerializer) ol[1];
-				s.write(o, dat);
-				return;
+				Class<?> cla = (Class<?>) ol[0];
+				if (cla.equals(clazz))
+				{
+					dat.writeByte(i);
+					ISerializer s = (ISerializer) ol[1];
+					s.write(o, dat);
+					return;
+				}
+				i++;
 			}
-			i++;
-		}
-		throw new IllegalArgumentException(clazz.getName()+" is not serializable!");
+			throw new IllegalArgumentException(clazz.getName()+" is not serializable!");
 		}
 	}
 
