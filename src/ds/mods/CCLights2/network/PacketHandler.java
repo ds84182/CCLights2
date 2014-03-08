@@ -2,18 +2,12 @@ package ds.mods.CCLights2.network;
 
 import java.awt.Color;
 import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.OutputStream;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.zip.GZIPInputStream;
-
-import javax.imageio.ImageIO;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -33,7 +27,6 @@ import cpw.mods.fml.common.network.IPacketHandler;
 import cpw.mods.fml.common.network.Player;
 import cpw.mods.fml.relauncher.Side;
 import dan200.computer.api.IComputerAccess;
-import dan200.computer.api.IWritableMount;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.ClientDrawThread;
 import ds.mods.CCLights2.Config;
@@ -235,13 +228,6 @@ public class PacketHandler implements IPacketHandler,IConnectionHandler {
 					if (gtile != null) {
 						for (IComputerAccess c : gtile.comp)
 							if (c != null) {
-								/*File directory = new File(CCLights2.proxy.getWorldDir(playr.worldObj)+"//computer//"+c.getID()+"//screenshot.jpg");
-								try {
-									ImageIO.write(ImageIO.read(in),"jpg",directory);
-								} catch (IOException e) {
-									e.printStackTrace();
-								}*/
-								//BAD ALEKOS! NO MASS FILE WRITES!
 								c.queueEvent("tablet_image",new Object[]{table});
 								CCLights2.debug("QUEUED EVENT");
 							}
@@ -258,16 +244,13 @@ public class PacketHandler implements IPacketHandler,IConnectionHandler {
 			int x = PacketData.readInt();
 			int y = PacketData.readInt();
 			int z = PacketData.readInt();
-			TileEntityGPU tile = (TileEntityGPU) ClientProxy.getClientWorld()
-					.getBlockTileEntity(x, y, z);
+			TileEntityGPU tile = (TileEntityGPU) ClientProxy.getClientWorld().getBlockTileEntity(x, y, z);
 			if (tile != null) {
 				int len = PacketData.readInt();
 				GPU gpu = tile.gpu;
-				// int[] most = new int[30];
 				for (int i = 0; i < len; i++) {
 					DrawCMD cmd = new DrawCMD();
 					cmd.cmd = PacketData.readInt();
-					// most[cmd.cmd + 1]++;
 					int lent = PacketData.readInt();
 					cmd.args = new Object[lent];
 					for (int g = 0; g < lent; g++) {
@@ -291,13 +274,11 @@ public class PacketHandler implements IPacketHandler,IConnectionHandler {
 						try {
 							tile.gpu.processCommand(cmd);
 						} catch (Exception e) {
-							// MEH.
-							e.printStackTrace();
+							CCLights2.debug("failed to process command in clientsidedrawlist");
 						}
 					else {
 						if (!thread.isAlive()) {
-							CCLights2
-							.debug("The client draw thread died, restarting");
+							CCLights2.debug("The client draw thread died, restarting");
 							thread = new ClientDrawThread();
 							thread.start();
 						}
@@ -308,12 +289,6 @@ public class PacketHandler implements IPacketHandler,IConnectionHandler {
 						thread.draws.get(tile.gpu).addLast(cmd);
 					}
 				}
-				/*
-				 * int n = -1; int ind = 0; for (int i = 0; i < most.length;
-				 * i++) { if (n < most[i]) { n = most[i]; ind = i; } }
-				 * System.out
-				 * .println("Most used drawcmd: "+(ind-1)+" with "+n+" uses");
-				 */
 			}
 			break;
 		}

@@ -38,7 +38,7 @@ public class ClientDrawThread extends Thread {
 										if (d == null) continue;
 										e.getKey().processCommand(d);
 									} catch (Exception e1) {
-										e1.printStackTrace();
+										CCLights2.debug("Unable to process cmd in clientdrawthread");
 									}
 								}
 								e.getKey().currentMonitor.tex.texUpdate();
@@ -52,7 +52,7 @@ public class ClientDrawThread extends Thread {
 			try {
 				Thread.sleep(1L);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				CCLights2.debug("ClientDrawThread is unable to sleep.");
 			}
 		}
 	}

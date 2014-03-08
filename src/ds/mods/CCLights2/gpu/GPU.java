@@ -7,7 +7,6 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Stack;
-import java.util.UUID;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -428,7 +427,7 @@ public class GPU {
 					String str = "";
 					for (int i = 0; i<cmd.args.length-2; i++)
 					{
-						str = str+String.valueOf((Character)cmd.args[2+i]);
+						str = str+String.valueOf(cmd.args[2+i]);
 					}
 					bindedTexture.drawText(str, (Integer) cmd.args[0], (Integer) cmd.args[1], color);
 					break;

@@ -3,7 +3,6 @@ package ds.mods.CCLights2.item;
 import java.util.List;
 import java.util.UUID;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -15,7 +14,6 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
 import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
-import ds.mods.CCLights2.client.ClientProxy;
 import ds.mods.CCLights2.client.ClientTickHandler;
 import ds.mods.CCLights2.utils.TabMesg;
 import ds.mods.CCLights2.utils.TabMesg.Message;
