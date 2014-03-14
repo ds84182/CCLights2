@@ -105,40 +105,6 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 		clickToDataMap.remove(id);
 	}
 
-	public void connectToMonitor() {
-		for (int i = 0; i < ForgeDirection.VALID_DIRECTIONS.length; i++) {
-			ForgeDirection dir = ForgeDirection.VALID_DIRECTIONS[i];
-			TileEntity ftile = worldObj.getBlockTileEntity(
-					xCoord + dir.offsetX, yCoord + dir.offsetY, zCoord
-					+ dir.offsetZ);
-			if (ftile != null) {
-				if (ftile instanceof TileEntityMonitor) {
-					TileEntityMonitor tile = (TileEntityMonitor) worldObj
-							.getBlockTileEntity(xCoord + dir.offsetX, yCoord
-									+ dir.offsetY, zCoord + dir.offsetZ);
-					if (tile != null) {
-						boolean found = false;
-						for (Monitor m : gpu.monitors) {
-							if (m == tile.mon) {
-								found = true;
-								break;
-							}
-						}
-						if (found)
-							break;
-						CCLights2.debug("Connecting!");
-						tile.connect(this.gpu);
-						tile.mon.tex.fill(Color.black);
-						tile.mon.tex.drawText("Monitor connected", 0, 0, Color.white);
-						tile.mon.tex.texUpdate();
-						gpu.setMonitor(tile.mon);
-						return;
-					}
-				}
-			}
-		}
-	}
-
 	@Override
 	public String getType() {
 		return "GPU";

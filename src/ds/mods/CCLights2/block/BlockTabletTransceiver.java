@@ -9,9 +9,11 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Icon;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.CCLights2.CCLights2;
+import ds.mods.CCLights2.block.tileentity.TileEntityExternalMonitor;
 import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
 
 public class BlockTabletTransceiver extends Block {
@@ -25,26 +27,30 @@ public class BlockTabletTransceiver extends Block {
 	}
 	
 	@Override
-	public void onBlockPlacedBy(World par1World, int par2, int par3, int par4,
+	public void onBlockPlacedBy(World world, int par2, int par3, int par4,
 			EntityLivingBase par5EntityLivingBase, ItemStack par6ItemStack) {
+		if(FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER){
 		int l = MathHelper.floor_double(par5EntityLivingBase.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
-		int i1 = par1World.getBlockMetadata(par2, par3, par4) >> 2;
+		int i1 = world.getBlockMetadata(par2, par3, par4) >> 2;
 		++l;
 		l %= 4;
 		if (l == 0) {
-			par1World.setBlockMetadataWithNotify(par2, par3, par4, 4 | i1 << 2,2);
+			world.setBlockMetadataWithNotify(par2, par3, par4, 4 | i1 << 2,2);
 		}
 
 		if (l == 1) {
-			par1World.setBlockMetadataWithNotify(par2, par3, par4, 2 | i1 << 2,2);
+			world.setBlockMetadataWithNotify(par2, par3, par4, 2 | i1 << 2,2);
 		}
 
 		if (l == 2) {
-			par1World.setBlockMetadataWithNotify(par2, par3, par4, 5 | i1 << 2,2);
+			world.setBlockMetadataWithNotify(par2, par3, par4, 5 | i1 << 2,2);
 		}
 
 		if (l == 3) {
-			par1World.setBlockMetadataWithNotify(par2, par3, par4, 3 | i1 << 2,2);
+			world.setBlockMetadataWithNotify(par2, par3, par4, 3 | i1 << 2,2);
+		}
+		TileEntityTTrans tile = (TileEntityTTrans) world.getBlockTileEntity(par2, par3, par4);
+		tile.connectToGPU();
 		}
 	}
 	

@@ -93,11 +93,6 @@ public class BlockGPU extends Block {
 		}
 		super.breakBlock(par1World, par2, par3, par4, par5, par6);
 	}
-	@Override
-	public void onNeighborBlockChange(World par1World, int par2, int par3, int par4, int par5) {
-		TileEntityGPU tile = (TileEntityGPU) par1World.getBlockTileEntity(par2, par3, par4);
-		if(tile != null) tile.connectToMonitor();
-	}
 
 	@Override
 	public boolean hasTileEntity(int meta) {
@@ -108,7 +103,7 @@ public class BlockGPU extends Block {
 	public TileEntity createTileEntity(World world, int meta) {
 		return new TileEntityGPU();
 	}
-
+	
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IconRegister par1IconRegister) {
