@@ -14,6 +14,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
+import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
 
 public class BlockMonitor extends Block {
 	Icon sides = null;
@@ -47,6 +48,8 @@ public class BlockMonitor extends Block {
 		if (l == 3) {
 			par1World.setBlockMetadataWithNotify(par2, par3, par4, 3 | i1 << 2,2);
 		}
+		TileEntityMonitor tile = (TileEntityMonitor) par1World.getBlockTileEntity(par2, par3, par4);
+		tile.connectToGPU();
 	}
 
 	@Override

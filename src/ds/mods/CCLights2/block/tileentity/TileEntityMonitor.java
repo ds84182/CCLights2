@@ -30,12 +30,13 @@ public class TileEntityMonitor extends TileEntity {
 	}
 	
 	public void connectToGPU() {
+		CCLights2.debug("Connect to GPU");
 		for (int i = 0; i < ForgeDirection.VALID_DIRECTIONS.length; i++) {
 			ForgeDirection dir = ForgeDirection.VALID_DIRECTIONS[i];
 			TileEntity tile = worldObj.getBlockTileEntity(xCoord + dir.offsetX, yCoord+ dir.offsetY, zCoord + dir.offsetZ);
 					if (tile != null && tile instanceof TileEntityGPU) {
 						TileEntityGPU ftile = (TileEntityGPU) tile;
-						if(ftile.gpu.monitors.contains(mon)) break;
+						//if(ftile.gpu.monitors.contains(mon)) break;
 						CCLights2.debug("Connecting!");
 						connect(ftile.gpu);
 						mon.tex.fill(Color.black);

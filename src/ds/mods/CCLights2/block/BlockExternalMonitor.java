@@ -145,7 +145,6 @@ public class BlockExternalMonitor extends Block {
 		tile.contractNeighbours();
         tile.contract();
         tile.expand();
-        tile.connectToGPU();
 		}
 	}
 	
