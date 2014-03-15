@@ -128,8 +128,8 @@ public class TileEntityExternalMonitor extends TileEntityMonitor implements IPer
 						if ((x != 0) || (y != 0)) {
 							monitor.mon.removeAllGPUs();
 							monitor.mon = originTerminal;
-							monitor.connectToGPU();
 						}
+						monitor.connectToGPU();
 					}
 				}
 			}
