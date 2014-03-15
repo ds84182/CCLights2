@@ -27,7 +27,7 @@ public class ClientDrawThread extends Thread {
 						synchronized (e.getValue())
 						{
 							if (e.getKey().currentMonitor == null) continue;
-							synchronized (e.getKey().currentMonitor.tex)
+							synchronized (e.getKey().currentMonitor)
 							{
 								e.getKey().currentMonitor.tex.renderLock = true;
 								Deque<DrawCMD> stack = e.getValue();
