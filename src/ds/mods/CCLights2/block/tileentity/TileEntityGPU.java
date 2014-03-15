@@ -1,6 +1,5 @@
 package ds.mods.CCLights2.block.tileentity;
 
-import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -21,7 +20,6 @@ import javax.imageio.ImageIO;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraftforge.common.ForgeDirection;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -40,7 +38,6 @@ import ds.mods.CCLights2.converter.ConvertInteger;
 import ds.mods.CCLights2.converter.ConvertString;
 import ds.mods.CCLights2.gpu.DrawCMD;
 import ds.mods.CCLights2.gpu.GPU;
-import ds.mods.CCLights2.gpu.Monitor;
 import ds.mods.CCLights2.gpu.Texture;
 import ds.mods.CCLights2.network.PacketSenders;
 

@@ -59,10 +59,9 @@ public class ItemTablet extends Item {
 			EntityPlayer par2EntityPlayer, World par3World, int par4, int par5,
 			int par6, int par7, float par8, float par9, float par10) {
 		NBTTagCompound nbt = getNBT(par1ItemStack,par3World);
-		CCLights2.debug(par3World.getBlockId(par4, par5, par6)+"");
+		
 		if (!par3World.isRemote && CCLights2.ttrans.blockID == par3World.getBlockId(par4, par5, par6))
 		{
-			CCLights2.debug("Right clicked GPU");
 			nbt.setBoolean("canDisplay",true);
 			TileEntityTTrans tile = (TileEntityTTrans) par3World.getBlockTileEntity(par4, par5, par6);
 			nbt.setString("trans", tile.id.toString());

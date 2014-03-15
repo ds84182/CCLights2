@@ -14,7 +14,6 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
-import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
 
 public class BlockMonitor extends Block {
 	Icon sides = null;
