@@ -15,8 +15,6 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.network.NetworkRegistry;
-import ds.mods.CCLights2.gpu.imageLoader.GeneralImageLoader;
-import ds.mods.CCLights2.gpu.imageLoader.ImageLoader;
 import ds.mods.CCLights2.network.PacketHandler;
 
 @Mod(modid = "CCLights2", name = "CCLights2", version = "0.4.1-74",dependencies="required-after:ComputerCraft;required-after:CCTurtle",acceptedMinecraftVersions = "[1.6.0,1.6.4]")
@@ -43,7 +41,6 @@ public class CCLights2 {
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		Config.loadConfig(new Configuration(event.getSuggestedConfigurationFile()));
-		ImageLoader.register(new GeneralImageLoader());
 		logger = event.getModLog();
 		logger.setParent(FMLLog.getLogger());
 		

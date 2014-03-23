@@ -117,7 +117,7 @@ public class GuiTablet extends GuiScreen {
 		}
 		TextureUtil.uploadTexture(TabletRenderer.dyntex.getGlTextureId(),
 				tex.rgbCache, 16 * 32, 9 * 32);
-		this.drawTexturedModalRect(unapplyXOffset(0), unapplyYOffset(0),
+		drawTexturedModalRect(unapplyXOffset(0), unapplyYOffset(0),
 				tex.getWidth(), tex.getHeight());
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
 	}

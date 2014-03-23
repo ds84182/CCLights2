@@ -20,7 +20,6 @@ import org.lwjgl.opengl.GL11;
 
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
-import ds.mods.CCLights2.gpu.Monitor;
 import ds.mods.CCLights2.gpu.Texture;
 import ds.mods.CCLights2.item.ItemTablet;
 import ds.mods.CCLights2.utils.TabMesg;
@@ -128,10 +127,11 @@ public class TabletRenderer implements IItemRenderer {
 						if (!(noncast == null || !(noncast instanceof TileEntityTTrans)))
 						{
 							TileEntityTTrans tile = (TileEntityTTrans) noncast;
-							Monitor mon;
-							mon = tile.mon;
-							if (mon.tex != null)
-								tex = mon.tex;
+							int lol = (int) Math.abs(Minecraft.getMinecraft().thePlayer.posX - (Integer)TabMesg.getTabVar(trans, "x"));
+							CCLights2.debug(lol+"");
+							if (tile.mon.tex != null){
+								tex = tile.mon.tex;
+							}
 							else
 								nbt.setBoolean("canDisplay", false);
 						}

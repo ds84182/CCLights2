@@ -3,16 +3,19 @@ package ds.mods.CCLights2.gpu;
 import java.awt.Color;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Stack;
 
+import javax.imageio.ImageIO;
+
 import org.apache.commons.lang3.ArrayUtils;
 
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
-import ds.mods.CCLights2.gpu.imageLoader.ImageLoader;
 import ds.mods.CCLights2.network.PacketSenders;
 
 public class GPU {
@@ -409,7 +412,7 @@ public class GPU {
 							n[i] = (Byte) old[i];
 						}
 					}
-					BufferedImage img = ImageLoader.load(ArrayUtils.toPrimitive((Byte[])cmd.args[0]));
+					BufferedImage img = loadImage(ArrayUtils.toPrimitive((Byte[])cmd.args[0]));
 					//image loaded successfully time to create texture
 					int id = newTexture(img.getWidth(),img.getHeight());
 					if (id == -1) {
@@ -474,6 +477,17 @@ public class GPU {
 				}
 			}
 		return null;
+	}
+	
+	/**
+	 * Load an image from a bytearray
+	 */
+	public BufferedImage loadImage(byte[] data) throws Exception {
+		try {
+			return ImageIO.read(new ByteArrayInputStream(data));
+		} catch (IOException e) {
+			throw new Exception("Failed to Load Image provided, invalid data?");
+		}
 	}
 	
 	/**

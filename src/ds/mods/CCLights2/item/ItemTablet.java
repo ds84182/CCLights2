@@ -12,7 +12,6 @@ import net.minecraft.world.World;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.CCLights2.CCLights2;
-import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
 import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
 import ds.mods.CCLights2.client.ClientTickHandler;
 import ds.mods.CCLights2.utils.TabMesg;
@@ -30,17 +29,16 @@ public class ItemTablet extends Item {
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void addInformation(ItemStack par1ItemStack,
-			EntityPlayer par2EntityPlayer, @SuppressWarnings("rawtypes") List par3List, boolean par4) {
-		
+	public void addInformation(ItemStack item,
+			EntityPlayer Player, @SuppressWarnings("rawtypes") List par3List, boolean par4) {
 	}
 
 	@Override
 	public ItemStack onItemRightClick(ItemStack par1ItemStack, World par3World, EntityPlayer Player) {
 		if(Player.isSneaking()){
-			if (par1ItemStack.getTagCompound().getBoolean("canDisplay")) {
+			if (par1ItemStack.getTagCompound().getBoolean("canDisplay") && par3World.isRemote) {
 				UUID trans = UUID.fromString(par1ItemStack.getTagCompound().getString("trans"));
-				TileEntityMonitor tile = (TileEntityMonitor) par3World.getBlockTileEntity(
+				TileEntityTTrans tile = (TileEntityTTrans) par3World.getBlockTileEntity(
 								(Integer) TabMesg.getTabVar(trans, "x"),
 								(Integer) TabMesg.getTabVar(trans, "y"),
 								(Integer) TabMesg.getTabVar(trans, "z"));

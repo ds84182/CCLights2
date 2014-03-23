@@ -36,7 +36,6 @@ public class TileEntityMonitor extends TileEntity {
 			TileEntity tile = worldObj.getBlockTileEntity(xCoord + dir.offsetX, yCoord+ dir.offsetY, zCoord + dir.offsetZ);
 					if (tile != null && tile instanceof TileEntityGPU) {
 						TileEntityGPU ftile = (TileEntityGPU) tile;
-						//if(ftile.gpu.monitors.contains(mon)) break;
 						CCLights2.debug("Connecting!");
 						connect(ftile.gpu);
 						mon.tex.fill(Color.black);

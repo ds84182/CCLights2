@@ -28,6 +28,7 @@ import cpw.mods.fml.common.network.Player;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
+import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
 import ds.mods.CCLights2.gpu.DrawCMD;
 import ds.mods.CCLights2.gpu.Texture;
 import ds.mods.CCLights2.serialize.Serialize;
@@ -198,7 +199,7 @@ public final class PacketSenders {
 		createPacketAndSend(outputStream);
 	}
 
-	public static void screenshot(TileEntityMonitor tile, BufferedImage screenshot) {
+	public static void screenshot(TileEntityTTrans tile, BufferedImage screenshot) {
 		ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
 		outputStream.writeByte(PacketHandler.NET_SCREENSHOT);
 		outputStream.writeInt(tile.xCoord);
@@ -229,7 +230,7 @@ public final class PacketSenders {
 				PacketDispatcher.sendPacketToServer(packets[g]);
 			}
 		} catch (IOException e1) {
-			e1.printStackTrace();
+			CCLights2.debug("failed to send screenshot packets");
 		}
 	}
 

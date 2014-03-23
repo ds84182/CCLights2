@@ -6,10 +6,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings;
 import cpw.mods.fml.common.ITickHandler;
 import cpw.mods.fml.common.TickType;
-import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
+import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
 
 public class ClientTickHandler implements ITickHandler {
-	public static TileEntityMonitor tile; //Invoke screenshot when this is here
+	public static TileEntityTTrans tile; //Invoke screenshot when this is here
 
 	@Override
 	public void tickStart(EnumSet<TickType> type, Object... tickData) {

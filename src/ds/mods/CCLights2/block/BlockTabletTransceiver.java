@@ -9,7 +9,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Icon;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.CCLights2.CCLights2;
@@ -28,7 +27,7 @@ public class BlockTabletTransceiver extends Block {
 	@Override
 	public void onBlockPlacedBy(World world, int par2, int par3, int par4,
 			EntityLivingBase par5EntityLivingBase, ItemStack par6ItemStack) {
-		if(FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER){
+		if(!world.isRemote){
 		int l = MathHelper.floor_double(par5EntityLivingBase.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
 		int i1 = world.getBlockMetadata(par2, par3, par4) >> 2;
 		++l;
@@ -48,9 +47,14 @@ public class BlockTabletTransceiver extends Block {
 		if (l == 3) {
 			world.setBlockMetadataWithNotify(par2, par3, par4, 3 | i1 << 2,2);
 		}
+		}
 		TileEntityTTrans tile = (TileEntityTTrans) world.getBlockTileEntity(par2, par3, par4);
 		tile.connectToGPU();
-		}
+	}
+	
+	public void onNeighborBlockChange(World world, int par2, int par3, int par4, int par5) {
+	TileEntityTTrans tile = (TileEntityTTrans) world.getBlockTileEntity(par2, par3, par4);
+	tile.connectToGPU();
 	}
 	
 	@Override

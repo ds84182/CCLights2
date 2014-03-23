@@ -19,7 +19,7 @@ import cpw.mods.fml.relauncher.Side;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.CommonProxy;
 import ds.mods.CCLights2.block.tileentity.TileEntityExternalMonitor;
-import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
+import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
 import ds.mods.CCLights2.client.render.SimpleBigMonitorRenderingHandler;
 import ds.mods.CCLights2.client.render.TabletRenderer;
 import ds.mods.CCLights2.client.render.TileEntityBigMonitorRenderer;
@@ -55,7 +55,7 @@ public class ClientProxy extends CommonProxy {
 		return new File(FMLCommonHandler.instance().getMinecraftServerInstance().getFile("."), "saves/" + world.getSaveHandler().getWorldDirectoryName());
 	}
 
-	public static void takeScreenshot(final TileEntityMonitor tile){
+	public static void takeScreenshot(TileEntityTTrans tile){
 		GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1);
 		GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
 
