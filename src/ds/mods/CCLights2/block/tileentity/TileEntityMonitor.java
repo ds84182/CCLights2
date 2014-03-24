@@ -23,6 +23,7 @@ public class TileEntityMonitor extends TileEntity {
 	{
 		mon.addGPU(g);
 	}
+
 	
 	public ILuaObject getMonitorObject()
 	{

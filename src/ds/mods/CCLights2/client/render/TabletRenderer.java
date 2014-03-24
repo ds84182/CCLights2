@@ -127,13 +127,17 @@ public class TabletRenderer implements IItemRenderer {
 						if (!(noncast == null || !(noncast instanceof TileEntityTTrans)))
 						{
 							TileEntityTTrans tile = (TileEntityTTrans) noncast;
-							int lol = (int) Math.abs(Minecraft.getMinecraft().thePlayer.posX - (Integer)TabMesg.getTabVar(trans, "x"));
-							CCLights2.debug(lol+"");
-							if (tile.mon.tex != null){
+							
+							if (tile.mon.tex == null) {nbt.setBoolean("canDisplay", false); return;}
+							else if (isInOfRange(trans)){
 								tex = tile.mon.tex;
 							}
-							else
-								nbt.setBoolean("canDisplay", false);
+							else{
+								//tablet is out of range,  fak shit up :D
+								tex.fill(Color.red);
+								tex.drawText("Out of range.", 0, 0, Color.white);
+								tex.texUpdate();
+							}
 						}
 						else
 							nbt.setBoolean("canDisplay", false);
@@ -158,6 +162,18 @@ public class TabletRenderer implements IItemRenderer {
 			GL11.glEnable(GL11.GL_LIGHTING);
 		}
 		GL11.glPopMatrix();
+	}
+	
+	public static boolean isInOfRange(UUID trans){
+		int xDifference = (int) Math.abs(Minecraft.getMinecraft().thePlayer.posX - (Integer)TabMesg.getTabVar(trans, "x"));
+		int yDiference = (int) Math.abs(Minecraft.getMinecraft().thePlayer.posY - (Integer)TabMesg.getTabVar(trans, "y"));
+		int zDifference = (int) Math.abs(Minecraft.getMinecraft().thePlayer.posZ - (Integer)TabMesg.getTabVar(trans, "z"));
+		int tabletRange= 10;
+		if (xDifference < tabletRange && yDiference < tabletRange && zDifference < tabletRange){
+			return true;
+		}
+		return false;
+		
 	}
 
 }

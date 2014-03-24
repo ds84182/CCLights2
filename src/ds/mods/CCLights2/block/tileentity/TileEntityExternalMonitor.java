@@ -102,8 +102,8 @@ public class TileEntityExternalMonitor extends TileEntityMonitor implements IPer
 	public void rebuildTerminal(Monitor copyFrom) {
 		int termWidth = this.m_width * 32;
 		int termHeight = this.m_height * 32;
-		this.mon.resize(termWidth, termHeight);
-		this.mon.removeAllGPUs();
+		mon.resize(termWidth, termHeight);
+		mon.removeAllGPUs();
 		propogateTerminal();
 	}
 
@@ -119,6 +119,7 @@ public class TileEntityExternalMonitor extends TileEntityMonitor implements IPer
 		originTerminal.removeAllGPUs();
 		originTerminal = new Monitor(m_width * 32, m_height * 32,getMonitorObject());
 		origin().mon = originTerminal;
+		origin().connectToGPU();
 		for (int y = 0; y < this.m_height; y++) {
 			for (int x = 0; x < this.m_width; x++) {
 				TileEntityExternalMonitor monitor = getNeighbour(x, y);
@@ -128,7 +129,6 @@ public class TileEntityExternalMonitor extends TileEntityMonitor implements IPer
 							monitor.mon.removeAllGPUs();
 							monitor.mon = originTerminal;
 						}
-						monitor.connectToGPU();
 					}
 				}
 			}

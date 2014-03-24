@@ -57,7 +57,7 @@ public class TileEntityTTrans extends TileEntityMonitor implements IPeripheral {
 		{
 			TabMesg.pushMessage(t, new Message("load"));
 		}
-		connectToGPU();
+		
 		update = true;
 	}
 
