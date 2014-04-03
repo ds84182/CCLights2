@@ -118,7 +118,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				"flipTextureV", "import", "export", "drawText", "getTextWidth",
 				"setColor", "getColor", "translate", "rotate", "rotateAround",
 				"scale", "push", "pop", "getMonitor", "blur", "startFrame",
-				"endFrame", "clearRect" };
+				"endFrame", "clearRect", "origin" };
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -685,6 +685,17 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			{
 				throw new Exception("clearRect: Argument Error: x, y, width, height expected");
 			}
+		}
+		case 35:
+		{
+			//origin
+			DrawCMD cmd = new DrawCMD();
+			Object[] nargs = new Object[] {};
+			cmd.cmd = 24;
+			cmd.args = nargs;
+			Object[] ret = gpu.processCommand(cmd);
+			gpu.drawlist.push(cmd);
+			return ret;
 		}
 		}
 		return null;
