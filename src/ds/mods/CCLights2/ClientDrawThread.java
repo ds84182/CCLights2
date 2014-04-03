@@ -24,26 +24,33 @@ public class ClientDrawThread extends Thread {
 					while (iter.hasNext())
 					{
 						Entry<GPU,Deque<DrawCMD>> e = iter.next();
-						synchronized (e.getValue())
+						GPU gpu = e.getKey();
+						Deque<DrawCMD> stack = e.getValue();
+						synchronized (gpu)
 						{
-							if (e.getKey().currentMonitor == null) continue;
-							synchronized (e.getKey().currentMonitor)
+							synchronized (stack)
 							{
-								e.getKey().currentMonitor.tex.renderLock = true;
-								Deque<DrawCMD> stack = e.getValue();
-								while (!stack.isEmpty())
+								if (gpu.currentMonitor == null) continue;
+								synchronized (gpu.currentMonitor)
 								{
-									try {
-										DrawCMD d = stack.poll();
-										if (d == null) continue;
-										e.getKey().processCommand(d);
-									} catch (Exception e1) {
-										CCLights2.debug("Unable to process cmd in clientdrawthread");
+									synchronized (gpu.currentMonitor.tex)
+									{
+										gpu.currentMonitor.tex.renderLock = true;
+										while (!stack.isEmpty())
+										{
+											try {
+												DrawCMD d = stack.poll();
+												if (d == null) continue;
+												gpu.processCommand(d);
+											} catch (Exception e1) {
+												CCLights2.debug("Unable to process cmd in clientdrawthread");
+											}
+										}
+										gpu.currentMonitor.tex.texUpdate();
+										gpu.currentMonitor.tex.renderLock = false;
+										gpu.currentMonitor.tex.notifyAll();
 									}
 								}
-								e.getKey().currentMonitor.tex.texUpdate();
-								e.getKey().currentMonitor.tex.renderLock = false;
-								e.getKey().currentMonitor.tex.notifyAll();
 							}
 						}
 					}
