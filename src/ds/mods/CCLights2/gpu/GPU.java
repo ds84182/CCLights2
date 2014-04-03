@@ -475,6 +475,12 @@ public class GPU {
 					bindedTexture.clearRect(color,(Integer) cmd.args[0],(Integer) cmd.args[1],(Integer) cmd.args[2],(Integer) cmd.args[3]);
 					break;
 				}
+				case 24:
+				{
+					transform = new AffineTransform();
+					break;
+				}
+
 			}
 		return null;
 	}
