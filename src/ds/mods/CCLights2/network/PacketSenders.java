@@ -287,13 +287,12 @@ public final class PacketSenders {
 				dimId, packet);
 	}
 
-	public static void GPUDOWNLOAD(int xCoord, int yCoord, int zCoord, int dimId) {
+	public static void GPUDOWNLOAD(int xCoord, int yCoord, int zCoord) {
 		ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
 		outputStream.writeByte(PacketHandler.NET_GPUDOWNLOAD);
 		outputStream.writeInt(xCoord);
 		outputStream.writeInt(yCoord);
 		outputStream.writeInt(zCoord);
-		CCLights2.debug("Sent DL Request to server!");
 		createPacketAndSend(outputStream);
 	}
 
@@ -310,7 +309,6 @@ public final class PacketSenders {
 		outputStream.writeByte(PacketHandler.NET_SYNC);
 		outputStream.writeShort(monitorWidth);
 		outputStream.writeShort(monitorHeight);
-		CCLights2.debug("Sent crap no one cares about to client");
 		Packet250CustomPayload packet = new Packet250CustomPayload();
 		packet.channel = "CCLights2";
 		packet.data = outputStream.toByteArray();

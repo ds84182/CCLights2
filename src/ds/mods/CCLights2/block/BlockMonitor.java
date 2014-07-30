@@ -47,8 +47,6 @@ public class BlockMonitor extends Block {
 		if (l == 3) {
 			par1World.setBlockMetadataWithNotify(par2, par3, par4, 3 | i1 << 2,2);
 		}
-		TileEntityMonitor tile = (TileEntityMonitor) par1World.getBlockTileEntity(par2, par3, par4);
-		tile.connectToGPU();
 	}
 
 	@Override

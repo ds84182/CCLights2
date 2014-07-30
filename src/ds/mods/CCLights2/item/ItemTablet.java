@@ -47,7 +47,6 @@ public class ItemTablet extends Item {
 			}
 		}
 		else{
-			CCLights2.debug("Show GUI");
 			Player.openGui(CCLights2.instance, 1, par3World, 0, 0, 0);
 		}
 		return par1ItemStack;
@@ -65,7 +64,6 @@ public class ItemTablet extends Item {
 			TileEntityTTrans tile = (TileEntityTTrans) par3World.getBlockTileEntity(par4, par5, par6);
 			nbt.setString("trans", tile.id.toString());
 			TabMesg.pushMessage(tile.id, new Message("connect",UUID.fromString(nbt.getString("uuid"))));
-			CCLights2.debug(tile.id.toString());
 			return false;
 		}
 		return false;

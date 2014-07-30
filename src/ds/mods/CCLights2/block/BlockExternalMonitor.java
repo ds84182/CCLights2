@@ -36,7 +36,6 @@ public class BlockExternalMonitor extends Block {
 	public boolean onBlockActivated(World world, int par2, int par3, int par4, EntityPlayer par5EntityPlayer, int par6, float vecX,
 			float vecY, float vecZ) {
 		TileEntityExternalMonitor tile = (TileEntityExternalMonitor) world.getBlockTileEntity(par2,par3,par4);
-		CCLights2.debug(vecX+","+vecY+","+vecZ+","+tile.m_dir);
 		float x = 0f;
 		float y = 0f;
 		switch (tile.m_dir)
@@ -96,10 +95,8 @@ public class BlockExternalMonitor extends Block {
 		}
 		int px = (int) Math.floor(x*32F);
 		int py = (int) Math.floor((1F-y)*32F);
-		CCLights2.debug(px+","+py);
 		px+=(tile.m_width-tile.m_xIndex-1)*32;
 		py+=(tile.m_height-tile.m_yIndex-1)*32;
-		CCLights2.debug(px+","+py);
 		if (!world.isRemote)
 		{
 			//Send it to the tileentity!
@@ -138,7 +135,6 @@ public class BlockExternalMonitor extends Block {
 		if(!world.isRemote){
 		int l = MathHelper.floor_double(entityliving.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
 		TileEntityExternalMonitor tile = (TileEntityExternalMonitor) world.getBlockTileEntity(i, j, k);
-		CCLights2.debug("Placed.");
 		tile.setDir(l);
 		tile.contractNeighbours();
         tile.contract();

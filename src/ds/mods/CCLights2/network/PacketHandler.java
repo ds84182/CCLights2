@@ -192,7 +192,6 @@ public class PacketHandler implements IPacketHandler,IConnectionHandler {
 			int x = PacketData.readInt();
 			int y = PacketData.readInt();
 			int z = PacketData.readInt();
-			CCLights2.debug("Got DL packet from client!");
 			TileEntityGPU tile = (TileEntityGPU) MinecraftServer.getServer().worldServers[playr.dimension].getBlockTileEntity(x, y, z);
 			if (tile != null) {
 				PacketSenders.sendPacketToPlayer(x, y, z, tile,player);
@@ -211,9 +210,8 @@ public class PacketHandler implements IPacketHandler,IConnectionHandler {
 			int len = PacketData.readInt();
 			byte[] arr = new byte[len];
 			PacketData.readFully(arr);
-			CCLights2.debug("Got Screenshot packet from client!");
 			TileEntityTTrans tile = (TileEntityTTrans) MinecraftServer.getServer().worldServers[playr.dimension].getBlockTileEntity(x, y, z);
-			if (tile != null) {//CCLights2.debug("found TTtrans to submit image to!");
+			if (tile != null) {
 				HashMap<Double, Double> table = new HashMap<Double, Double>();
 				ByteArrayInputStream in = new ByteArrayInputStream(arr);
 				Double at = 1D;
@@ -229,7 +227,6 @@ public class PacketHandler implements IPacketHandler,IConnectionHandler {
 						for (IComputerAccess c : gtile.comp)
 							if (c != null) {
 								c.queueEvent("tablet_image",new Object[]{table});
-								CCLights2.debug("QUEUED EVENT");
 							}
 					}
 				}
@@ -369,7 +366,6 @@ public class PacketHandler implements IPacketHandler,IConnectionHandler {
 		for (int i = 0; i < arr.length; i++) {
 			arr[i] = dat.readInt();
 		}
-		CCLights2.debug(w + "," + h);
 		tex.img.setRGB(0, 0, w, h, arr, 0, w);
 	}
 

@@ -26,7 +26,6 @@ public class Convert {
 		case 2:
 		{
 			color = to16(r,g,b);
-			CCLights2.debug("R: "+r+" G: "+g+" B: "+b+" Color: "+color);
 			break;
 		}
 		default:

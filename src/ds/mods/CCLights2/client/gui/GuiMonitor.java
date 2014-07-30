@@ -40,7 +40,6 @@ public class GuiMonitor extends GuiScreen {
 		Texture tex = mon.tex;
 		if (tex == null)
 			throw new RuntimeException("OpenGL texture setup failed!");
-		CCLights2.debug("Created textures");
 		Keyboard.enableRepeatEvents(true);
 	}
 	
@@ -73,7 +72,6 @@ public class GuiMonitor extends GuiScreen {
 		int wheel = Mouse.getDWheel();
 		if (wheel != 0)
 		{
-			CCLights2.debug(wheel/120+"");
 			PacketSenders.GPUEvent(par1,par2,tile,wheel);
 		}
 		if (isMouseDown)
@@ -84,7 +82,6 @@ public class GuiMonitor extends GuiScreen {
 				my = par2;
 				if (mlx != mx | mly != my)
 				{
-					CCLights2.debug("Moused move!");
 					PacketSenders.mouseEventMove(mx,mly,tile);
 				}
 				mlx = mx;
@@ -139,7 +136,6 @@ public class GuiMonitor extends GuiScreen {
 		par2 = applyYOffset(par2);
 		if (par1 > -1 & par2 > -1 & par1 < mon.getWidth()+1 & par2 < mon.getHeight()+1)
 		{
-			CCLights2.debug("Mouse click! "+par3);
 			isMouseDown = true;
 			mouseButton = par3;
 			mlx = par1;
@@ -159,7 +155,6 @@ public class GuiMonitor extends GuiScreen {
 		{
 			if (par3 == mouseButton)
 			{
-				CCLights2.debug("Mouse up! "+par3);
 				isMouseDown = false;
                 PacketSenders.mouseEventUp(tile);
 			}

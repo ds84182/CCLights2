@@ -48,13 +48,6 @@ public class BlockTabletTransceiver extends Block {
 			world.setBlockMetadataWithNotify(par2, par3, par4, 3 | i1 << 2,2);
 		}
 		}
-		TileEntityTTrans tile = (TileEntityTTrans) world.getBlockTileEntity(par2, par3, par4);
-		tile.connectToGPU();
-	}
-	
-	public void onNeighborBlockChange(World world, int par2, int par3, int par4, int par5) {
-	TileEntityTTrans tile = (TileEntityTTrans) world.getBlockTileEntity(par2, par3, par4);
-	tile.connectToGPU();
 	}
 	
 	@Override

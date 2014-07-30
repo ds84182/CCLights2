@@ -27,7 +27,6 @@ public class GuiHandler implements IGuiHandler {
 				return new GuiMonitor(((TileEntityMonitor) tile_entity));
 			}
 		case 1:
-			CCLights2.debug("Tablet GUI");
 			return new GuiTablet(player.getHeldItem().getTagCompound(),world);
 		}
 		return null;

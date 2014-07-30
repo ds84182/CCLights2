@@ -114,7 +114,6 @@ public class TileEntityTTrans extends TileEntityMonitor implements IPeripheral {
 			{
 				UUID tab = (UUID) msg.a; //A tablet asked to connect.
 				tablets.add(tab);
-				connectToGPU();
 				update = true;
 				TabMesg.pushMessage(tab, new Message("connected"));
 			}

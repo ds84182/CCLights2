@@ -29,8 +29,6 @@ public class GPUSerializer implements ISerializer {
 		int z = dat.readInt();
 		int d = dat.readInt();
 		
-		//CCLights2.debug("GPU in dim %d at %d, %d, %d\n", d, x, y, z);
-		
 		World world = ClientProxy.getClientWorld();
 		
 		TileEntity noncast = world.getBlockTileEntity(x, y, z);

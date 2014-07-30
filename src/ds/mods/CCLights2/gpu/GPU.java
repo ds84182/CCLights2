@@ -102,7 +102,6 @@ public class GPU {
 		monitors.add(mon);
 		currentMonitor = mon;
 		textures[0] = mon.tex;
-		CCLights2.debug("Added monitor "+mon.getWidth()+"x"+mon.getHeight()+" "+mon);
 	}
 	
 	/**
@@ -112,7 +111,6 @@ public class GPU {
 	public void removeMonitor(Monitor mon)
 	{
 		monitors.remove(mon);
-		CCLights2.debug("Rem monitor "+mon.getWidth()+"x"+mon.getHeight()+" "+mon);
 		if (currentMonitor == mon)
 		{
 			textures[0] = null;
@@ -139,7 +137,6 @@ public class GPU {
 			addMonitor(mon);
 		}
 		currentMonitor = mon;
-		CCLights2.debug("Monitor set!");
 		if (bindedSlot == 0)
 		{
 			bindedTexture = mon.getTex();

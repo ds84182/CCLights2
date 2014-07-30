@@ -1,5 +1,6 @@
 package ds.mods.CCLights2.block.tileentity;
 
+import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -20,6 +21,7 @@ import javax.imageio.ImageIO;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.common.ForgeDirection;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -38,6 +40,7 @@ import ds.mods.CCLights2.converter.ConvertInteger;
 import ds.mods.CCLights2.converter.ConvertString;
 import ds.mods.CCLights2.gpu.DrawCMD;
 import ds.mods.CCLights2.gpu.GPU;
+import ds.mods.CCLights2.gpu.Monitor;
 import ds.mods.CCLights2.gpu.Texture;
 import ds.mods.CCLights2.network.PacketSenders;
 
@@ -420,7 +423,6 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				{
 					data[(int) i] = ((Double)m.get(i+1D)).byteValue();
 				}
-				CCLights2.debug("Converted data");
 			}
 			else if (args.length == 1 && args[0] instanceof String)
 			{
@@ -787,16 +789,48 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			gpu.maxmem = init;
 		}
 	}
+	
+	public void connectToMonitor() {
+		for (int i = 0; i < ForgeDirection.VALID_DIRECTIONS.length; i++) {
+			ForgeDirection dir = ForgeDirection.VALID_DIRECTIONS[i];
+			TileEntity ftile = worldObj.getBlockTileEntity(
+					xCoord + dir.offsetX, yCoord + dir.offsetY, zCoord
+							+ dir.offsetZ);
+			if (ftile != null) {
+				if (ftile instanceof TileEntityMonitor) {
+					TileEntityMonitor tile = (TileEntityMonitor) worldObj
+							.getBlockTileEntity(xCoord + dir.offsetX, yCoord
+									+ dir.offsetY, zCoord + dir.offsetZ);
+					if (tile != null) {
+						boolean found = false;
+						for (Monitor m : gpu.monitors) {
+							if (m == tile.mon) {
+								found = true;
+								break;
+							}
+						}
+						if (found)
+							break;
+						tile.connect(this.gpu);
+						tile.mon.tex.fill(Color.black);
+						tile.mon.tex.drawText("Monitor connected", 0, 0, Color.white);
+						tile.mon.tex.texUpdate();
+						gpu.setMonitor(tile.mon);
+						return;
+					}
+				} 
+			}
+		}
+	}
 
 	@Override
 	public synchronized void updateEntity() {
-		synchronized (this){if(!sentOnce){ticks++;}
-		if (!frame){ gpu.processSendList();}
-		if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT && ticks > 25 && !sentOnce) {
-			ticks = 0;
-			sentOnce=true;
-			PacketSenders.GPUDOWNLOAD(xCoord, yCoord, zCoord, worldObj.provider.dimensionId);
+		synchronized (this) {if (!frame){ gpu.processSendList();}}
+		connectToMonitor();
+		if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT && ticks++ % 20 == 0 && !sentOnce) {
+		PacketSenders.GPUDOWNLOAD(xCoord, yCoord, zCoord);
+		sentOnce=true;
 		}
-		}
+
 	}
 }
