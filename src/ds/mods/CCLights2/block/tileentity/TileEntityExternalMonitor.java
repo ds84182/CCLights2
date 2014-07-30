@@ -211,7 +211,6 @@ public class TileEntityExternalMonitor extends TileEntityMonitor implements IPer
 	}
 
 	public void resize(int width, int height, boolean ignoreTerminals) {
-		CCLights2.debug("Resizing: " + width + "," + height);
 		int right = getRight();
 		int rightX = net.minecraft.util.Facing.offsetsXForSide[right];
 		int rightZ = net.minecraft.util.Facing.offsetsZForSide[right];
@@ -248,7 +247,7 @@ public class TileEntityExternalMonitor extends TileEntityMonitor implements IPer
 
 		this.m_totalConnections = totalConnections;
 		rebuildTerminal(existingTerminal);
-		
+
 		this.worldObj.markBlockRangeForRenderUpdate(this.xCoord, this.yCoord,
 				this.zCoord, this.xCoord + rightX * width,
 				this.yCoord + height, this.zCoord + rightZ * width);
@@ -313,7 +312,6 @@ public class TileEntityExternalMonitor extends TileEntityMonitor implements IPer
 	public void expand() {
 		dirty = true;
 		while ((mergeLeft()) || (mergeRight()) || (mergeUp()) || (mergeDown())) {
-			CCLights2.debug("Expanding");
 		}
 		;
 	}
@@ -460,9 +458,8 @@ public class TileEntityExternalMonitor extends TileEntityMonitor implements IPer
 		m_yIndex = dat.readInt();
 		m_dir = dat.readInt();
 		propogateTerminal();
-		CCLights2.debug("Handled update packet");
 	}
-	
+
 	@Override
 	public String[] getMethodNames() {
 		return new String[]{"getResolution","getDPM","getBlockResolution"};

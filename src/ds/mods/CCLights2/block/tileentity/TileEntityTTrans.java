@@ -30,6 +30,8 @@ public class TileEntityTTrans extends TileEntityMonitor implements IPeripheral {
 	{
 		mon = new Monitor(16*32,9*32,getMonitorObject());
 		mon.tex.fill(Color.black);
+		mon.tex.drawText("Tablet connected", 0, 0, Color.white);
+		mon.tex.texUpdate();
 	}
 	
 	public void onRemove()
@@ -46,6 +48,7 @@ public class TileEntityTTrans extends TileEntityMonitor implements IPeripheral {
 		{
 			TabMesg.pushMessage(t, new Message("unload"));
 		}
+		
 	}
 
 	@Override
@@ -54,6 +57,7 @@ public class TileEntityTTrans extends TileEntityMonitor implements IPeripheral {
 		{
 			TabMesg.pushMessage(t, new Message("load"));
 		}
+		
 		update = true;
 	}
 
@@ -110,6 +114,7 @@ public class TileEntityTTrans extends TileEntityMonitor implements IPeripheral {
 			{
 				UUID tab = (UUID) msg.a; //A tablet asked to connect.
 				tablets.add(tab);
+				update = true;
 				TabMesg.pushMessage(tab, new Message("connected"));
 			}
 			else if (msg.name.equals("ccevent"))
@@ -176,6 +181,7 @@ public class TileEntityTTrans extends TileEntityMonitor implements IPeripheral {
 			pkt.zPosition = zCoord;
 			writeToNBT(pkt.data);
 			PacketDispatcher.sendPacketToAllAround(xCoord, yCoord, zCoord, 64, worldObj.provider.dimensionId, pkt);
+			update = false;
 		}
 	}
 	@Override
@@ -202,7 +208,7 @@ public class TileEntityTTrans extends TileEntityMonitor implements IPeripheral {
 		}
 		case 3:
 		{
-
+           invalidate();
 		}
 		}
 		return null;

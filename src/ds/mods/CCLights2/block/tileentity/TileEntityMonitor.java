@@ -3,8 +3,10 @@ package ds.mods.CCLights2.block.tileentity;
 import java.awt.Color;
 
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.common.ForgeDirection;
 import dan200.computer.api.ILuaContext;
 import dan200.computer.api.ILuaObject;
+import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.gpu.GPU;
 import ds.mods.CCLights2.gpu.Monitor;
 
@@ -21,6 +23,7 @@ public class TileEntityMonitor extends TileEntity {
 	{
 		mon.addGPU(g);
 	}
+
 	
 	public ILuaObject getMonitorObject()
 	{

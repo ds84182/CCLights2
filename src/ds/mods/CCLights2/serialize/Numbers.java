@@ -19,6 +19,21 @@ public class Numbers {
 		
 	}
 	
+	public static class CharacterSerializer implements ISerializer
+	{
+
+		@Override
+		public void write(Object o, ByteArrayDataOutput dat) {
+			dat.writeChar((Character)o);
+		}
+
+		@Override
+		public Object read(ByteArrayDataInput dat) {
+			return dat.readChar();
+		}
+		
+	}
+	
 	public static class ShortSerializer implements ISerializer
 	{
 	

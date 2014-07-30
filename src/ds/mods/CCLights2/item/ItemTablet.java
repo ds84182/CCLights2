@@ -3,6 +3,7 @@ package ds.mods.CCLights2.item;
 import java.util.List;
 import java.util.UUID;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -13,6 +14,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
+import ds.mods.CCLights2.client.ClientTickHandler;
 import ds.mods.CCLights2.utils.TabMesg;
 import ds.mods.CCLights2.utils.TabMesg.Message;
 
@@ -28,16 +30,25 @@ public class ItemTablet extends Item {
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void addInformation(ItemStack par1ItemStack,
-			EntityPlayer par2EntityPlayer, @SuppressWarnings("rawtypes") List par3List, boolean par4) {
-		
+	public void addInformation(ItemStack item,
+			EntityPlayer Player, @SuppressWarnings("rawtypes") List par3List, boolean par4) {
 	}
 
 	@Override
-	public ItemStack onItemRightClick(ItemStack par1ItemStack, World par3World, EntityPlayer par2EntityPlayer) {
-		//Show GUI
-		CCLights2.debug("Show GUI");
-		par2EntityPlayer.openGui(CCLights2.instance, 1, par3World, 0, 0, 0);
+	public ItemStack onItemRightClick(ItemStack par1ItemStack, World par3World, EntityPlayer Player) {
+		if(Player.isSneaking()){
+			if (par1ItemStack.getTagCompound().getBoolean("canDisplay") && par3World.isRemote) {
+				UUID trans = UUID.fromString(par1ItemStack.getTagCompound().getString("trans"));
+				TileEntityTTrans tile = (TileEntityTTrans) par3World.getBlockTileEntity(
+								(Integer) TabMesg.getTabVar(trans, "x"),
+								(Integer) TabMesg.getTabVar(trans, "y"),
+								(Integer) TabMesg.getTabVar(trans, "z"));
+				ClientTickHandler.tile = tile;
+			}
+		}
+		else{
+			Player.openGui(CCLights2.instance, 1, par3World, 0, 0, 0);
+		}
 		return par1ItemStack;
 	}
 
@@ -46,15 +57,13 @@ public class ItemTablet extends Item {
 			EntityPlayer par2EntityPlayer, World par3World, int par4, int par5,
 			int par6, int par7, float par8, float par9, float par10) {
 		NBTTagCompound nbt = getNBT(par1ItemStack,par3World);
-		CCLights2.debug(par3World.getBlockId(par4, par5, par6)+"");
+		
 		if (!par3World.isRemote && CCLights2.ttrans.blockID == par3World.getBlockId(par4, par5, par6))
 		{
-			CCLights2.debug("Right clicked GPU");
 			nbt.setBoolean("canDisplay",true);
 			TileEntityTTrans tile = (TileEntityTTrans) par3World.getBlockTileEntity(par4, par5, par6);
 			nbt.setString("trans", tile.id.toString());
 			TabMesg.pushMessage(tile.id, new Message("connect",UUID.fromString(nbt.getString("uuid"))));
-			CCLights2.debug(tile.id.toString());
 			return false;
 		}
 		return false;

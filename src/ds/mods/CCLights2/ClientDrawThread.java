@@ -19,29 +19,39 @@ public class ClientDrawThread extends Thread {
 			synchronized (draws)
 			{
 				Iterator<Entry<GPU,Deque<DrawCMD>>> iter = draws.entrySet().iterator();
-				while (iter.hasNext())
+				synchronized (iter)
 				{
-					Entry<GPU,Deque<DrawCMD>> e = iter.next();
-					synchronized (e.getValue())
+					while (iter.hasNext())
 					{
-						if (e.getKey().currentMonitor == null) continue;
-						synchronized (e.getKey().currentMonitor.tex)
+						Entry<GPU,Deque<DrawCMD>> e = iter.next();
+						GPU gpu = e.getKey();
+						Deque<DrawCMD> stack = e.getValue();
+						synchronized (gpu)
 						{
-							e.getKey().currentMonitor.tex.renderLock = true;
-							Deque<DrawCMD> stack = e.getValue();
-							while (!stack.isEmpty())
+							synchronized (stack)
 							{
-								try {
-									DrawCMD d = stack.poll();
-									if (d == null) continue;
-									e.getKey().processCommand(d);
-								} catch (Exception e1) {
-									e1.printStackTrace();
+								if (gpu.currentMonitor == null) continue;
+								synchronized (gpu.currentMonitor)
+								{
+									synchronized (gpu.currentMonitor.tex)
+									{
+										gpu.currentMonitor.tex.renderLock = true;
+										while (!stack.isEmpty())
+										{
+											try {
+												DrawCMD d = stack.poll();
+												if (d == null) continue;
+												gpu.processCommand(d);
+											} catch (Exception e1) {
+												CCLights2.debug("Unable to process cmd in clientdrawthread");
+											}
+										}
+										gpu.currentMonitor.tex.texUpdate();
+										gpu.currentMonitor.tex.renderLock = false;
+										gpu.currentMonitor.tex.notifyAll();
+									}
 								}
 							}
-							e.getKey().currentMonitor.tex.texUpdate();
-							e.getKey().currentMonitor.tex.renderLock = false;
-							e.getKey().currentMonitor.tex.notifyAll();
 						}
 					}
 				}
@@ -49,7 +59,7 @@ public class ClientDrawThread extends Thread {
 			try {
 				Thread.sleep(1L);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				CCLights2.debug("ClientDrawThread is unable to sleep.");
 			}
 		}
 	}

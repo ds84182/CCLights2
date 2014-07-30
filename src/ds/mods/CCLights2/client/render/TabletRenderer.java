@@ -20,7 +20,6 @@ import org.lwjgl.opengl.GL11;
 
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
-import ds.mods.CCLights2.gpu.Monitor;
 import ds.mods.CCLights2.gpu.Texture;
 import ds.mods.CCLights2.item.ItemTablet;
 import ds.mods.CCLights2.utils.TabMesg;
@@ -105,7 +104,6 @@ public class TabletRenderer implements IItemRenderer {
 			NBTTagCompound nbt = ((ItemTablet)CCLights2.tablet).getNBT(item, Minecraft.getMinecraft().theWorld);
 			if (nbt == null)
 			{
-				CCLights2.debug("No NBT");
 				GL11.glPopMatrix();
 				return;
 			}
@@ -128,12 +126,17 @@ public class TabletRenderer implements IItemRenderer {
 						if (!(noncast == null || !(noncast instanceof TileEntityTTrans)))
 						{
 							TileEntityTTrans tile = (TileEntityTTrans) noncast;
-							Monitor mon;
-							mon = tile.mon;
-							if (mon.tex != null)
-								tex = mon.tex;
-							else
-								nbt.setBoolean("canDisplay", false);
+							
+							if (tile.mon.tex == null) {nbt.setBoolean("canDisplay", false); return;}
+							else if (isInOfRange(trans)){
+								tex = tile.mon.tex;
+							}
+							else{
+								//tablet is out of range,  fak shit up :D
+								tex.fill(Color.red);
+								tex.drawText("Out of range.", 0, 0, Color.white);
+								tex.texUpdate();
+							}
 						}
 						else
 							nbt.setBoolean("canDisplay", false);
@@ -147,8 +150,9 @@ public class TabletRenderer implements IItemRenderer {
 			GL11.glTranslatef(0F, -0.0001F, 0F);
 			TextureUtil.uploadTexture(dyntex.getGlTextureId(), tex.rgbCache, 16*32, 9*32);
 			Tessellator tess = Tessellator.instance;
-			tess.startDrawingQuads();
 			GL11.glDisable(GL11.GL_LIGHTING);
+			tess.startDrawingQuads();
+			tess.setBrightness(0xFF);
 			tess.addVertexWithUV(-8/16D, 0.5D-(2/16D), -(6/16D),0D,((double)tex.getHeight())/(9*32));
 			tess.addVertexWithUV(0.5D, 0.5D-(2/16D), -(6/16D),((double)tex.getWidth())/(16*32),((double)tex.getHeight())/(9*32));
 			tess.addVertexWithUV(0.5D, 0.5D-(2/16D), (3/16D),((double)tex.getWidth())/(16*32),0D);
@@ -157,6 +161,18 @@ public class TabletRenderer implements IItemRenderer {
 			GL11.glEnable(GL11.GL_LIGHTING);
 		}
 		GL11.glPopMatrix();
+	}
+	
+	public static boolean isInOfRange(UUID trans){
+		int xDifference = (int) Math.abs(Minecraft.getMinecraft().thePlayer.posX - (Integer)TabMesg.getTabVar(trans, "x"));
+		int yDiference = (int) Math.abs(Minecraft.getMinecraft().thePlayer.posY - (Integer)TabMesg.getTabVar(trans, "y"));
+		int zDifference = (int) Math.abs(Minecraft.getMinecraft().thePlayer.posZ - (Integer)TabMesg.getTabVar(trans, "z"));
+		int tabletRange= 10;
+		if (xDifference < tabletRange && yDiference < tabletRange && zDifference < tabletRange){
+			return true;
+		}
+		return false;
+		
 	}
 
 }

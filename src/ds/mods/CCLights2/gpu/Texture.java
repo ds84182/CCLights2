@@ -86,10 +86,7 @@ public class Texture {
 		if (font == null)
 		{
 			try {
-				font = ImageIO.read(CCLights2.class.getResourceAsStream("/assets/cclights/textures/gui/ascii.png"));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			font = ImageIO.read(CCLights2.class.getResourceAsStream("/assets/cclights/textures/gui/ascii.png"));
 			temp = new Texture(512, 512);
 			int i = font.getWidth();
 	        int j = font.getHeight();
@@ -142,8 +139,12 @@ public class Texture {
 	                ++i1;
 	                break;
 	            }
-	        }
+	        }	
+	        } catch (IOException e) {
+				CCLights2.debug("failed to load typeface for cclights2 ;_; did you mess with the files?");
+			}
 		}
+			
 	}
 	
 	/**

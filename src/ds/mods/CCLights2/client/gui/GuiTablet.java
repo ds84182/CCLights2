@@ -1,5 +1,6 @@
 package ds.mods.CCLights2.client.gui;
 
+import java.awt.Color;
 import java.util.UUID;
 
 import net.minecraft.client.Minecraft;
@@ -14,7 +15,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
-import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
+import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
 import ds.mods.CCLights2.client.render.TabletRenderer;
 import ds.mods.CCLights2.gpu.Monitor;
 import ds.mods.CCLights2.gpu.Texture;
@@ -25,7 +26,7 @@ public class GuiTablet extends GuiScreen {
 	Monitor mon;
 	Texture tex = TabletRenderer.defaultTexture;
 	NBTTagCompound nbt;
-	TileEntityMonitor tile;
+	TileEntityTTrans tile;
 
 	boolean isMouseDown = false;
 	int mouseButton = 0;
@@ -40,13 +41,20 @@ public class GuiTablet extends GuiScreen {
 		nbt = n;
 		if (nbt.getBoolean("canDisplay")) {
 			UUID trans = UUID.fromString(nbt.getString("trans"));
-			tile = (TileEntityMonitor) Minecraft.getMinecraft().theWorld
+			tile = (TileEntityTTrans) Minecraft.getMinecraft().theWorld
 					.getBlockTileEntity(
 							(Integer) TabMesg.getTabVar(trans, "x"),
 							(Integer) TabMesg.getTabVar(trans, "y"),
 							(Integer) TabMesg.getTabVar(trans, "z"));
+			if(TabletRenderer.isInOfRange(trans)){
 			mon = tile.mon;
 			tex = mon.tex;
+			}
+			else{
+				tex.fill(Color.red);
+				tex.drawText("Out of range.", 0, 0, Color.white);
+				tex.texUpdate();
+			}
 		}
 	}
 
@@ -117,7 +125,7 @@ public class GuiTablet extends GuiScreen {
 		}
 		TextureUtil.uploadTexture(TabletRenderer.dyntex.getGlTextureId(),
 				tex.rgbCache, 16 * 32, 9 * 32);
-		this.drawTexturedModalRect(unapplyXOffset(0), unapplyYOffset(0),
+		drawTexturedModalRect(unapplyXOffset(0), unapplyYOffset(0),
 				tex.getWidth(), tex.getHeight());
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
 	}
@@ -143,8 +151,7 @@ public class GuiTablet extends GuiScreen {
 
 	@Override
 	protected void mouseClicked(int par1, int par2, int par3) {
-		if (!nbt.getBoolean("canDisplay"))
-			return;
+		if (!nbt.getBoolean("canDisplay")) return;
 		par1 = applyXOffset(par1);
 		par2 = applyYOffset(par2);
 		if (par1 > -1 & par2 > -1 & par1 < mon.getWidth() + 1
