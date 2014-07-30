@@ -11,6 +11,7 @@ import net.minecraftforge.common.DimensionManager;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.registry.GameRegistry;
+import dan200.computercraft.api.ComputerCraftAPI;
 import ds.mods.CCLights2.block.BlockExternalMonitor;
 import ds.mods.CCLights2.block.BlockGPU;
 import ds.mods.CCLights2.block.BlockMonitor;
@@ -31,16 +32,14 @@ public class CommonProxy {
 	public void registerBlocks()
 	{	
 		boolean gpu = false, monitor = false, monitorBig = false, light = false, advancedlight = false, ttrans = false, ram = false, tablet = false;
-		
 		if(RegisterHelper.canRegisterBlock(Config.Gpu, "GPU")) {
 			CCLights2.gpu = new BlockGPU(Config.Gpu, Material.iron);
 			
 			GameRegistry.registerBlock(CCLights2.gpu, "CCLGPU");
 			GameRegistry.registerTileEntity(TileEntityGPU.class, "GPU");
-			
 			gpu = true;
 		}
-		
+		ComputerCraftAPI.registerPeripheralProvider(new PeripheralpProvider());
 		if (RegisterHelper.canRegisterBlock(Config.Monitor, "Monitor")) {
 			CCLights2.monitor = new BlockMonitor(Config.Monitor, Material.iron);
 			

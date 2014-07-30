@@ -1,6 +1,5 @@
 package ds.mods.CCLights2.utils;
 
-import ds.mods.CCLights2.CCLights2;
 
 public class Convert {
 	public static int to256(int r, int g, int b)

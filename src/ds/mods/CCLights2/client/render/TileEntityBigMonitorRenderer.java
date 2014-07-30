@@ -11,7 +11,6 @@ import net.minecraft.util.Facing;
 
 import org.lwjgl.opengl.GL11;
 
-import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityExternalMonitor;
 import ds.mods.CCLights2.gpu.Texture;
 

@@ -3,10 +3,8 @@ package ds.mods.CCLights2.block.tileentity;
 import java.awt.Color;
 
 import net.minecraft.tileentity.TileEntity;
-import net.minecraftforge.common.ForgeDirection;
-import dan200.computer.api.ILuaContext;
-import dan200.computer.api.ILuaObject;
-import ds.mods.CCLights2.CCLights2;
+import dan200.computercraft.api.lua.ILuaContext;
+import dan200.computercraft.api.lua.ILuaObject;
 import ds.mods.CCLights2.gpu.GPU;
 import ds.mods.CCLights2.gpu.Monitor;
 

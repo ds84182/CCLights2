@@ -10,9 +10,9 @@ import net.minecraft.util.AxisAlignedBB;
 import com.google.common.io.ByteArrayDataInput;
 
 import cpw.mods.fml.common.FMLLog;
-import dan200.computer.api.IComputerAccess;
-import dan200.computer.api.ILuaContext;
-import dan200.computer.api.IPeripheral;
+import dan200.computercraft.api.lua.ILuaContext;
+import dan200.computercraft.api.peripheral.IComputerAccess;
+import dan200.computercraft.api.peripheral.IPeripheral;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.gpu.Monitor;
 import ds.mods.CCLights2.network.PacketSenders;
@@ -489,11 +489,14 @@ public class TileEntityExternalMonitor extends TileEntityMonitor implements IPer
 	public String getType() {return "Monitor";}
 
 	@Override
-	public boolean canAttachToSide(int side) {return true;}
-
-	@Override
 	public void attach(IComputerAccess computer) {}
 
 	@Override
 	public void detach(IComputerAccess computer) {}
+
+	@Override
+	public boolean equals(IPeripheral other) {
+		if(other.getType() == getType()){return true;}
+		else return false;
+	}
 }

@@ -17,7 +17,7 @@ import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import ds.mods.CCLights2.network.PacketHandler;
 
-@Mod(modid = "CCLights2", name = "CCLights2", version = "0.4.1-74",dependencies="required-after:ComputerCraft;required-after:CCTurtle",acceptedMinecraftVersions = "[1.6.0,1.6.4]")
+@Mod(modid = "CCLights2", name = "CCLights2", version = "0.4.1-75",dependencies="required-after:ComputerCraft@[1.6,)",acceptedMinecraftVersions = "1.6.4")
 @NetworkMod(clientSideRequired = true, serverSideRequired = true, channels = { "CCLights2" },packetHandler = PacketHandler.class,connectionHandler = PacketHandler.class)
 public class CCLights2 {
 	@Mod.Instance("CCLights2")
@@ -57,8 +57,7 @@ public class CCLights2 {
 
 	public static void debug(String debugmsg) {
 		if (Config.DEBUGS) {
-			Level level = Level.INFO;
-			logger.log(level, debugmsg);
+			logger.log(Level.INFO, debugmsg);
 		}
 	}
 }

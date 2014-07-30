@@ -10,9 +10,9 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 
 import cpw.mods.fml.common.network.PacketDispatcher;
-import dan200.computer.api.IComputerAccess;
-import dan200.computer.api.ILuaContext;
-import dan200.computer.api.IPeripheral;
+import dan200.computercraft.api.lua.ILuaContext;
+import dan200.computercraft.api.peripheral.IComputerAccess;
+import dan200.computercraft.api.peripheral.IPeripheral;
 import ds.mods.CCLights2.network.PacketChunker;
 
 public class TileEntityAdvancedlight  extends TileEntity implements IPeripheral {
@@ -65,13 +65,7 @@ public class TileEntityAdvancedlight  extends TileEntity implements IPeripheral 
 
 	        return null;
 	    }
-
-	    @Override
-		public boolean canAttachToSide(int i)
-	    {
-	        return true;
-	    }
-	    
+        
 	    public void colorChange()
 	    {
 	    	ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
@@ -111,4 +105,10 @@ public class TileEntityAdvancedlight  extends TileEntity implements IPeripheral 
 	    		colorChange();
 	    	}
 	    }
+
+		@Override
+		public boolean equals(IPeripheral other) {
+			if(other.getType() == getType()){return true;}
+			else return false;
+		}
 }

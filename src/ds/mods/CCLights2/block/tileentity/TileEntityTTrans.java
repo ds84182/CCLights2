@@ -11,9 +11,9 @@ import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet132TileEntityData;
 import cpw.mods.fml.common.network.PacketDispatcher;
 import cpw.mods.fml.common.network.Player;
-import dan200.computer.api.IComputerAccess;
-import dan200.computer.api.ILuaContext;
-import dan200.computer.api.IPeripheral;
+import dan200.computercraft.api.lua.ILuaContext;
+import dan200.computercraft.api.peripheral.IComputerAccess;
+import dan200.computercraft.api.peripheral.IPeripheral;
 import ds.mods.CCLights2.converter.ConvertInteger;
 import ds.mods.CCLights2.gpu.GPU;
 import ds.mods.CCLights2.gpu.Monitor;
@@ -190,7 +190,7 @@ public class TileEntityTTrans extends TileEntityMonitor implements IPeripheral {
 	}
 
 	@Override
-	public Object[] callMethod(IComputerAccess computer,ILuaContext context, int method,Object[] arguments) 
+	public Object[] callMethod(IComputerAccess computer, ILuaContext context,int method, Object[] arguments) 
 			throws Exception {
 		switch (method)
 		{
@@ -217,14 +217,17 @@ public class TileEntityTTrans extends TileEntityMonitor implements IPeripheral {
 	@Override
 	public String getType() {return "TabletTransciever";
 	}
-	@Override
-	public boolean canAttachToSide(int side) {return true;
-	}
 
 	@Override
 	public void attach(IComputerAccess computer) {}
 
 	@Override
 	public void detach(IComputerAccess computer) {}
+
+	@Override
+	public boolean equals(IPeripheral other) {
+		if(other.getType() == getType()){return true;}
+		else return false;
+	}
 
 }

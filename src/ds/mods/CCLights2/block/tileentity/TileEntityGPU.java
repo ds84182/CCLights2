@@ -30,10 +30,10 @@ import com.google.common.collect.ImmutableSortedSet;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.Player;
 import cpw.mods.fml.relauncher.Side;
-import dan200.computer.api.IComputerAccess;
-import dan200.computer.api.ILuaContext;
-import dan200.computer.api.IMount;
-import dan200.computer.api.IPeripheral;
+import dan200.computercraft.api.filesystem.IMount;
+import dan200.computercraft.api.lua.ILuaContext;
+import dan200.computercraft.api.peripheral.IComputerAccess;
+import dan200.computercraft.api.peripheral.IPeripheral;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.converter.ConvertDouble;
 import ds.mods.CCLights2.converter.ConvertInteger;
@@ -702,12 +702,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 		}
 		return null;
 	}
-
-	@Override
-	public boolean canAttachToSide(int side) {
-		return true;
-	}
-
+	
 	@Override
 	public void attach(IComputerAccess computer) {
 		comp.add(computer);
@@ -832,5 +827,11 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 		sentOnce=true;
 		}
 
+	}
+
+	@Override
+	public boolean equals(IPeripheral other) {
+		if(other.getType() == getType()){return true;}
+		else return false;
 	}
 }

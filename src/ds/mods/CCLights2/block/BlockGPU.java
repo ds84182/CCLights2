@@ -17,7 +17,7 @@ import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
 import ds.mods.CCLights2.item.ItemRAM;
 
-public class BlockGPU extends Block {
+public class BlockGPU extends Block{
 	Icon sides = null;
 	public BlockGPU(int par1, Material par2Material) {
 		super(par1, par2Material);

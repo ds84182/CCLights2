@@ -5,9 +5,9 @@ import java.util.List;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import dan200.computer.api.IComputerAccess;
-import dan200.computer.api.ILuaContext;
-import dan200.computer.api.IPeripheral;
+import dan200.computercraft.api.lua.ILuaContext;
+import dan200.computercraft.api.peripheral.IComputerAccess;
+import dan200.computercraft.api.peripheral.IPeripheral;
 
 public class TileEntityColorLight  extends TileEntity implements IPeripheral{
     int color;
@@ -63,12 +63,15 @@ public class TileEntityColorLight  extends TileEntity implements IPeripheral{
 	}
 
 	@Override
-	public boolean canAttachToSide(int side) {return true;}
-
-	@Override
 	public synchronized void attach(IComputerAccess computer) {}
 
 	@Override
 	public synchronized void detach(IComputerAccess computer) {}
+
+	@Override
+	public boolean equals(IPeripheral other) {
+		if(other.getType() == getType()){return true;}
+		else return false;
+	}
 
 }
