@@ -30,7 +30,7 @@ public class CCLights2 {
 	public static Item ram,tablet;
 	public static Logger logger;
 	
-	public static CreativeTabs ccltab = new CreativeTabs("CClights2") {
+	public static CreativeTabs ccltab = new CreativeTabs("CCLights2") {
 		@Override
 		public ItemStack getIconItemStack() {
 			this.getTranslatedTabLabel();

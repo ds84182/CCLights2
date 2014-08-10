@@ -31,6 +31,7 @@ public class TabletRenderer implements IItemRenderer {
 	TextureManager re;
 	ResourceLocation texture = new ResourceLocation("cclights", "textures/items/Tablet.png");
 	public static Texture defaultTexture = new Texture(16*32, 9*32);
+	public static Texture errorTexture = new Texture(16*32, 9*32);
 	public static DynamicTexture dyntex = new DynamicTexture(16*32,9*32);
 	public static int[] dyntex_data;
 	
@@ -44,6 +45,11 @@ public class TabletRenderer implements IItemRenderer {
 		defaultTexture.drawText("Please configure the tablet with a Tablet Transmitter.", 0, 9, Color.white);
 		defaultTexture.drawText("You can do this by right clicking it with your tablet.", 0, 18, Color.white);
 		defaultTexture.texUpdate();
+		
+		errorTexture.rgbCache = new int[16*32*9*32];
+		errorTexture.fill(Color.red);
+		errorTexture.drawText("Out of range.", 0, 0, Color.white);
+		errorTexture.texUpdate();
 	}
 
 	@Override
@@ -137,9 +143,7 @@ public class TabletRenderer implements IItemRenderer {
 							}
 							else{
 								//tablet is out of range,  fak shit up :D
-								tex.fill(Color.red);
-								tex.drawText("Out of range.", 0, 0, Color.white);
-								tex.texUpdate();
+								tex = errorTexture;
 							}
 						}
 						else

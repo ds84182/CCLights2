@@ -4,7 +4,7 @@ import net.minecraft.world.World;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import dan200.computercraft.api.peripheral.IPeripheralProvider;
 
-public class PeripheralpProvider implements IPeripheralProvider
+public class PeripheralProvider implements IPeripheralProvider
 {
 
     @Override

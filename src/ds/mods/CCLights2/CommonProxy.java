@@ -39,7 +39,7 @@ public class CommonProxy {
 			GameRegistry.registerTileEntity(TileEntityGPU.class, "GPU");
 			gpu = true;
 		}
-		ComputerCraftAPI.registerPeripheralProvider(new PeripheralpProvider());
+		ComputerCraftAPI.registerPeripheralProvider(new PeripheralProvider());
 		if (RegisterHelper.canRegisterBlock(Config.Monitor, "Monitor")) {
 			CCLights2.monitor = new BlockMonitor(Config.Monitor, Material.iron);
 			
