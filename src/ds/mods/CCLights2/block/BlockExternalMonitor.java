@@ -17,7 +17,6 @@ import ds.mods.CCLights2.block.tileentity.TileEntityExternalMonitor;
 import ds.mods.CCLights2.gpu.GPU;
 
 public class BlockExternalMonitor extends Block {
-
 	public BlockExternalMonitor(int par1, Material par2Material) {
 		super(par1, par2Material);
 		this.setUnlocalizedName("monitor.big");
@@ -156,9 +155,9 @@ public class BlockExternalMonitor extends Block {
 	public boolean isOpaqueCube() {
 		return false;
 	}
-	@Override
-	public void registerIcons(IconRegister par1IconRegister)
-    {
-        this.blockIcon = par1IconRegister.registerIcon("cclights:monitorsides");
-    }
+	
+	 @Override
+	  public void registerIcons(IconRegister iconRegister) {
+	      blockIcon = iconRegister.registerIcon("cclights:monitorsides");
+	  }
 }

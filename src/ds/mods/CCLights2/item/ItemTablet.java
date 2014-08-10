@@ -14,6 +14,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
 import ds.mods.CCLights2.client.ClientTickHandler;
+import ds.mods.CCLights2.client.render.TabletRenderer;
 import ds.mods.CCLights2.utils.TabMesg;
 import ds.mods.CCLights2.utils.TabMesg.Message;
 
@@ -38,11 +39,13 @@ public class ItemTablet extends Item {
 		if(Player.isSneaking()){
 			if (par1ItemStack.getTagCompound().getBoolean("canDisplay") && par3World.isRemote) {
 				UUID trans = UUID.fromString(par1ItemStack.getTagCompound().getString("trans"));
+				if(TabletRenderer.isInOfRange(trans)){
 				TileEntityTTrans tile = (TileEntityTTrans) par3World.getBlockTileEntity(
 								(Integer) TabMesg.getTabVar(trans, "x"),
 								(Integer) TabMesg.getTabVar(trans, "y"),
 								(Integer) TabMesg.getTabVar(trans, "z"));
 				ClientTickHandler.tile = tile;
+				}
 			}
 		}
 		else{

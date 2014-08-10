@@ -48,7 +48,9 @@ public class ClientDrawThread extends Thread {
 										}
 										gpu.currentMonitor.tex.texUpdate();
 										gpu.currentMonitor.tex.renderLock = false;
+										try{
 										gpu.currentMonitor.tex.notifyAll();
+										}catch(Exception eee){eee.printStackTrace();}
 									}
 								}
 							}

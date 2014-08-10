@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureUtil;
@@ -61,13 +62,16 @@ public class TabletRenderer implements IItemRenderer {
 		if (re == null)
 			re = Minecraft.getMinecraft().renderEngine;
 		re.bindTexture(texture);
-		//re.bindTexture("/mods/CCLights2/textures/items/Tablet.png");
 		GL11.glPushMatrix();
 		switch (type)
 		{
 		case ENTITY:
-			GL11.glRotatef(180, 0F, 0F, 1F);
-			GL11.glTranslatef(0F, -0.25F, 0F);
+			if(RenderItem.renderInFrame){
+			   GL11.glRotatef(90, 0F, 0F, 1F);
+			   GL11.glTranslatef(0, -0.5F, 0.10F);
+			}else{
+			   GL11.glRotatef(180, 0F, 0F, 1F);
+			   GL11.glTranslatef(0F, -0.25F, 0F);}
 			break;
 		case EQUIPPED:
 			int i;

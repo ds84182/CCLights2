@@ -759,7 +759,6 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 	@Override
 	public void detach(IComputerAccess computer) {
 		comp.remove(computer);
-		computer.unmount("cclights2");
 	}
 
 	@Override
