@@ -14,7 +14,7 @@ import cpw.mods.fml.common.network.Player;
 import dan200.computercraft.api.lua.ILuaContext;
 import dan200.computercraft.api.peripheral.IComputerAccess;
 import dan200.computercraft.api.peripheral.IPeripheral;
-import ds.mods.CCLights2.converter.ConvertInteger;
+import static ds.mods.CCLights2.utils.TypeConverters.*;
 import ds.mods.CCLights2.gpu.GPU;
 import ds.mods.CCLights2.gpu.Monitor;
 import ds.mods.CCLights2.utils.TabMesg;
@@ -204,7 +204,7 @@ public class TileEntityTTrans extends TileEntityMonitor implements IPeripheral {
 		}
 		case 2:
 		{
-			return new Object[]{tablets.get(ConvertInteger.convert(arguments[0])).toString()};
+			return new Object[]{tablets.get(checkInteger(arguments,0,"getTabletUUID")).toString()};
 		}
 		case 3:
 		{

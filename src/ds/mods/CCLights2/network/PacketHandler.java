@@ -30,7 +30,7 @@ import dan200.computercraft.api.peripheral.IComputerAccess;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.ClientDrawThread;
 import ds.mods.CCLights2.Config;
-import ds.mods.CCLights2.block.tileentity.TileEntityAdvancedlight;
+import ds.mods.CCLights2.block.tileentity.TileEntityAdvancedLight;
 import ds.mods.CCLights2.block.tileentity.TileEntityExternalMonitor;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
@@ -279,11 +279,14 @@ public class PacketHandler implements IPacketHandler,IConnectionHandler {
 							thread = new ClientDrawThread();
 							thread.start();
 						}
-						if (thread.draws.get(tile.gpu) == null) {
-							thread.draws.put(tile.gpu,
-									new ArrayDeque<DrawCMD>());
+						synchronized (thread)
+						{
+							if (thread.draws.get(tile.gpu) == null) {
+								thread.draws.put(tile.gpu,
+										new ArrayDeque<DrawCMD>());
+							}
+							thread.draws.get(tile.gpu).addLast(cmd);
 						}
-						thread.draws.get(tile.gpu).addLast(cmd);
 					}
 				}
 			}
@@ -335,10 +338,10 @@ public class PacketHandler implements IPacketHandler,IConnectionHandler {
 			int x = PacketData.readInt();
 			int y = PacketData.readInt();
 			int z = PacketData.readInt();
-			TileEntityAdvancedlight tile = (TileEntityAdvancedlight) ClientProxy.getClientWorld()
+			TileEntityAdvancedLight tile = (TileEntityAdvancedLight) ClientProxy.getClientWorld()
 					.getBlockTileEntity(x, y, z);
 			if (tile != null) {
-				TileEntityAdvancedlight ntile = tile;
+				TileEntityAdvancedLight ntile = tile;
 				ntile.r = PacketData.readFloat();
 				ntile.g = PacketData.readFloat();
 				ntile.b = PacketData.readFloat();

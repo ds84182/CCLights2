@@ -16,54 +16,41 @@ public class ClientDrawThread extends Thread {
 	public void run() {
 		while (true)
 		{
-			synchronized (draws)
+			synchronized (this)
 			{
 				Iterator<Entry<GPU,Deque<DrawCMD>>> iter = draws.entrySet().iterator();
-				synchronized (iter)
+				while (iter.hasNext())
 				{
-					while (iter.hasNext())
+					Entry<GPU,Deque<DrawCMD>> e = iter.next();
+					GPU gpu = e.getKey();
+					Deque<DrawCMD> stack = e.getValue();
+					if (gpu.currentMonitor == null) continue;
+					gpu.currentMonitor.tex.renderLock = true;
+					while (!stack.isEmpty())
 					{
-						Entry<GPU,Deque<DrawCMD>> e = iter.next();
-						GPU gpu = e.getKey();
-						Deque<DrawCMD> stack = e.getValue();
-						synchronized (gpu)
-						{
-							synchronized (stack)
-							{
-								if (gpu.currentMonitor == null) continue;
-								synchronized (gpu.currentMonitor)
-								{
-									synchronized (gpu.currentMonitor.tex)
-									{
-										gpu.currentMonitor.tex.renderLock = true;
-										while (!stack.isEmpty())
-										{
-											try {
-												DrawCMD d = stack.poll();
-												if (d == null) continue;
-												gpu.processCommand(d);
-											} catch (Exception e1) {
-												CCLights2.debug("Unable to process cmd in clientdrawthread");
-											}
-										}
-										gpu.currentMonitor.tex.texUpdate();
-										gpu.currentMonitor.tex.renderLock = false;
-										try{
-										gpu.currentMonitor.tex.notifyAll();
-										}catch(Exception eee){eee.printStackTrace();}
-									}
-								}
-							}
+						try {
+							DrawCMD d = stack.poll();
+							if (d == null) continue;
+							gpu.processCommand(d);
+						} catch (Exception e1) {
+							CCLights2.debug("Unable to process cmd in clientdrawthread");
 						}
+					}
+					gpu.currentMonitor.tex.texUpdate();
+					gpu.currentMonitor.tex.renderLock = false;
+					try {
+						//gpu.currentMonitor.tex.notifyAll();
+					} catch(Exception eee)
+					{
+						eee.printStackTrace();
 					}
 				}
 			}
 			try {
 				Thread.sleep(1L);
 			} catch (InterruptedException e) {
-				CCLights2.debug("ClientDrawThread is unable to sleep.");
+				CCLights2.debug("Imsomia is a bitch");
 			}
 		}
 	}
-
 }

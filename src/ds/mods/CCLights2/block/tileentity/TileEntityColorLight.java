@@ -8,6 +8,7 @@ import net.minecraft.tileentity.TileEntity;
 import dan200.computercraft.api.lua.ILuaContext;
 import dan200.computercraft.api.peripheral.IComputerAccess;
 import dan200.computercraft.api.peripheral.IPeripheral;
+import static ds.mods.CCLights2.utils.TypeConverters.*;
 
 public class TileEntityColorLight  extends TileEntity implements IPeripheral{
     int color;
@@ -26,7 +27,7 @@ public class TileEntityColorLight  extends TileEntity implements IPeripheral{
 	public Object[] callMethod(IComputerAccess computer, ILuaContext context,
 			int method, Object[] arguments) throws Exception {
 		if (method == 0) {
-			String colorString = arguments[0].toString();
+			String colorString = toLString(arguments[0]);
 			try {
 				color = Integer.parseInt(colorString);
 			} catch (NumberFormatException ex) {

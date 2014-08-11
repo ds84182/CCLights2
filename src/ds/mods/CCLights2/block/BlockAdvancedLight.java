@@ -8,7 +8,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.CommonProxy;
-import ds.mods.CCLights2.block.tileentity.TileEntityAdvancedlight;
+import ds.mods.CCLights2.block.tileentity.TileEntityAdvancedLight;
 
 public class BlockAdvancedLight extends BlockContainer
 {
@@ -43,7 +43,7 @@ public class BlockAdvancedLight extends BlockContainer
     @Override
 	public TileEntity createNewTileEntity(World var1)
     {
-        return new TileEntityAdvancedlight();
+        return new TileEntityAdvancedLight();
     }
     
 }
