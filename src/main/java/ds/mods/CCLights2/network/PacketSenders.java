@@ -49,7 +49,7 @@ public final class PacketSenders {
 		outputStream.writeInt(drawlist.size());
 		while (!drawlist.isEmpty()) {
 			DrawCMD c = drawlist.removeLast();
-			outputStream.writeInt(c.cmd);
+			outputStream.writeInt(c.cmd.ordinal());
 			outputStream.writeInt(c.args.length);
 			for (int g = 0; g < c.args.length; g++) {
 				Object v = c.args[g];

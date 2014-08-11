@@ -247,7 +247,7 @@ public class PacketHandler implements IPacketHandler,IConnectionHandler {
 				GPU gpu = tile.gpu;
 				for (int i = 0; i < len; i++) {
 					DrawCMD cmd = new DrawCMD();
-					cmd.cmd = PacketData.readInt();
+					cmd.cmd = TileEntityGPU.EnumCache[PacketData.readInt()];
 					int lent = PacketData.readInt();
 					cmd.args = new Object[lent];
 					for (int g = 0; g < lent; g++) {

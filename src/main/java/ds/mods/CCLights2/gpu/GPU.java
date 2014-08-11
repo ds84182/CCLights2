@@ -295,24 +295,24 @@ public class GPU {
 			bindedTexture.transform = transform;
 			switch(cmd.cmd)
 			{
-				case -1:
+				case SetColor:
 				{
 					color = cmd.args.length == 3 ? new Color((Integer) cmd.args[0],(Integer) cmd.args[1],(Integer) cmd.args[2]) : new Color((Integer) cmd.args[0],(Integer) cmd.args[1],(Integer) cmd.args[2],(Integer) cmd.args[3]);
 					break;
 				}
-				case 0:
+				case Fill:
 				{
 					//Clear//
 					bindedTexture.fill(color);
 					break;
 				}
-				case 1:
+				case Plot:
 				{
 					//Plot//
 					bindedTexture.plot(color,(Integer) cmd.args[0],(Integer) cmd.args[1]);
 					break;
 				}
-				case 2:
+				case DrawTexture:
 				{
 					//drawTexture//
 					if ((Integer)cmd.args[0] == 0)
@@ -326,25 +326,25 @@ public class GPU {
 					}
 					break;
 				}
-				case 3:
+				case Line:
 				{
 					//line//
 					bindedTexture.line(color,(Integer) cmd.args[0],(Integer) cmd.args[1],(Integer) cmd.args[2],(Integer) cmd.args[3]);
 					break;
 				}
-				case 6:
+				case CreateTexture:
 				{
 					//New Texture//
 					return new Object[]{newTexture((Integer) cmd.args[0],(Integer) cmd.args[1])};
 				}
-				case 7:
+				case BindTexture:
 				{
 					//Bind Texture//
 					bindedTexture = textures[(Integer) cmd.args[0]];
 					bindedSlot = (Integer) cmd.args[0];
 					break;
 				}
-				case 8:
+				case FreeTexture:
 				{
 					//Delete Texture//
 					if (bindedTexture == textures[(Integer) cmd.args[0]])
@@ -355,48 +355,34 @@ public class GPU {
 					textures[(Integer) cmd.args[0]] = null;
 					break;
 				}
-				case 9:
+				case Rectangle:
 				{
 					bindedTexture.rect(color,(Integer) cmd.args[0],(Integer) cmd.args[1],(Integer) cmd.args[2],(Integer) cmd.args[3]);
 					break;
 				}
-				case 10:
+				case FilledRectangle:
 				{
 					bindedTexture.filledRect(color,(Integer) cmd.args[0],(Integer) cmd.args[1],(Integer) cmd.args[2],(Integer) cmd.args[3]);
 					break;
 				}
-				case 12:
+				case SetPixels:
 				{
-					int i = 5;
-					int type = (Integer) cmd.args[0];
-					if (type == 0)
+					int i = 4;
+					for (int x = 0; x<(Integer)cmd.args[1]; x++)
 					{
-						for (int x = 0; x<(Integer)cmd.args[1]; x++)
-						{
-							for (int y = 0; y<(Integer)cmd.args[2]; y++)
-							{
-								bindedTexture.plot(new Color((Integer) cmd.args[i++], (Integer) cmd.args[i++], (Integer) cmd.args[i++]), x+(Integer)cmd.args[3], y+(Integer)cmd.args[4]);
-							}
-						}
-					}
-					else
-					{
-						for (int y = 0; y<(Integer)cmd.args[2]; y++)
-						{
-							for (int x = 0; x<(Integer)cmd.args[1]; x++)
-							{
-								bindedTexture.plot(new Color((Integer) cmd.args[i++], (Integer) cmd.args[i++], (Integer) cmd.args[i++]), x+(Integer)cmd.args[3], y+(Integer)cmd.args[4]);
-							}
-						}
+					 for (int y = 0; y<(Integer)cmd.args[2]; y++)
+					 {
+					   bindedTexture.plot(new Color((Integer) cmd.args[i++], (Integer) cmd.args[i++], (Integer) cmd.args[i++], (Integer) cmd.args[i++]), x+(Integer)cmd.args[3], y+(Integer)cmd.args[4]);
+					 }
 					}
 					break;
 				}
-				case 13:
+				case FlipVertically:
 				{
 					textures[(Integer) cmd.args[0]].flipV();
 					break;
 				}
-				case 14:
+				case Import:
 				{
 					if (cmd.args[0] instanceof Object[])
 					{
@@ -421,7 +407,7 @@ public class GPU {
 					return new Object[]{id};
 					}
 				}
-				case 15:
+				case DrawText:
 				{
 					String str = "";
 					for (int i = 0; i<cmd.args.length-2; i++)
@@ -431,52 +417,53 @@ public class GPU {
 					bindedTexture.drawText(str, (Integer) cmd.args[0], (Integer) cmd.args[1], color);
 					break;
 				}
-				case 16:
+				case Transelate:
 				{
 					translate((Double)cmd.args[0],(Double)cmd.args[1]);
 					break;
 				}
-				case 17:
+				case Rotate:
 				{
 					rotate((Double)cmd.args[0]);
 					break;
 				}
-				case 18:
+				case RotateAround:
 				{
 					rotate((Double)cmd.args[0],(Double)cmd.args[1],(Double)cmd.args[2]);
 					break;
 				}
-				case 19:
+				case Scale:
 				{
 					scale((Double)cmd.args[0],(Double)cmd.args[1]);
 					break;
 				}
-				case 20:
+				case Push:
 				{
 					push();
 					break;
 				}
-				case 21:
+				case Pop:
 				{
 					pop();
 					break;
 				}
-				case 22:
+				case Blur:
 				{
 					textures[(Integer) cmd.args[0]].blur();
 					break;
 				}
-				case 23:
+				case ClearRectangle:
 				{
 					bindedTexture.clearRect(color,(Integer) cmd.args[0],(Integer) cmd.args[1],(Integer) cmd.args[2],(Integer) cmd.args[3]);
 					break;
 				}
-				case 24:
+				case Origin:
 				{
 					transform = new AffineTransform();
 					break;
 				}
-
+			default:
+				break;
 			}
 		return null;
 	}
