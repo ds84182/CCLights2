@@ -10,73 +10,44 @@ buildscript {
         classpath 'net.minecraftforge.gradle:ForgeGradle:1.0-SNAPSHOT'
     }
 }
-ENV = System.getenv()
-
-if(ENV.DRONE_BUILD_NUMBER)
-buildNum = ENV.DRONE_BUILD_NUMBER
-
-else if (ENV.BUILD_NUMBER)
-buildNum = ENV.BUILD_NUMBER
-
-else if (ENV.TRAVIS_BUILD_NUMBER)
-buildNum = ENV.TRAVIS_BUILD_NUMBER
-
-else
-buildNum = 1
 
 apply plugin: 'forge'
 
-   sourceSets {
-    main {
-        java {
-            srcDir 'src'
-        }
-        resources {
-            srcDir '/'
-        }
-    }
-}
+if (System.getenv().BUILD_NUMBER != null)
+	ext.buildNumber = System.getenv().BUILD_NUMBER?.toInteger()
+else
+	ext.buildNumber = 0
 
-// define the properties file
-ext.configFile = file "build.properties"
-
-configFile.withReader {
-    // read config
-    def prop = new Properties()
-    prop.load(it)
-    ext.config = new ConfigSlurper().parse prop
-}
-
-version = config.mod_version + "-" + buildNum
-group= "CCLights2"
+version = "0.4.1"
+group = "ds.mods.CCLights2"
 archivesBaseName = "CCLights2"
 
 minecraft {
-	version = config.minecraft_version + "-" + config.forge_version
+	version = "1.6.4-9.11.1.964"
 	replace "@VERSION@", project.version
-	replace "@AUTHOR@", config.author_name
+	replace "@BUILD@", project.ext.buildNumber
+}
+version = "${version}.${project.ext.buildNumber}"
+sourceSets.main.java.srcDir("./src/externs/java")
+
+jar.doFirst {
+	for (String s : new File("./src/externs/java").list())
+		delete new File(sourceSets.main.output.classesDir, s);
 }
 
-processResources
-{
+//jar.classifier = "${ext.buildNumber}"
+
+processResources {
     // replace stuff in mcmod.info, nothing else
     from(sourceSets.main.resources.srcDirs) {
-		include 'mcmod.info'
+        include 'mcmod.info'
                 
-        expand 'version' : project.version, 'mcversion' : project.minecraft.version
+        // replace version and mcversion
+        expand 'version':project.version, 'mcversion':project.minecraft.version
     }
         
     // copy everything else, thats not the mcmod.info
     from(sourceSets.main.resources.srcDirs) {
-        include 'assets'
+        exclude 'mcmod.info'
     }
-}
-
-task deobfJar(type: Jar) {
-        from sourceSets.main.output
-        appendix = 'deobf'
-}
- 
-artifacts {
-        archives deobfJar
 }
