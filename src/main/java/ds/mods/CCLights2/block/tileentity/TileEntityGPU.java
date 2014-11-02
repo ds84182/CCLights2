@@ -401,6 +401,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 			else if (args.length == 1 && args[0] instanceof String)
 			{
 				String file = (String)args[0];
+				if (file.startsWith(".") || file.startsWith("/") || file.startsWith("\\")){throw new Exception("import: Argument Error: Invalid char used at start of filename!");}
 				File f = new File(CCLights2.proxy.getWorldDir(worldObj),"computer/"+computer.getID()+"/"+file);
 				FileInputStream in = new FileInputStream(f);
 				byte[] b = new byte[(int)in.getChannel().size()];
@@ -478,7 +479,7 @@ public class TileEntityGPU extends TileEntity implements IPeripheral {
 				{
 					nargs[2+i] = str.charAt(i);
 				}
-				cmd.cmd = CommandEnum.DrawTexture;
+				cmd.cmd = CommandEnum.DrawText;
 				cmd.args = nargs;
 				Object[] ret = gpu.processCommand(cmd);
 				gpu.drawlist.push(cmd);
