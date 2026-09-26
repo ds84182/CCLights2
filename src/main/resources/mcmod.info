@@ -5,7 +5,7 @@
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "https://github.com/ds84182/CCLights2",
-  "credits": "ds84182, Alekso56, gamax92, BlueAmulet",
+  "credits": "ds84182, Alekso56, gamax92",
   "authors": [
     "ds84182",
     "Alekso56"
