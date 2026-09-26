@@ -108,6 +108,9 @@ Texture 0 is always the current monitor. Wrap the peripheral with `peripheral.fi
 
 Old names `flipTextureV`, `clearRect` and `getPixelColor` still work.
 
+**IDE autocompletion:** `docs/ide/cclights2.lua` is a Lua Language Server definition file for this whole API
+(VS Code "Lua" extension, EmmyLua, Neovim). See `docs/ide/README.md` for the two-line setup.
+
 Programs should read `gpu.getSize(0)` instead of assuming a size: a bigger monitor means more pixels, not a
 magnified picture. To draw at a fixed design size on any screen, use the `canvas` helper that ships with the mod
 (the tutorial and `gpudemo` use it):
