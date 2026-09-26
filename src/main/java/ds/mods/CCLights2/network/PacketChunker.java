@@ -2,138 +2,103 @@ package ds.mods.CCLights2.network;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import ds.mods.CCLights2.network.PacketHandler.PacketMessage;
 
+/**
+ * Compresses a payload and splits it into packets small enough for the Forge channel.
+ * Reassembly is keyed by sender so several clients can talk to the server at once.
+ */
 public class PacketChunker {
+	/** Below this size a payload is sent as a single uncompressed packet. */
+	public static final int INLINE_LIMIT = 1024;
+	public static final int CHUNK_SIZE = 30000;
 
-	private byte packetId = 0;
+	private int packetId = 0;
+	private final Map<String, byte[][]> pending = new HashMap<String, byte[][]>();
 
-	private final HashMap<Byte, byte[][]> packetStack = new HashMap<Byte, byte[][]>();
+	public static final PacketChunker instance = new PacketChunker();
 
-	public final static PacketChunker instance = new PacketChunker();
-
-	/***
-	 * Convert a byte array into one or more packets
-	 * 
-	 * @param the
-	 *            byte array
-	 * @return the list of chunks
-	 * @throws IOException
-	 */
-	public PacketMessage[] createPackets(String channel, byte[] input) throws IOException {
-		//gzip.jpg
-		ByteArrayOutputStream dataToCompress = new ByteArrayOutputStream();
-		GZIPOutputStream zipStream = new GZIPOutputStream(dataToCompress);
-		zipStream.write(input);
-		zipStream.close();
-		byte[] data = dataToCompress.toByteArray();
-		dataToCompress.close();
-		
-		int start = 0;
-		short maxChunkSize = Short.MAX_VALUE - 100;
-		byte numChunks = (byte)Math.ceil(data.length / (double)maxChunkSize);
-		PacketMessage[] packets = new PacketMessage[numChunks];
-		final byte META_LENGTH = 4;
-
-		for (byte i = 0; i < numChunks; i++) {
-
-			// size of the current chunk
-			int chunkSize = Math.min(data.length - start, maxChunkSize);
-
-			// make a new byte array but leave space for the meta
-			byte[] chunk = new byte[META_LENGTH + chunkSize];
-
-			// set the chunk metadata: total number of chunks, current chunk
-			// index, packetId to match chunks together
-			chunk[0] = PacketHandlerIMPL.NET_SPLITPACKET;
-			chunk[1] = numChunks;
-			chunk[2] = i;
-			chunk[3] = packetId;
-
-			// copy part of the data across
-			System.arraycopy(data, start, chunk, META_LENGTH, chunkSize);
-
-			PacketMessage packet = new PacketMessage();
-			packet.data = chunk;
-			packets[i] = packet;
-			start += chunkSize;
+	public synchronized PacketMessage[] createPackets(byte[] input) throws IOException {
+		if (input.length <= INLINE_LIMIT) {
+			return new PacketMessage[] { new PacketMessage(input) };
 		}
-		packetId++;
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(input.length / 2 + 64);
+		GZIPOutputStream zip = new GZIPOutputStream(bos);
+		zip.write(input);
+		zip.close();
+		byte[] data = bos.toByteArray();
+
+		int numChunks = (data.length + CHUNK_SIZE - 1) / CHUNK_SIZE;
+		if (numChunks > Short.MAX_VALUE) throw new IOException("payload too large: " + input.length + " bytes");
+		int id = packetId++;
+		PacketMessage[] packets = new PacketMessage[numChunks];
+		int start = 0;
+		for (int i = 0; i < numChunks; i++) {
+			int size = Math.min(data.length - start, CHUNK_SIZE);
+			byte[] chunk = new byte[7 + size];
+			chunk[0] = PacketProcessor.NET_SPLITPACKET;
+			chunk[1] = (byte) (numChunks >> 8);
+			chunk[2] = (byte) numChunks;
+			chunk[3] = (byte) (i >> 8);
+			chunk[4] = (byte) i;
+			chunk[5] = (byte) (id >> 8);
+			chunk[6] = (byte) id;
+			System.arraycopy(data, start, chunk, 7, size);
+			packets[i] = new PacketMessage(chunk);
+			start += size;
+		}
 		return packets;
 	}
 
-	/***
-	 * Get the bytes from the packet. If the total packet is not yet complete
-	 * (and we're waiting for more to complete the sequence), We return null.
-	 * Otherwise we return the full byte array
-	 * 
-	 * @param one
-	 *            of the packets
-	 * @return the full byte array
-	 * @throws IOException
+	/**
+	 * Feeds one chunk; returns the decompressed payload once every chunk of that message arrived.
+	 * @param sender something unique per peer, e.g. the player name
 	 */
-	public byte[] getBytes(PacketMessage packet) throws IOException {
-
-		DataInputStream inputStream1 = new DataInputStream(new ByteArrayInputStream(packet.data));
-		inputStream1.skipBytes(1);
-		// how many total chunks in this packet
-		byte chunkLength = inputStream1.readByte();
-
-		// the index of this chunk
-		byte chunkIndex = inputStream1.readByte();
-
-		// the id for the combined packet
-		byte incomingPacketId = inputStream1.readByte();
-
-		// if it's not in our stack, lets create a new one
-		if (!packetStack.containsKey(incomingPacketId)) {
-			packetStack.put(incomingPacketId, new byte[chunkLength][]);
+	public synchronized byte[] receive(String sender, byte[] chunk) throws IOException {
+		if (chunk.length < 7) throw new IOException("truncated chunk");
+		int numChunks = ((chunk[1] & 0xFF) << 8) | (chunk[2] & 0xFF);
+		int index = ((chunk[3] & 0xFF) << 8) | (chunk[4] & 0xFF);
+		int id = ((chunk[5] & 0xFF) << 8) | (chunk[6] & 0xFF);
+		if (numChunks <= 0 || index < 0 || index >= numChunks) throw new IOException("bad chunk header");
+		String key = sender + "#" + id;
+		byte[][] parts = pending.get(key);
+		if (parts == null || parts.length != numChunks) {
+			parts = new byte[numChunks][];
+			pending.put(key, parts);
 		}
+		byte[] part = new byte[chunk.length - 7];
+		System.arraycopy(chunk, 7, part, 0, part.length);
+		parts[index] = part;
 
-		// the current stack
-		byte[][] stack = packetStack.get(incomingPacketId);
-
-		byte[] remainingBytes = new byte[packet.data.length - 4];
-		inputStream1.read(remainingBytes, 0, remainingBytes.length);
-		stack[chunkIndex] = remainingBytes;
-
-		// count how many chunks are still null
-		byte chunksLeft = 0;
-		for (byte[] s : stack) {
-			if (s == null) {
-				chunksLeft++;
-			}
+		int total = 0;
+		for (byte[] p : parts) {
+			if (p == null) return null;
+			total += p.length;
 		}
-
-		// if we've got all the chunks
-		if (chunksLeft == 0) {
-
-			int totalLength = 0;
-			for (byte[] s : stack) {
-				totalLength += s.length;
-			}
-
-			// merge them into a single full byte array
-			byte[] fullPacket = new byte[totalLength];
-			int offset = 0;
-			for (short i = 0; i < chunkLength; i++) {
-				byte[] chunkPart = stack[i];
-				System.arraycopy(chunkPart, 0, fullPacket, offset, chunkPart.length);
-				offset += chunkPart.length;
-			}
-
-			// remove the entry
-			packetStack.remove(incomingPacketId);
-
-			// return the bytes
-			return fullPacket;
-
+		pending.remove(key);
+		byte[] full = new byte[total];
+		int off = 0;
+		for (byte[] p : parts) {
+			System.arraycopy(p, 0, full, off, p.length);
+			off += p.length;
 		}
-		return null;
+		GZIPInputStream zip = new GZIPInputStream(new ByteArrayInputStream(full));
+		ByteArrayOutputStream out = new ByteArrayOutputStream(total * 2);
+		byte[] buf = new byte[8192];
+		int n;
+		while ((n = zip.read(buf)) > 0) out.write(buf, 0, n);
+		zip.close();
+		return out.toByteArray();
+	}
+
+	/** Forgets partial messages from a peer, e.g. when a player disconnects. */
+	public synchronized void forget(String sender) {
+		pending.keySet().removeIf(k -> k.startsWith(sender + "#"));
 	}
 }

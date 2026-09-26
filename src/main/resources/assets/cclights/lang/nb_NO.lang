@@ -1,9 +1,7 @@
 tile.gpu.name=GPU
 tile.monitor.normal.name=Skjerm
 tile.monitor.big.name=Ekstern Skjerm
-tile.monitor.tablet.name=Tablet
-tile.Light.name=Lys
-tile.Advanced.Light.name=Avansert Lys
-item.ram.name=Random Access Memory
+tile.monitor.tablet.name=Tablet-sender
+item.ram.name=Grafikkminne
 item.tablet.name=Tablet
-itemGroup.CCLights2=CCLys 2
+itemGroup.CCLights2=CCLights 2

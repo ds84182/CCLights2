@@ -5,6 +5,7 @@ import java.util.Random;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.CCLights2.CCLights2;
+import ds.mods.CCLights2.Config;
 import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
 import ds.mods.CCLights2.item.ItemRAM;
 import net.minecraft.block.Block;
@@ -18,81 +19,82 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 
-public class BlockGPU extends Block{
-	IIcon sides = null;
-	public BlockGPU(Material par2Material) {
-		super(par2Material);
-		this.setBlockName("gpu");
-		this.setCreativeTab(CCLights2.ccltab);
-		this.setHardness(0.6F).setStepSound(Block.soundTypeStone);
+public class BlockGPU extends Block {
+	@SideOnly(Side.CLIENT)
+	private IIcon iconTop, iconBottom, iconSide;
+
+	public BlockGPU(Material material) {
+		super(material);
+		setBlockName("gpu");
+		setCreativeTab(CCLights2.ccltab);
+		setHardness(0.6F);
+		setStepSound(Block.soundTypeMetal);
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public IIcon getIcon(int side, int meta) {
-		if (side == 0 || side == 1) {
-			return this.blockIcon;
-		}
-		return sides;
+		if (side == 1) return iconTop;
+		if (side == 0) return iconBottom;
+		return iconSide;
 	}
 
 	@Override
-	public boolean onBlockActivated(World par1World, int par2, int par3,
-			int par4, EntityPlayer par5EntityPlayer, int par6, float par7,
-			float par8, float par9) {
-		ItemStack curr = par5EntityPlayer.getHeldItem();
-		if (curr == null)
-			return false;
-		if (curr.getItem() instanceof ItemRAM) {
-			if (!par5EntityPlayer.capabilities.isCreativeMode) {
-				curr.stackSize--;
-			}
-			TileEntityGPU tile = (TileEntityGPU) par1World.getTileEntity(
-					par2, par3, par4);
-			tile.addedType[curr.getItemDamage()]++;
-			tile.gpu.maxmem += 1024 * (curr.getItemDamage() + 1);
-			if (par1World.isRemote) {
-				par5EntityPlayer.addChatMessage(new ChatComponentText((curr.getItemDamage() + 1)
-						+ "K of RAM added to GPU"));
-			}
-			return true;
-		}
-		return false;
+	@SideOnly(Side.CLIENT)
+	public void registerBlockIcons(IIconRegister reg) {
+		iconTop = reg.registerIcon("cclights:gpu_top");
+		iconBottom = reg.registerIcon("cclights:gpu_bottom");
+		iconSide = reg.registerIcon("cclights:gpu_side");
 	}
 
 	@Override
-	public void breakBlock(World par1World, int par2, int par3, int par4,
-			Block par5, int par6) {
-		if (!par1World.isRemote) {
-			Random rand = new Random();
-			TileEntityGPU tile = (TileEntityGPU) par1World.getTileEntity(par2, par3, par4);
-			if(tile != null && tile.addedType != null){
-			for (int i = 0; i < tile.addedType.length; i++) {
-				int n = tile.addedType[i];
-				while (n != 0) {
-					int stacksize = 0;
-					if (n > 64) {
-						stacksize = 64;
-					} else {
-						stacksize = n;
+	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ) {
+		ItemStack held = player.getHeldItem();
+		if (held == null || !(held.getItem() instanceof ItemRAM)) return false;
+		if (world.isRemote) return true;
+		TileEntity te = world.getTileEntity(x, y, z);
+		if (!(te instanceof TileEntityGPU)) return false;
+		TileEntityGPU tile = (TileEntityGPU) te;
+		int size = Math.min(held.getItemDamage(), ItemRAM.SIZES - 1);
+		if (!player.capabilities.isCreativeMode) {
+			held.stackSize--;
+			if (held.stackSize <= 0) player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
+		}
+		tile.addedType[size]++;
+		tile.gpu.maxmem += (size + 1) * Config.gpuRamPerStick;
+		tile.markDirty();
+		player.addChatMessage(new ChatComponentText((size + 1) + "K of RAM added to GPU (" + tile.gpu.maxmem + " total)"));
+		return true;
+	}
+
+	@Override
+	public void onNeighborBlockChange(World world, int x, int y, int z, Block neighbour) {
+		TileEntity te = world.getTileEntity(x, y, z);
+		if (te instanceof TileEntityGPU) ((TileEntityGPU) te).onNeighbourChanged();
+	}
+
+	@Override
+	public void breakBlock(World world, int x, int y, int z, Block block, int meta) {
+		if (!world.isRemote) {
+			TileEntity te = world.getTileEntity(x, y, z);
+			if (te instanceof TileEntityGPU) {
+				TileEntityGPU tile = (TileEntityGPU) te;
+				Random rand = world.rand;
+				for (int size = 0; size < tile.addedType.length; size++) {
+					int n = tile.addedType[size];
+					while (n > 0) {
+						int stack = Math.min(64, n);
+						n -= stack;
+						EntityItem item = new EntityItem(world, x + 0.5, y + 0.5, z + 0.5, new ItemStack(CCLights2.ram, stack, size));
+						item.motionX = rand.nextGaussian() * 0.05F;
+						item.motionY = rand.nextGaussian() * 0.05F + 0.2F;
+						item.motionZ = rand.nextGaussian() * 0.05F;
+						world.spawnEntityInWorld(item);
 					}
-					n -= stacksize;
-					EntityItem var14 = new EntityItem(par1World,
-							par2 + 0.5,
-							par3 + 0.5,
-							par4 + 0.5, new ItemStack(
-									CCLights2.ram, stacksize, i));
-					float var15 = 0.05F;
-					var14.motionX = (float) rand.nextGaussian() * var15;
-					var14.motionY = (float) rand.nextGaussian()
-							* var15 + 0.2F;
-					var14.motionZ = (float) rand.nextGaussian() * var15;
-					par1World.spawnEntityInWorld(var14);
 				}
 			}
-			}
 		}
-		super.breakBlock(par1World, par2, par3, par4, par5, par6);
+		super.breakBlock(world, x, y, z, block, meta);
 	}
 
 	@Override
@@ -104,12 +106,4 @@ public class BlockGPU extends Block{
 	public TileEntity createTileEntity(World world, int meta) {
 		return new TileEntityGPU();
 	}
-	
-	@Override
-	@SideOnly(Side.CLIENT)
-	public void registerBlockIcons(IIconRegister par1IconRegister) {
-		this.blockIcon = par1IconRegister.registerIcon("cclights:gpufront");
-		sides = par1IconRegister.registerIcon("cclights:gpusides");
-	}
-
 }

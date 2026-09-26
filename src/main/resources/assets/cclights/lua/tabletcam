@@ -1,13 +1,40 @@
+-- tabletcam: shows pictures taken with a tablet (sneak + right click with a paired tablet)
+-- on the screen of a GPU next to this computer.
+-- usage: tabletcam [gpu side]
+-- The tablet_image event arrives on computers next to the Tablet Transceiver and on computers
+-- next to a GPU that is attached to the transceiver, so either layout works.
 local args = {...}
-local gpu=peripheral.wrap(args[1] or "left")
-while true do
- local event,imagedata = os.pullEvent()
- if event == "tablet_image" then
-  local textureID = gpu.import(imagedata)
-  gpu.setColor(255,255,255)
-  gpu.drawTexture(textureID,0,0)
-  print("Drew tabletimage from textureID:"..textureID)
-  gpu.freeTexture(textureID)
- end
+local gpu = args[1] and peripheral.wrap(args[1]) or peripheral.find("GPU")
+if not gpu then
+	error("No GPU found. Place one next to the computer or pass its side.", 0)
+end
+local trans = peripheral.find("TabletTransceiver")
+if trans then
+	print("Transceiver found next to this computer, " .. trans.getNumberOfTablets() .. " tablet(s) paired.")
+else
+	print("No transceiver next to this computer; images arrive through the GPU's transceiver.")
 end
 
+print("Waiting for tablet images: sneak + right click with a paired tablet. Press Q to quit.")
+while true do
+	local event, image, who = os.pullEvent()
+	if event == "tablet_image" then
+		local ok, tex, w, h = pcall(gpu.import, image)
+		if ok then
+			local sw, sh = gpu.getSize(0)
+			gpu.origin()
+			gpu.setColor(255, 255, 255)
+			gpu.drawTextureScaled(tex, 0, 0, sw, sh)
+			gpu.setColor(0, 0, 0, 160)
+			gpu.filledRectangle(0, sh - 10, sw, 10)
+			gpu.setColor(255, 255, 255)
+			gpu.drawText("Photo by " .. tostring(who) .. " (" .. w .. "x" .. h .. ")", 2, sh - 9)
+			gpu.freeTexture(tex)
+			print("Drew image from " .. tostring(who))
+		else
+			print("Could not import image: " .. tostring(tex))
+		end
+	elseif event == "char" and image == "q" then
+		break
+	end
+end

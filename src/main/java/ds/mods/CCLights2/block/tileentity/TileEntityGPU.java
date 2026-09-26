@@ -1,29 +1,23 @@
 package ds.mods.CCLights2.block.tileentity;
 
-import java.awt.Color;
-import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Scanner;
-import java.util.SortedSet;
-import java.util.TreeMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.imageio.ImageIO;
 
-import org.apache.commons.lang3.ArrayUtils;
-
-import com.google.common.collect.ImmutableSortedSet;
-
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.relauncher.Side;
+import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.api.filesystem.IMount;
 import dan200.computercraft.api.lua.ILuaContext;
 import dan200.computercraft.api.lua.LuaException;
@@ -31,853 +25,348 @@ import dan200.computercraft.api.peripheral.IComputerAccess;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.CommandEnum;
-import ds.mods.CCLights2.converter.ConvertDouble;
-import ds.mods.CCLights2.converter.ConvertInteger;
-import ds.mods.CCLights2.converter.ConvertString;
+import ds.mods.CCLights2.Config;
+import ds.mods.CCLights2.gpu.BlendComposite;
 import ds.mods.CCLights2.gpu.DrawCMD;
 import ds.mods.CCLights2.gpu.GPU;
+import ds.mods.CCLights2.gpu.GpuLuaApi;
+import ds.mods.CCLights2.gpu.LuaArgs;
 import ds.mods.CCLights2.gpu.Monitor;
+import ds.mods.CCLights2.gpu.ShaderInstance;
 import ds.mods.CCLights2.gpu.Texture;
+import ds.mods.CCLights2.gpu.shader.Program.Uniform;
+import ds.mods.CCLights2.gpu.shader.ShaderException;
+import ds.mods.CCLights2.item.ItemRAM;
 import ds.mods.CCLights2.network.PacketSenders;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 
-public class TileEntityGPU extends TileEntity implements IPeripheral {
-	public GPU gpu;
-    private ArrayList<DrawCMD> newarr = new ArrayList<DrawCMD>();
-	public ArrayList<IComputerAccess> comp = new ArrayList<IComputerAccess>();
-	private TreeMap<String, Integer> playerToClickMap = new TreeMap<String, Integer>();
-	private TreeMap<Integer, int[]> clickToDataMap = new TreeMap<Integer, int[]>();
-	public int[] addedType = new int[1025];
+/**
+ * The GPU block: a ComputerCraft peripheral that executes draw commands on the server and
+ * replicates them to clients. Connects automatically to adjacent monitors.
+ */
+public class TileEntityGPU extends TileEntity implements IPeripheral, GpuLuaApi.Host {
+	public static final String PERIPHERAL_TYPE = "GPU";
+	private static final int MONITOR_RESCAN_TICKS = 40;
+	private static final int MAX_FRAME_TICKS = 100;
+
+
+	public final GPU gpu;
+	private final GpuLuaApi api;
+	private final List<IComputerAccess> computers = new CopyOnWriteArrayList<IComputerAccess>();
+	private final Map<IComputerAccess, String> mounts = new HashMap<IComputerAccess, String>();
+	private final Map<String, int[]> clicks = new HashMap<String, int[]>();
+	private final Map<Monitor, TileEntityMonitor> attached = new LinkedHashMap<Monitor, TileEntityMonitor>();
+	private final Random random = new Random();
+	/** RAM sticks that were inserted, per size, so they drop again when the block breaks. */
+	public int[] addedType = new int[ItemRAM.SIZES];
 	private boolean frame = false;
-	private byte ticks = 0;
-	private boolean sentOnce = false;
-	public static final CommandEnum[] EnumCache = CommandEnum.values();
+	private int frameTicks = 0;
+	private int ticks = 0;
+	private boolean syncRequested = false;
+	private boolean rescanMonitors = true;
 
 	public TileEntityGPU() {
-		gpu = new GPU(1024 * 8);
+		gpu = new GPU(Config.gpuBaseMemory);
 		gpu.tile = this;
+		api = new GpuLuaApi(gpu, this);
 	}
 
-	public void startClick(EntityPlayer player, int button, int x, int y) {
-		int id = new Random().nextInt();
-		while (playerToClickMap.containsValue(id)) {
-			id = new Random().nextInt();
-		}
-		playerToClickMap.put(player.getDisplayName(), id);
-		clickToDataMap.put(id, new int[] { button, x, y });
+	// ------------------------------------------------------------------ mouse events
 
-		String event = "monitor_down";
-		Object[] args = new Object[] { button, x, y, id };
-		for (IComputerAccess c : comp) {
-			c.queueEvent(event, args);
-		}
+	public void startClick(EntityPlayer player, int button, int x, int y) {
+		int id;
+		do {
+			id = random.nextInt(Integer.MAX_VALUE);
+		} while (clickIdInUse(id));
+		clicks.put(player.getCommandSenderName(), new int[] { button, x, y, id });
+		queueEvent("monitor_down", new Object[] { button, x, y, id });
+	}
+
+	private boolean clickIdInUse(int id) {
+		for (int[] c : clicks.values()) if (c[3] == id) return true;
+		return false;
 	}
 
 	public void moveClick(EntityPlayer player, int nx, int ny) {
-		int id = playerToClickMap.get(player.getDisplayName());
-		int[] data = clickToDataMap.get(id);
-		int button = data[0];
-		data[1] = nx;
-		data[2] = ny;
-
-		String event = "monitor_move";
-		Object[] args = new Object[] { button, nx, ny, id };
-		for (IComputerAccess c : comp) {
-			c.queueEvent(event, args);
-		}
+		int[] c = clicks.get(player.getCommandSenderName());
+		if (c == null) return;
+		c[1] = nx;
+		c[2] = ny;
+		queueEvent("monitor_move", new Object[] { c[0], nx, ny, c[3] });
 	}
 
 	public void endClick(EntityPlayer player) {
-		int id = playerToClickMap.get(player.getDisplayName());
-		int[] data = clickToDataMap.get(id);
-		int button = data[0];
-		int x = data[1];
-		int y = data[2];
-
-		String event = "monitor_up";
-		Object[] args = new Object[] { button, x, y, id };
-		for (IComputerAccess c : comp) {
-			c.queueEvent(event, args);
-		}
-		playerToClickMap.remove(player.getDisplayName());
-		clickToDataMap.remove(id);
+		int[] c = clicks.remove(player.getCommandSenderName());
+		if (c == null) return;
+		queueEvent("monitor_up", new Object[] { c[0], c[1], c[2], c[3] });
 	}
+
+	public void queueEvent(String event, Object[] args) {
+		for (IComputerAccess c : computers) {
+			Object[] full = Arrays.copyOf(args, args.length + 1);
+			full[args.length] = c.getAttachmentName();
+			c.queueEvent(event, full);
+		}
+	}
+
+	public List<IComputerAccess> computers() {
+		return computers;
+	}
+
+	// ------------------------------------------------------------------ peripheral
 
 	@Override
 	public String getType() {
-		return "GPU";
+		return PERIPHERAL_TYPE;
 	}
 
 	@Override
 	public String[] getMethodNames() {
-		return new String[] { "fill", "plot", "createTexture", "drawTexture",
-				"drawText", "bindTexture", "freeTexture", "line", "rectangle",
-				"filledRectangle", "triangle", "filledTriangle", "oval",
-				"filledOval", "setPixels", "flipTextureV", "import",
-				"translate", "rotate", "rotateAround", "scale", "push", "pop",
-				"blur", "clearRect", "origin", "getFreeMemory",
-				"getTotalMemory", "getUsedMemory", "getSize", "getPixels",
-				"getBindedTexture", "getTextWidth", "getMonitor", "export",
-				"setColor", "getColor", "startFrame", "endFrame" };
+		return GpuLuaApi.METHOD_NAMES;
 	}
 
-	@SuppressWarnings("rawtypes")
-	@Override
-	public synchronized Object[] callMethod(IComputerAccess computer,
-			ILuaContext context, int method, Object[] args) throws LuaException {
-		try {
-			return _callMethod(computer, context, method, args);
-		} catch (LuaException e) {
-			throw e;
-		} catch (Exception e) {
-			LuaException le = new LuaException(e.getMessage());
-			le.initCause(e.getCause());
-			throw le;
-		}
-	}
-	
-	@SuppressWarnings("rawtypes")
-	private synchronized Object[] _callMethod(IComputerAccess computer,
-			ILuaContext context, int method, Object[] args) throws Exception {
-		switch (EnumCache[method]) {
-		case Fill: {
-			//fill
-			DrawCMD cmd = new DrawCMD();
-			cmd.cmd = CommandEnum.Fill;
-			gpu.processCommand(cmd);
-			gpu.drawlist.push(cmd);
-			break;
-		}
-		case CreateTexture: {
-			//createTexture
-			if (args.length > 1) {
-				DrawCMD cmd = new DrawCMD();
-				Object[] nargs = new Object[] { ConvertInteger.convert(args[0]),
-						ConvertInteger.convert(args[1]) };
-				cmd.cmd = CommandEnum.CreateTexture;
-				cmd.args = nargs;
-				Object[] ret = gpu.processCommand(cmd);
-				int id = (Integer) ret[0];
-				if (id == -1) {
-					throw new LuaException("createTexture: Not enough memory");
-				} else if (id == -2) {
-					throw new LuaException("createTexture: Not enough texture slots");
-				} else {
-					gpu.drawlist.push(cmd);
-					return ret;
-				}
-			}
-			else
-			{
-				throw new LuaException("createTexture: Argument Error: width, height expected");
-			}
-		}
-		case GetFreeMemory: {
-			//getFreeMemory
-			return new Object[] { gpu.getFreeMemory() };
-		}
-		case GetTotalMemory: {
-			//getTotalMemory
-			return new Object[] { gpu.maxmem };
-		}
-		case GetUsedMemory: {
-			//getUsedMemory
-			return new Object[] { gpu.getUsedMemory() };
-		}
-		case BindTexture: {
-			//bindTexture
-			if (args.length > 0) {
-				if (gpu.textures[ConvertInteger.convert(args[0])] == null)
-					throw new LuaException("bindTexture: Texture does not exist");
-				DrawCMD cmd = new DrawCMD();
-				Object[] nargs = new Object[] { ConvertInteger.convert(args[0]) };
-				cmd.cmd = CommandEnum.BindTexture;
-				cmd.args = nargs;
-				gpu.processCommand(cmd);
-				gpu.drawlist.push(cmd);
-			}
-			else
-			{
-				throw new LuaException("bindTexture: Argument Error: textureid expected");
-			}
-			break;
-		}
-		case Plot: {
-			//plot
-			if (args.length >= 2) {
-				int x = ConvertInteger.convert(args[0]);
-				int y = ConvertInteger.convert(args[1]);
-				Point2D point = gpu.transform.transform(new Point2D.Double(x, y),null);
-				double tx = point.getX();
-				double ty = point.getY();
-				int w = gpu.bindedTexture.getWidth();
-				int h = gpu.bindedTexture.getHeight();
-				if (tx<0 || ty<0 || tx>w || ty>h) //Don't draw if out of bounds!
-					return null;
-				DrawCMD cmd = new DrawCMD();
-				Object[] nargs = new Object[] { x, y };
-				cmd.cmd = CommandEnum.Plot;
-				cmd.args = nargs;
-				gpu.processCommand(cmd);
-				gpu.drawlist.push(cmd);
-			}
-			else
-			{
-				throw new LuaException("plot: Argument Error: x, y expected");
-			}
-			break;
-		}
-		case DrawTexture: {
-			//drawTexture
-			if (args.length == 3) {
-				DrawCMD cmd = new DrawCMD();
-				Object[] nargs = new Object[] { 0, ConvertInteger.convert(args[0]),
-						ConvertInteger.convert(args[1]), ConvertInteger.convert(args[2]) };
-				cmd.cmd = CommandEnum.DrawTexture;
-				cmd.args = nargs;
-				gpu.processCommand(cmd);
-				gpu.drawlist.push(cmd);
-			} else if (args.length > 6) {
-				DrawCMD cmd = new DrawCMD();
-				Object[] nargs = new Object[] { 1, ConvertInteger.convert(args[0]),
-						ConvertInteger.convert(args[1]), ConvertInteger.convert(args[2]),
-						ConvertInteger.convert(args[3]), ConvertInteger.convert(args[4]),
-						ConvertInteger.convert(args[5]), ConvertInteger.convert(args[6]) };
-				cmd.cmd = CommandEnum.DrawTexture;
-				cmd.args = nargs;
-				gpu.processCommand(cmd);
-				gpu.drawlist.push(cmd);
-			}
-			else
-			{
-				throw new LuaException("drawTexture: Argument Error: textureid, x, y expected");
-			}
-			break;
-		}
-		case FreeTexture: {
-			//freeTexture
-			if (args.length == 1) {
-				DrawCMD cmd = new DrawCMD();
-				Object[] nargs = new Object[] { ConvertInteger.convert(args[0]) };
-				cmd.cmd = CommandEnum.FreeTexture;
-				cmd.args = nargs;
-				gpu.processCommand(cmd);
-				gpu.drawlist.push(cmd);
-			}
-			else
-			{
-				throw new LuaException("freeTexture: Argument Error: textureid expected");
-			}
-			break;
-		}
-		case Line: {
-			//line
-			if (args.length > 3) {
-				DrawCMD cmd = new DrawCMD();
-				Object[] nargs = new Object[] { ConvertInteger.convert(args[0]),
-						ConvertInteger.convert(args[1]), ConvertInteger.convert(args[2]),
-						ConvertInteger.convert(args[3]) };
-				cmd.cmd = CommandEnum.Line;
-				cmd.args = nargs;
-				gpu.processCommand(cmd);
-				gpu.drawlist.push(cmd);
-			}
-			else
-			{
-				throw new LuaException("line: Argument Error: x1, y1, x2, y2 expected");
-			}
-			break;
-		}
-		case GetSize: {
-			//getSize
-			int tex = gpu.bindedSlot;
-			if (args.length >= 1)
-			{
-				tex = ConvertInteger.convert(args[0]);
-			}
-			if (gpu.textures[tex] == null)
-				throw new LuaException("getSize: texture does not exist");
-			Texture texture = gpu.textures[tex];
-			return new Object[] { texture.getWidth(),texture.getHeight() };
-		}
-		case GetPixelColor: {
-			//getPixelColor
-			if (args.length > 1) {
-				int x = ConvertInteger.convert(args[0]);
-				int y = ConvertInteger.convert(args[1]);
-				int[] dat = gpu.bindedTexture.getRGB(x, y);
-				return new Object[] { dat[0] & 0xFF, dat[1] & 0xFF, dat[2] & 0xFF, dat[3] & 0xFF };
-			}
-			else
-			{
-				throw new LuaException("getPixelColor: Argument Error: x, y expected");
-			}
-		}
-		case Rectangle: {
-			//rectangle
-			if (args.length > 3) {
-				DrawCMD cmd = new DrawCMD();
-				Object[] nargs = new Object[] { ConvertInteger.convert(args[0]),
-						ConvertInteger.convert(args[1]), ConvertInteger.convert(args[2]),
-						ConvertInteger.convert(args[3]) };
-				cmd.cmd = CommandEnum.Rectangle;
-				cmd.args = nargs;
-				gpu.processCommand(cmd);
-				gpu.drawlist.push(cmd);
-			}
-			else
-			{
-				throw new LuaException("rectangle: Argument Error: x, y, width, height expected");
-			}
-			break;
-		}
-		case FilledRectangle: {
-			//filledRectangle
-			if (args.length > 3) {
-				DrawCMD cmd = new DrawCMD();
-				Object[] nargs = new Object[] { ConvertInteger.convert(args[0]),
-						ConvertInteger.convert(args[1]), ConvertInteger.convert(args[2]),
-						ConvertInteger.convert(args[3]) };
-				cmd.cmd = CommandEnum.FilledRectangle;
-				cmd.args = nargs;
-				gpu.processCommand(cmd);
-				gpu.drawlist.push(cmd);
-			}
-			else
-			{
-				throw new LuaException("filledRectangle: Argument Error: x, y, width, height expected");
-			}
-			break;
-		}
-		case Triangle: {
-			//triangle
-			if (args.length > 5) {
-				DrawCMD cmd = new DrawCMD();
-				Object[] nargs = new Object[] { ConvertInteger.convert(args[0]), ConvertInteger.convert(args[1]), ConvertInteger.convert(args[2]), ConvertInteger.convert(args[3]), ConvertInteger.convert(args[4]), ConvertInteger.convert(args[5]) };
-				cmd.cmd = CommandEnum.Triangle;
-				cmd.args = nargs;
-				gpu.processCommand(cmd);
-				gpu.drawlist.push(cmd);
-			} else {
-				throw new LuaException("triangle: Argument Error: x1, y1, x2, y2, x3, y3 expected");
-			}
-			break;
-		}
-		case FilledTriangle: {
-			//filledTriangle
-			if (args.length > 5) {
-				DrawCMD cmd = new DrawCMD();
-				Object[] nargs = new Object[] { ConvertInteger.convert(args[0]), ConvertInteger.convert(args[1]), ConvertInteger.convert(args[2]), ConvertInteger.convert(args[3]), ConvertInteger.convert(args[4]), ConvertInteger.convert(args[5]) };
-				cmd.cmd = CommandEnum.FilledTriangle;
-				cmd.args = nargs;
-				gpu.processCommand(cmd);
-				gpu.drawlist.push(cmd);
-			} else {
-				throw new LuaException("filledTriangle: Argument Error: x1, y1, x2, y2, x3, y3 expected");
-			}
-			break;
-		}
-		case Oval: {
-			//oval
-			if (args.length > 3) {
-				DrawCMD cmd = new DrawCMD();
-				Object[] nargs = new Object[] { ConvertInteger.convert(args[0]), ConvertInteger.convert(args[1]), ConvertInteger.convert(args[2]), ConvertInteger.convert(args[3]) };
-				cmd.cmd = CommandEnum.Oval;
-				cmd.args = nargs;
-				gpu.processCommand(cmd);
-				gpu.drawlist.push(cmd);
-			} else {
-				throw new LuaException("oval: Argument Error: x, y, width, height expected");
-			}
-			break;
-		}
-		case FilledOval: {
-			//filledOval
-			if (args.length > 3) {
-				DrawCMD cmd = new DrawCMD();
-				Object[] nargs = new Object[] { ConvertInteger.convert(args[0]), ConvertInteger.convert(args[1]), ConvertInteger.convert(args[2]), ConvertInteger.convert(args[3]) };
-				cmd.cmd = CommandEnum.FilledOval;
-				cmd.args = nargs;
-				gpu.processCommand(cmd);
-				gpu.drawlist.push(cmd);
-			} else {
-				throw new LuaException("filledOval: Argument Error: x, y, width, height expected");
-			}
-			break;
-		}
-		case GetBindedTexture: {
-			//getBindedTexture
-			return new Object[] { gpu.bindedSlot };
-		}
-		case SetPixels: {
-			//setPixels
-			if (args.length < 4) {
-				throw new LuaException("setPixels: Argument Error: w, h, x, y, {[r,g,b,a]}... expected");
-			} else {
-				int w = ConvertInteger.convert(args[0]);
-				int h = ConvertInteger.convert(args[1]);
-				// We send the arguments straight to the GPU!
-				DrawCMD cmd = new DrawCMD();
-				Object[] nargs = new Object[(w * h * 4) + 4 + 1];
-				nargs[0] = 0;
-				nargs[1] = w;
-				nargs[2] = h;
-				nargs[3] = ConvertInteger.convert(args[2]);
-				nargs[4] = ConvertInteger.convert(args[3]);
-				Map m = (Map) args[4];
-				for (int i = 1; i <= (w * h * 4); i++) {
-                 nargs[i + 4] = ConvertInteger.convert(m.get((double) i)).intValue();
-				}
-				cmd.cmd = CommandEnum.SetPixels;
-				cmd.args = nargs;
-				Object[] ret = gpu.processCommand(cmd);
-				gpu.drawlist.push(cmd);
-				return ret;
-			}
-		}
-		case FlipVertically: {
-			//flipVertically
-			if (args.length > 0) {
-				DrawCMD cmd = new DrawCMD();
-				Object[] nargs = new Object[] { ConvertInteger.convert(args[0]) };
-				cmd.cmd = CommandEnum.FlipVertically;
-				cmd.args = nargs;
-				Object[] ret = gpu.processCommand(cmd);
-				gpu.drawlist.push(cmd);
-				return ret;
-			}
-			else{
-				throw new LuaException("flipVertically: Argument Error: textureid expected");
-			}
-		}
-		case Import: {
-			//import
-			double a = System.currentTimeMillis();
-			Byte[] data;
-			if (args.length == 1 && args[0] instanceof Map)
-			{
-				//One of the things I hate is that ComputerCraft uses Doubles for all their values
-				//Double the fun! -alekso56
-				Map m = (Map)args[0];
-				data = new Byte[m.size()];
-				for (double i = 0; i<data.length; i++)
-				{
-					data[(int) i] = ((Double)m.get(i+1D)).byteValue();
-				}
-			}
-			else if (args.length == 1 && args[0] instanceof String)
-			{
-				String file = (String)args[0];
-				if (file.startsWith(".") || file.startsWith("/") || file.startsWith("\\")){throw new LuaException("import: Argument Error: Invalid char used at start of filename!");}
-				File f = new File(CCLights2.proxy.getWorldDir(worldObj),"computer/"+computer.getID()+"/"+file);
-				FileInputStream in = new FileInputStream(f);
-				byte[] b = new byte[(int)in.getChannel().size()];
-				in.read(b);
-				in.close();
-				data = ArrayUtils.toObject(b);
-			}
-			else
-			{
-				throw new LuaException("import: Argument Error: (filedata or filename)");
-			}
-			DrawCMD cmd = new DrawCMD();
-			Object[] nargs = new Object[]{data};
-			cmd.cmd = CommandEnum.Import;
-			cmd.args = nargs;
-			int id = (Integer) gpu.processCommand(cmd)[0];
-			Texture tex = gpu.textures[id];
-			Object[] ret = {id,tex.getWidth(),tex.getHeight()};
-			gpu.drawlist.push(cmd);
-			double b = System.currentTimeMillis();
-			CCLights2.debug("Import time: "+(b-a)+"ms");
-			return ret;
-		}
-		case Export:
-		{
-			//export
-			if (args.length > 1)
-			{
-				int texid = ConvertInteger.convert(args[0]);
-				String format = ConvertString.convert(args[1]);
-				if (texid<0 || texid>gpu.textures.length || gpu.textures[texid] == null)
-				{
-					throw new LuaException("export: Texture does not exist.");
-				}
-				Texture tex = gpu.textures[texid];
-				ByteArrayOutputStream output = new ByteArrayOutputStream();
-				ImageIO.write(tex.img, format, output);
-				byte[] data = output.toByteArray();
-				HashMap<Double,Double> out = new HashMap<Double, Double>();
-				for (int i = 0; i<data.length; i++)
-				{
-					out.put((double)(i+1), (double)data[i]);
-				}
-				return new Object[]{out};
-			}
-			else
-			{
-				throw new LuaException("export: Argument Error: textureid, format expected");
-			}
-		}
-		case DrawText:
-		{
-			//drawText
-			if (args.length > 2)
-			{
-				String str = ConvertString.convert(args[0]);
-				int x = ConvertInteger.convert(args[1]);
-				int y = ConvertInteger.convert(args[2]);
-				Point2D point = gpu.transform.transform(new Point2D.Double(x, y),null);
-				double tx = point.getX();
-				double ty = point.getY();
-				int w = gpu.bindedTexture.getWidth();
-				int h = gpu.bindedTexture.getHeight();
-				double tw = Texture.getStringWidth(str);
-				double th = 8;
-				if ((tx<0 && tx+tw<0) || (ty<0 && ty+th<0) || (tx>w) || (ty>h)) //Don't draw if out of bounds!
-				{
-					return null;
-				}
-				DrawCMD cmd = new DrawCMD();
-				Object[] nargs = new Object[2+str.length()];
-				nargs[0] = x;
-				nargs[1] = y;
-				for (int i=0; i<str.length(); i++)
-				{
-					nargs[2+i] = str.charAt(i);
-				}
-				cmd.cmd = CommandEnum.DrawText;
-				cmd.args = nargs;
-				Object[] ret = gpu.processCommand(cmd);
-				gpu.drawlist.push(cmd);
-				return ret;
-			}
-			else
-			{
-				throw new LuaException("drawText: Argument Error: text, x, y expected");
-			}
-		}
-		case GetTextWidth:
-		{
-			//getTextWidth
-			if (args.length > 0)
-			{
-				String str = ConvertString.convert(args[0]);
-				return new Object[]{Texture.getStringWidth(str)};
-			}
-			else
-			{
-				throw new LuaException("getTextWidth: Argument Error: text expected");
-			}
-		}
-		case SetColor:
-		{
-			//setColor
-			if (args.length > 2)
-			{
-				DrawCMD cmd = new DrawCMD();
-				Object[] nargs = new Object[4];
-				for (int i=0; i<4; i++)
-				{
-					nargs[i] = args.length > i ? ConvertInteger.convert(args[i]) : 255;
-				}
-				if (gpu.color.getRed() == (Integer)nargs[0] && gpu.color.getBlue() == (Integer)nargs[1] && gpu.color.getGreen() == (Integer)nargs[2] && gpu.color.getAlpha() == (Integer)nargs[3])
-				{
-					break;
-				}
-				cmd.cmd = CommandEnum.SetColor;
-				cmd.args = nargs;
-				Object[] ret = gpu.processCommand(cmd);
-				gpu.drawlist.push(cmd);
-				break;
-			}
-			else
-			{
-				throw new LuaException("setColor: Argument Error: int, int, int[, int] expected");
-			}
-		}
-		case GetColor:
-		{
-			//getColor
-			return new Object[]{gpu.color.getRed(),gpu.color.getGreen(),gpu.color.getBlue(),gpu.color.getAlpha()};
-		}
-		case Translate:
-		{
-			//translate
-			double x = ConvertDouble.convert(args[0]);
-			double y = ConvertDouble.convert(args[1]);
-			DrawCMD cmd = new DrawCMD();
-			Object[] nargs = new Object[2];
-			nargs[0] = x;
-			nargs[1] = y;
-			cmd.cmd = CommandEnum.Translate;
-			cmd.args = nargs;
-			Object[] ret = gpu.processCommand(cmd);
-			gpu.drawlist.push(cmd);
-			break;
-		}
-		case Rotate:
-		{
-			//rotate
-			double r = ConvertDouble.convert(args[0]);
-			DrawCMD cmd = new DrawCMD();
-			Object[] nargs = new Object[1];
-			nargs[0] = r;
-			cmd.cmd = CommandEnum.Rotate;
-			cmd.args = nargs;
-			Object[] ret = gpu.processCommand(cmd);
-			gpu.drawlist.push(cmd);
-			break;
-		}
-		case RotateAround:
-		{
-			//rotateAround
-			double r = ConvertDouble.convert(args[0]);
-			double x = ConvertDouble.convert(args[1]);
-			double y = ConvertDouble.convert(args[2]);
-			DrawCMD cmd = new DrawCMD();
-			Object[] nargs = new Object[3];
-			nargs[0] = r;
-			nargs[1] = x;
-			nargs[2] = y;
-			cmd.cmd = CommandEnum.RotateAround;
-			cmd.args = nargs;
-			Object[] ret = gpu.processCommand(cmd);
-			gpu.drawlist.push(cmd);
-			break;
-		}
-		case Scale:
-		{
-			//scale
-			double x = ConvertDouble.convert(args[0]);
-			double y = ConvertDouble.convert(args[1]);
-			DrawCMD cmd = new DrawCMD();
-			Object[] nargs = new Object[2];
-			nargs[0] = x;
-			nargs[1] = y;
-			cmd.cmd = CommandEnum.Scale;
-			cmd.args = nargs;
-			Object[] ret = gpu.processCommand(cmd);
-			gpu.drawlist.push(cmd);
-			break;
-		}
-		case Push:
-		{
-			//push
-			DrawCMD cmd = new DrawCMD();
-			cmd.cmd = CommandEnum.Push;
-			Object[] ret = gpu.processCommand(cmd);
-			gpu.drawlist.push(cmd);
-			break;
-		}
-		case Pop:
-		{
-			//pop
-			DrawCMD cmd = new DrawCMD();
-			cmd.cmd = CommandEnum.Pop;
-			Object[] ret = gpu.processCommand(cmd);
-			gpu.drawlist.push(cmd);
-			break;
-		}
-		case GetMonitor:
-		{
-			//getMonitor
-			return new Object[]{gpu.currentMonitor.obj};
-		}
-		case Blur:
-		{
-			//blur
-			if (args.length > 0) {
-				DrawCMD cmd = new DrawCMD();
-				Object[] nargs = new Object[] { ConvertInteger.convert(args[0]) };
-				cmd.cmd = CommandEnum.Blur;
-				cmd.args = nargs;
-				Object[] ret = gpu.processCommand(cmd);
-				gpu.drawlist.push(cmd);
-				return ret;
-			}
-			else
-			{
-				throw new LuaException("blur: Argument Error: textureid expected");
-			}
-		}
-		case StartFrame:
-		{
-			//startFrame
-			frame = true;
-			break;
-		}
-		case EndFrame:
-		{
-			//endFrame
-			frame = false;
-			break;
-		}
-		case ClearRectangle:
-		{
-			//clearRectangle
-			if (args.length >= 4) {
-				DrawCMD cmd = new DrawCMD();
-				Object[] nargs = new Object[] { ConvertInteger.convert(args[0]),ConvertInteger.convert(args[1]),ConvertInteger.convert(args[2]),ConvertInteger.convert(args[3]) };
-				cmd.cmd = CommandEnum.ClearRectangle;
-				cmd.args = nargs;
-				Object[] ret = gpu.processCommand(cmd);
-				gpu.drawlist.push(cmd);
-				return ret;
-			}
-			else
-			{
-				throw new LuaException("clearRectangle: Argument Error: x, y, width, height expected");
-			}
-		}
-		case Origin:
-		{
-			//origin
-			DrawCMD cmd = new DrawCMD();
-			Object[] nargs = new Object[] {};
-			cmd.cmd = CommandEnum.Origin;
-			cmd.args = nargs;
-			Object[] ret = gpu.processCommand(cmd);
-			gpu.drawlist.push(cmd);
-			return ret;
-		}
-		default:
-			break;
-		}
-		return null;
-	}
-	
 	@Override
 	public void attach(IComputerAccess computer) {
-		comp.add(computer);
-		computer.mount("cclights2", new IMount(){
-			private static final String RESOURCE_PATH = "/assets/cclights/lua/";
-			private final SortedSet<String> files;
-
-			{
-				ImmutableSortedSet.Builder<String> files = ImmutableSortedSet.naturalOrder();
-				InputStream fileList = getClass().getResourceAsStream(RESOURCE_PATH + "files.lst");
-				if (fileList != null) {
-					Scanner sc = new Scanner(fileList);
-
-					while (sc.hasNextLine()) {
-						String fileName = sc.nextLine();
-						files.add(fileName);
-					}
-
-					sc.close();
-				}
-
-				this.files = files.build();
-			}
-
-			@Override
-			public boolean exists(String path) throws IOException {
-				return path.isEmpty() || files.contains(path);
-			}
-
-			@Override
-			public boolean isDirectory(String path) throws IOException {
-				return path.isEmpty();
-			}
-
-			@Override
-			public void list(String path, List<String> contents) throws IOException {
-				contents.addAll(files);
-			}
-
-			@Override
-			public long getSize(String path) throws IOException {
-				return 0;
-			}
-
-			@Override
-			public InputStream openForRead(String path) throws IOException {
-				if (!files.contains(path)) throw new IOException();
-				return getClass().getResourceAsStream(RESOURCE_PATH + path);
-			}
-
-		});
+		computers.add(computer);
+		IMount mount = ComputerCraftAPI.createResourceMount(CCLights2.class, "cclights", "lua");
+		if (mount != null) {
+			String location = computer.mount("cclights2", mount);
+			if (location != null) mounts.put(computer, location);
+		}
 	}
 
 	@Override
 	public void detach(IComputerAccess computer) {
-		comp.remove(computer);
+		computers.remove(computer);
+		String location = mounts.remove(computer);
+		if (location != null) computer.unmount(location);
 	}
+
+	@Override
+	public boolean equals(IPeripheral other) {
+		return other == this;
+	}
+
+	@Override
+	public Object[] callMethod(final IComputerAccess computer, ILuaContext context, int method, Object[] args) throws LuaException {
+		try {
+			return api.call(method, args, new GpuLuaApi.ImportSource() {
+				@Override
+				public byte[] read(String name, String fileName) throws LuaException {
+					return readImportFile(name, fileName, computer.getID());
+				}
+			});
+		} catch (LuaException e) {
+			throw e;
+		} catch (RuntimeException e) {
+			String name = method >= 0 && method < GpuLuaApi.METHOD_NAMES.length ? GpuLuaApi.METHOD_NAMES[method] : "?";
+			CCLights2.logger.warn("GPU method " + name + " failed", e);
+			throw new LuaException(name + ": " + e);
+		}
+	}
+
+	@Override
+	public void setFrame(boolean on) {
+		frame = on;
+		frameTicks = 0;
+	}
+
+	/** Reads a file from the calling computer's save folder for gpu.import("file"). */
+	private byte[] readImportFile(String name, String s, int computerId) throws LuaException {
+		File dir = new File(CCLights2.proxy.getWorldDir(worldObj), "computer" + File.separator + computerId);
+		File f = new File(dir, s);
+		try {
+			if (!f.getCanonicalPath().startsWith(dir.getCanonicalPath())) throw new LuaException(name + ": invalid file name");
+			if (!f.isFile()) throw new LuaException(name + ": no such file '" + s + "' in the computer's folder");
+			if (f.length() > 16L * 1024 * 1024) throw new LuaException(name + ": file too large");
+			return Files.readAllBytes(f.toPath());
+		} catch (IOException e) {
+			throw new LuaException(name + ": " + e.getMessage());
+		}
+	}
+
+	// ------------------------------------------------------------------ ticking
+
+	@Override
+	public void updateEntity() {
+		if (worldObj.isRemote) {
+			if (!syncRequested) {
+				syncRequested = true;
+				gpu.server = false;
+				PacketSenders.requestGPUSync(this);
+			}
+			if (rescanMonitors || ticks % MONITOR_RESCAN_TICKS == 0) {
+				rescanMonitors = false;
+				synchronized (gpu) {
+					connectToMonitors();
+				}
+			}
+			ticks++;
+			return;
+		}
+		synchronized (gpu) {
+			if (rescanMonitors || ticks % MONITOR_RESCAN_TICKS == 0) {
+				rescanMonitors = false;
+				connectToMonitors();
+			}
+			if (frame && ++frameTicks > MAX_FRAME_TICKS) frame = false;
+			if (!frame && !gpu.drawlist.isEmpty()) {
+				PacketSenders.sendDrawList(gpu.drawlist, this);
+				gpu.drawlist.clear();
+			}
+		}
+		ticks++;
+	}
+
+	/** Called by the block when a neighbour changes so monitors get (dis)connected promptly. */
+	public void onNeighbourChanged() {
+		rescanMonitors = true;
+	}
+
+	/** Keeps the GPU's monitor list equal to the set of adjacent monitor blocks. */
+	private void connectToMonitors() {
+		// Drop monitors whose tile went away or whose screen object was rebuilt (multi-block resize).
+		List<Monitor> stale = new ArrayList<Monitor>();
+		for (Map.Entry<Monitor, TileEntityMonitor> e : attached.entrySet()) {
+			TileEntityMonitor tile = e.getValue();
+			Monitor m = e.getKey();
+			if (tile.isInvalid() || tile.getMonitor() != m || !isAdjacent(tile) || !m.gpus.contains(gpu)) stale.add(m);
+		}
+		for (Monitor m : stale) {
+			attached.remove(m);
+			m.removeGPU(gpu);
+		}
+		boolean added = false;
+		for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
+			TileEntity te = worldObj.getTileEntity(xCoord + dir.offsetX, yCoord + dir.offsetY, zCoord + dir.offsetZ);
+			if (!(te instanceof TileEntityMonitor)) continue;
+			TileEntityMonitor tile = (TileEntityMonitor) te;
+			Monitor mon = tile.getMonitor();
+			if (mon == null || attached.containsKey(mon)) continue;
+			attached.put(mon, tile);
+			mon.addGPU(gpu);
+			added = true;
+		}
+		// A client that just gained a screen needs the server's current pixels for it.
+		if (added && worldObj.isRemote && syncRequested) PacketSenders.requestGPUSync(this);
+	}
+
+	private boolean isAdjacent(TileEntity tile) {
+		int dx = Math.abs(tile.xCoord - xCoord), dy = Math.abs(tile.yCoord - yCoord), dz = Math.abs(tile.zCoord - zCoord);
+		return dx + dy + dz == 1 && tile.getWorldObj() == worldObj;
+	}
+
+	@Override
+	public void invalidate() {
+		super.invalidate();
+		for (Monitor m : new ArrayList<Monitor>(attached.keySet())) m.removeGPU(gpu);
+		attached.clear();
+	}
+
+	@Override
+	public void onChunkUnload() {
+		super.onChunkUnload();
+		for (Monitor m : new ArrayList<Monitor>(attached.keySet())) m.removeGPU(gpu);
+		attached.clear();
+	}
+
+	// ------------------------------------------------------------------ persistence
 
 	@Override
 	public void writeToNBT(NBTTagCompound nbt) {
 		super.writeToNBT(nbt);
 		nbt.setIntArray("addedTypes", addedType);
 		nbt.setInteger("vram", gpu.maxmem);
+		synchronized (gpu) {
+			nbt.setInteger("bindedSlot", gpu.bindedSlot);
+			nbt.setInteger("color", gpu.state.color.getRGB());
+			if (Config.persistMonitorContents) {
+				NBTTagCompound textures = new NBTTagCompound();
+				for (int id = 1; id < gpu.textures.length; id++) {
+					Texture t = gpu.textures[id];
+					if (t == null) continue;
+					try {
+						ByteArrayOutputStream out = new ByteArrayOutputStream();
+						ImageIO.write(t.getImage(), "png", out);
+						textures.setByteArray(String.valueOf(id), out.toByteArray());
+					} catch (IOException e) {
+						CCLights2.logger.warn("Failed to save GPU texture " + id + ": " + e);
+					}
+				}
+				nbt.setTag("textures", textures);
+			}
+			NBTTagCompound shaders = new NBTTagCompound();
+			for (int id = 1; id < gpu.shaders.length; id++) {
+				ShaderInstance sh = gpu.shaders[id];
+				if (sh == null) continue;
+				NBTTagCompound tag = new NBTTagCompound();
+				tag.setString("source", sh.source);
+				int[] bits = new int[sh.values.length];
+				for (int i = 0; i < bits.length; i++) bits[i] = Float.floatToIntBits(sh.values[i]);
+				tag.setIntArray("values", bits);
+				tag.setIntArray("samplers", sh.samplers);
+				shaders.setTag(String.valueOf(id), tag);
+			}
+			nbt.setTag("shaders", shaders);
+		}
 	}
 
 	@Override
 	public void readFromNBT(NBTTagCompound nbt) {
 		super.readFromNBT(nbt);
-		addedType = nbt.getIntArray("addedTypes");
-		if (addedType == null) {
-			addedType = new int[1025];
-		} else if (addedType.length != 1025) {
-			addedType = new int[1025];
-		}
-		int init = gpu.maxmem;
-		gpu.maxmem = nbt.getInteger("vram");
-		if (init > gpu.maxmem) {
-			gpu.maxmem = init;
-		}
-	}
-	
-	public void connectToMonitor() {
-		for (int i = 0; i < ForgeDirection.VALID_DIRECTIONS.length; i++) {
-			ForgeDirection dir = ForgeDirection.VALID_DIRECTIONS[i];
-			TileEntity ftile = worldObj.getTileEntity(
-					xCoord + dir.offsetX, yCoord + dir.offsetY, zCoord
-							+ dir.offsetZ);
-			if (ftile != null) {
-				if (ftile instanceof TileEntityMonitor) {
-					TileEntityMonitor tile = (TileEntityMonitor) worldObj
-							.getTileEntity(xCoord + dir.offsetX, yCoord
-									+ dir.offsetY, zCoord + dir.offsetZ);
-					if (tile != null) {
-						boolean found = false;
-						for (Monitor m : gpu.monitors) {
-							if (m == tile.mon) {
-								found = true;
-								break;
-							}
-						}
-						if (found)
-							break;
-						tile.connect(this.gpu);
-						tile.mon.tex.fill(Color.black);
-						tile.mon.tex.drawText("Monitor connected", 0, 0, Color.white);
-						tile.mon.tex.texUpdate();
-						gpu.setMonitor(tile.mon);
-						return;
+		int[] added = nbt.getIntArray("addedTypes");
+		addedType = new int[ItemRAM.SIZES];
+		if (added != null) System.arraycopy(added, 0, addedType, 0, Math.min(added.length, addedType.length));
+		int mem = Config.gpuBaseMemory;
+		for (int i = 0; i < addedType.length; i++) mem += addedType[i] * (i + 1) * Config.gpuRamPerStick;
+		gpu.maxmem = Math.max(mem, nbt.getInteger("vram"));
+		synchronized (gpu) {
+			if (nbt.hasKey("textures")) {
+				NBTTagCompound textures = nbt.getCompoundTag("textures");
+				@SuppressWarnings("unchecked")
+				java.util.Set<String> keys = textures.func_150296_c();
+				for (String key : keys) {
+					try {
+						int id = Integer.parseInt(key);
+						BufferedImage img = ImageIO.read(new ByteArrayInputStream(textures.getByteArray(key)));
+						if (img == null || id <= 0 || id >= GPU.MAX_TEXTURES) continue;
+						Texture t = new Texture(img.getWidth(), img.getHeight());
+						t.getGraphics().drawImage(img, 0, 0, null);
+						t.markDirty();
+						gpu.textures[id] = t;
+					} catch (Exception e) {
+						CCLights2.logger.warn("Failed to load GPU texture " + key + ": " + e);
 					}
-				} 
+				}
+			}
+			if (nbt.hasKey("shaders")) {
+				NBTTagCompound shaders = nbt.getCompoundTag("shaders");
+				@SuppressWarnings("unchecked")
+				java.util.Set<String> keys = shaders.func_150296_c();
+				for (String key : keys) {
+					try {
+						int id = Integer.parseInt(key);
+						NBTTagCompound tag = shaders.getCompoundTag(key);
+						int slot = gpu.createShader(tag.getString("source"), id);
+						ShaderInstance sh = gpu.shaders[slot];
+						int[] bits = tag.getIntArray("values");
+						for (int i = 0; i < bits.length && i < sh.values.length; i++) sh.values[i] = Float.intBitsToFloat(bits[i]);
+						int[] samplers = tag.getIntArray("samplers");
+						System.arraycopy(samplers, 0, sh.samplers, 0, Math.min(samplers.length, sh.samplers.length));
+					} catch (Exception e) {
+						CCLights2.logger.warn("Failed to restore shader " + key + ": " + e.getMessage());
+					}
+				}
+			}
+			if (nbt.hasKey("color")) gpu.state.color = new java.awt.Color(nbt.getInteger("color"), true);
+			int slot = nbt.getInteger("bindedSlot");
+			if (slot > 0 && slot < GPU.MAX_TEXTURES && gpu.textures[slot] != null) {
+				gpu.bindedTexture = gpu.textures[slot];
+				gpu.bindedSlot = slot;
 			}
 		}
-	}
-
-	@Override
-	public synchronized void updateEntity() {
-		synchronized (this) {if (!frame){ gpu.processSendList();}}
-		connectToMonitor();
-		if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT && ticks++ % 20 == 0 && !sentOnce) {
-		PacketSenders.GPUDOWNLOAD(xCoord, yCoord, zCoord);
-		sentOnce=true;
-		}
-
-	}
-
-	@Override
-	public boolean equals(IPeripheral other) {
-		if(other.getType() == getType()){return true;}
-		else return false;
 	}
 }

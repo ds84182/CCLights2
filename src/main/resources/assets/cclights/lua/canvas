@@ -1,0 +1,58 @@
+-- canvas: draw at a fixed design size on any screen.
+--
+--   local canvas = dofile("/cclights2/canvas")
+--   local c = canvas.fit(gpu, 256, 144)   -- design size; scales to the real screen, keeps the aspect ratio
+--   c.apply()                             -- call after gpu.origin() or whenever you reset the transform
+--   local x, y = c.toCanvas(px, py)       -- convert monitor_down/move/up coordinates
+--   c.text(str, x, y)                     -- text at a canvas position but in real (unshrunk) pixels
+--   c.w, c.h                              -- design size to lay things out with
+--   c.realW, c.realH, c.sx, c.sy          -- real screen size and the scale factors in use
+--
+-- Text is a bitmap font: scaling it down makes it unreadable, so draw text with c.text() (or in real
+-- pixels) and use the scaled canvas for shapes and textures only.
+--
+-- canvas.fit(gpu, w, h, "stretch") ignores the aspect ratio and fills the whole screen.
+-- canvas.fit(gpu, w, h, "fit") (default) letterboxes so shapes keep their proportions.
+local canvas = {}
+
+function canvas.fit(gpu, w, h, mode)
+	local c = { gpu = gpu, w = w, h = h }
+	function c.refresh()
+		c.realW, c.realH = gpu.getSize(0)
+		if mode == "stretch" then
+			c.sx, c.sy = c.realW / w, c.realH / h
+		else
+			local s = math.min(c.realW / w, c.realH / h)
+			c.sx, c.sy = s, s
+		end
+		c.ox = math.floor((c.realW - w * c.sx) / 2)
+		c.oy = math.floor((c.realH - h * c.sy) / 2)
+	end
+	function c.apply()
+		gpu.origin()
+		gpu.translate(c.ox, c.oy)
+		gpu.scale(c.sx, c.sy)
+	end
+	function c.toCanvas(px, py)
+		return (px - c.ox) / c.sx, (py - c.oy) / c.sy
+	end
+	-- draws text whose position follows the canvas but whose glyphs stay at their real size
+	function c.text(str, x, y)
+		gpu.push()
+		gpu.origin()
+		gpu.drawText(str, math.floor(c.ox + x * c.sx), math.floor(c.oy + y * c.sy))
+		gpu.pop()
+	end
+	-- clears the whole real screen (including letterbox bars) with the current colour
+	function c.clear()
+		gpu.push()
+		gpu.origin()
+		gpu.filledRectangle(0, 0, c.realW, c.realH)
+		gpu.pop()
+	end
+	c.refresh()
+	c.apply()
+	return c
+end
+
+return canvas

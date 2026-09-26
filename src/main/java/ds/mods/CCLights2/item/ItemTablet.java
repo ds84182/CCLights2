@@ -6,109 +6,112 @@ import java.util.UUID;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.CCLights2.CCLights2;
+import ds.mods.CCLights2.GuiHandler;
 import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
-import ds.mods.CCLights2.client.ClientTickHandler;
-import ds.mods.CCLights2.client.render.TabletRenderer;
-import ds.mods.CCLights2.utils.TabMesg;
-import ds.mods.CCLights2.utils.TabMesg.Message;
-import net.minecraft.block.Block;
+import ds.mods.CCLights2.client.TabletLink;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 
+/**
+ * Hand-held screen paired to a tablet transceiver. Right click opens it, sneak + right click
+ * sends a screenshot from the player's view to the transceiver's computer (tablet_image event).
+ */
 public class ItemTablet extends Item {
+	public static final String NBT_UUID = "uuid";
+	public static final String NBT_TRANS = "trans";
+	public static final String NBT_CAN_DISPLAY = "canDisplay";
 
 	public ItemTablet() {
-		super();
-		this.setMaxStackSize(1);
-		this.setNoRepair();
-		this.setUnlocalizedName("tablet");
-		this.setCreativeTab(CCLights2.ccltab);
+		setMaxStackSize(1);
+		setNoRepair();
+		setUnlocalizedName("tablet");
+		setCreativeTab(CCLights2.ccltab);
 	}
 
 	@Override
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@SideOnly(Side.CLIENT)
-	public void addInformation(ItemStack item,
-			EntityPlayer Player, @SuppressWarnings("rawtypes") List par3List, boolean par4) {
+	public void addInformation(ItemStack stack, EntityPlayer player, List lines, boolean advanced) {
+		NBTTagCompound nbt = stack.getTagCompound();
+		if (nbt != null && nbt.getBoolean(NBT_CAN_DISPLAY)) {
+			lines.add("Paired with a transceiver");
+			lines.add("Sneak + right click: send camera image");
+		} else {
+			lines.add("Right click a Tablet Transceiver to pair");
+		}
+	}
+
+	public static UUID getTransceiverId(ItemStack stack) {
+		NBTTagCompound nbt = stack.getTagCompound();
+		if (nbt == null || !nbt.getBoolean(NBT_CAN_DISPLAY)) return null;
+		try {
+			return UUID.fromString(nbt.getString(NBT_TRANS));
+		} catch (IllegalArgumentException e) {
+			return null;
+		}
 	}
 
 	@Override
-	public ItemStack onItemRightClick(ItemStack par1ItemStack, World par3World, EntityPlayer Player) {
-		if(Player.isSneaking()){
-			if (par1ItemStack.getTagCompound().getBoolean("canDisplay") && par3World.isRemote) {
-				UUID trans = UUID.fromString(par1ItemStack.getTagCompound().getString("trans"));
-				if(TabletRenderer.isInOfRange(trans)){
-				TileEntityTTrans tile = (TileEntityTTrans) par3World.getTileEntity(
-								(Integer) TabMesg.getTabVar(trans, "x"),
-								(Integer) TabMesg.getTabVar(trans, "y"),
-								(Integer) TabMesg.getTabVar(trans, "z"));
-				ClientTickHandler.tile = tile;
-				}
-			}
+	public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player) {
+		getNBT(stack);
+		if (world.isRemote) {
+			if (player.isSneaking()) TabletLink.requestScreenshot(stack);
+			else player.openGui(CCLights2.instance, GuiHandler.GUI_TABLET, world, 0, 0, 0);
 		}
-		else{
-			Player.openGui(CCLights2.instance, 1, par3World, 0, 0, 0);
-		}
-		return par1ItemStack;
+		return stack;
 	}
 
 	@Override
-	public boolean onItemUse(ItemStack par1ItemStack,
-			EntityPlayer par2EntityPlayer, World par3World, int par4, int par5,
-			int par6, int par7, float par8, float par9, float par10) {
-		NBTTagCompound nbt = getNBT(par1ItemStack,par3World);
-		
-		if (!par3World.isRemote && Block.isEqualTo(CCLights2.ttrans, par3World.getBlock(par4, par5, par6)))
-		{
-			nbt.setBoolean("canDisplay",true);
-			TileEntityTTrans tile = (TileEntityTTrans) par3World.getTileEntity(par4, par5, par6);
-			nbt.setString("trans", tile.id.toString());
-			TabMesg.pushMessage(tile.id, new Message("connect",UUID.fromString(nbt.getString("uuid"))));
-			return false;
-		}
-		return false;
+	public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ) {
+		TileEntity te = world.getTileEntity(x, y, z);
+		if (!(te instanceof TileEntityTTrans)) return false;
+		if (world.isRemote) return true;
+		TileEntityTTrans tile = (TileEntityTTrans) te;
+		NBTTagCompound nbt = getNBT(stack);
+		nbt.setBoolean(NBT_CAN_DISPLAY, true);
+		nbt.setString(NBT_TRANS, tile.id.toString());
+		tile.connectTablet(UUID.fromString(nbt.getString(NBT_UUID)));
+		player.addChatMessage(new ChatComponentText("Tablet paired with transceiver"));
+		return true;
 	}
 
 	@Override
-	public int getMaxItemUseDuration(ItemStack par1ItemStack) {
+	public int getMaxItemUseDuration(ItemStack stack) {
 		return 1;
 	}
 
-	public NBTTagCompound createNBT(World par3World)
-	{
-		NBTTagCompound nbt = new NBTTagCompound();
-		nbt.setBoolean("canDisplay", false);
-		nbt.setString("uuid", UUID.randomUUID().toString());
-		return nbt;
-	}
-	
-	public NBTTagCompound getNBT(ItemStack item, World parWorld)
-	{
-		NBTTagCompound nbt = item.getTagCompound();
-		if (nbt == null)
-		{
-			nbt = createNBT(parWorld);
-			item.setTagCompound(nbt);
+	public NBTTagCompound getNBT(ItemStack stack) {
+		NBTTagCompound nbt = stack.getTagCompound();
+		if (nbt == null) {
+			nbt = new NBTTagCompound();
+			stack.setTagCompound(nbt);
+		}
+		if (!nbt.hasKey(NBT_UUID)) {
+			nbt.setString(NBT_UUID, UUID.randomUUID().toString());
+			nbt.setBoolean(NBT_CAN_DISPLAY, false);
 		}
 		return nbt;
 	}
-	
+
 	@Override
-	public void onCreated(ItemStack par1ItemStack, World par2World,
-			EntityPlayer par3EntityPlayer) {
-		par1ItemStack.setTagCompound(createNBT(par2World));
+	public void onCreated(ItemStack stack, World world, EntityPlayer player) {
+		getNBT(stack);
 	}
 
 	@Override
-	public boolean isItemTool(ItemStack par1ItemStack)
-    {
+	public boolean isItemTool(ItemStack stack) {
 		return true;
-    }
-	//stuff loads faster when forge is satisfied at load
+	}
+
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void registerIcons(IIconRegister par1IconRegister){}
+	public void registerIcons(IIconRegister reg) {
+		// The item renderer draws the 3D model; no icon needed.
+	}
 }

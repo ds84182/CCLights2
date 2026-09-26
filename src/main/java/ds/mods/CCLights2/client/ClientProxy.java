@@ -3,6 +3,7 @@ package ds.mods.CCLights2.client;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.util.List;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -10,89 +11,107 @@ import org.lwjgl.opengl.GL11;
 import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.relauncher.Side;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.CommonProxy;
 import ds.mods.CCLights2.block.tileentity.TileEntityExternalMonitor;
 import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
+import ds.mods.CCLights2.client.render.ExternalMonitorRenderer;
 import ds.mods.CCLights2.client.render.TabletRenderer;
-import ds.mods.CCLights2.client.render.TileEntityExternalMonitorRenderer;
+import ds.mods.CCLights2.client.render.TextureCache;
+import ds.mods.CCLights2.gpu.DrawCMD;
+import ds.mods.CCLights2.gpu.GPU;
 import ds.mods.CCLights2.network.PacketSenders;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.World;
 import net.minecraftforge.client.MinecraftForgeClient;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.world.WorldEvent;
 
 public class ClientProxy extends CommonProxy {
-	private static ByteBuffer ssBuffer;
+	private static ByteBuffer screenshotBuffer;
+	private ClientDrawThread drawThread;
 
-	public static World getClientWorld()
-	{
+	@Override
+	public World getClientWorld() {
 		return Minecraft.getMinecraft().theWorld;
 	}
 
 	@Override
-	public void registerRenderInfo()
-	{
-		CommonProxy.modelID = RenderingRegistry.getNextAvailableRenderId();
-
-		RenderingRegistry.registerBlockHandler(new TileEntityExternalMonitorRenderer());
-		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityExternalMonitor.class, new TileEntityExternalMonitorRenderer());
-		MinecraftForgeClient.registerItemRenderer(CCLights2.tablet, new TabletRenderer());
-		//ClientRegistry.bindTileEntitySpecialRenderer(TileEntityAdvancedlight.class, new TileEntityLightRenderer());
-
+	public void registerHandlers() {
+		super.registerHandlers();
 		FMLCommonHandler.instance().bus().register(new ClientTickHandler());
+		MinecraftForge.EVENT_BUS.register(this);
 	}
 
 	@Override
-	public File getWorldDir(World world)
-	{
+	public void registerRenderInfo() {
+		CommonProxy.modelID = RenderingRegistry.getNextAvailableRenderId();
+		ExternalMonitorRenderer renderer = new ExternalMonitorRenderer();
+		RenderingRegistry.registerBlockHandler(renderer);
+		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityExternalMonitor.class, renderer);
+		MinecraftForgeClient.registerItemRenderer(CCLights2.tablet, new TabletRenderer());
+	}
+
+	@Override
+	public void runOnGameThread(Side side, Runnable task) {
+		if (side == Side.CLIENT) {
+			Minecraft.getMinecraft().func_152344_a(task);
+		} else {
+			super.runOnGameThread(side, task);
+		}
+	}
+
+	@Override
+	public void submitDraw(GPU gpu, List<DrawCMD> cmds) {
+		if (drawThread == null || !drawThread.isAlive()) {
+			drawThread = new ClientDrawThread();
+			drawThread.start();
+		}
+		drawThread.submit(gpu, cmds);
+	}
+
+	@SubscribeEvent
+	public void onWorldUnload(WorldEvent.Unload event) {
+		if (!event.world.isRemote) return;
+		if (drawThread != null) drawThread.clear();
+		TextureCache.releaseAll();
+		ClientTickHandler.pendingScreenshot = null;
+	}
+
+	@Override
+	public File getWorldDir(World world) {
 		return new File(FMLCommonHandler.instance().getMinecraftServerInstance().getFile("."), "saves/" + world.getSaveHandler().getWorldDirectoryName());
 	}
 
-	public static void takeScreenshot(TileEntityTTrans tile){
+	/** Reads the current framebuffer and sends it to the server for the tablet camera. */
+	public static void takeScreenshot(TileEntityTTrans tile) {
+		Minecraft mc = Minecraft.getMinecraft();
+		int width = mc.displayWidth;
+		int height = mc.displayHeight;
+		int byteCount = width * height * 3;
+		if (screenshotBuffer == null || screenshotBuffer.capacity() < byteCount) {
+			screenshotBuffer = BufferUtils.createByteBuffer(byteCount);
+		}
 		GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1);
 		GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
+		screenshotBuffer.clear();
+		GL11.glReadPixels(0, 0, width, height, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, screenshotBuffer);
+		screenshotBuffer.rewind();
 
-		int width = Minecraft.getMinecraft().displayWidth;
-		int height = Minecraft.getMinecraft().displayHeight;
-		int byteCount = width * height * 3;
-
-		if (ssBuffer == null || ssBuffer.capacity() < byteCount) {
-			ssBuffer = BufferUtils.createByteBuffer(byteCount);
-		}
-
-		ssBuffer.clear();
-		// read the BGR values into the image
-		GL11.glReadPixels(0, 0, width, height, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, ssBuffer);
-
-		ssBuffer.rewind();
-
-		byte[] data = new byte[byteCount];
-		ssBuffer.get(data);
-		BufferedImage bufferedimage = new BufferedImage(width, height, 1);
-		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < height; y++) {
-				int i = (x + (width * y)) * 3;
-				int r = data[i] & 0xFF;
-				int g = data[i + 1] & 0xFF;
-				int b = data[i + 2] & 0xFF;
-				bufferedimage.setRGB(x, height - y - 1, (0xFF << 24) | (r << 16) | (g << 8) | b);
+		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		int[] row = new int[width];
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				int i = (x + width * y) * 3;
+				int r = screenshotBuffer.get(i) & 0xFF;
+				int g = screenshotBuffer.get(i + 1) & 0xFF;
+				int b = screenshotBuffer.get(i + 2) & 0xFF;
+				row[x] = (r << 16) | (g << 8) | b;
 			}
+			image.setRGB(0, height - y - 1, width, 1, row, 0, width);
 		}
-
-		//send image to server
-		PacketSenders.screenshot(tile,bufferedimage);
-	}
-
-	private static void func_74289_a(int[] par0ArrayOfInteger, int par1, int par2)
-	{
-		int[] aint1 = new int[par1];
-		int k = par2 / 2;
-
-		for (int l = 0; l < k; ++l)
-		{
-			System.arraycopy(par0ArrayOfInteger, l * par1, aint1, 0, par1);
-			System.arraycopy(par0ArrayOfInteger, (par2 - 1 - l) * par1, par0ArrayOfInteger, l * par1, par1);
-			System.arraycopy(aint1, 0, par0ArrayOfInteger, (par2 - 1 - l) * par1, par1);
-		}
+		PacketSenders.screenshot(tile, image);
 	}
 }

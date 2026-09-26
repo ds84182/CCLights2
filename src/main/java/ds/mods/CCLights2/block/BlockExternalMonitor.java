@@ -1,9 +1,12 @@
 package ds.mods.CCLights2.block;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.CCLights2.CCLights2;
 import ds.mods.CCLights2.CommonProxy;
 import ds.mods.CCLights2.block.tileentity.TileEntityExternalMonitor;
 import ds.mods.CCLights2.gpu.GPU;
+import ds.mods.CCLights2.gpu.Monitor;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
@@ -11,135 +14,70 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.IIcon;
 import net.minecraft.util.MathHelper;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
+/**
+ * Multi-block monitor. Rendered entirely by the tile entity renderer; clicking the screen face
+ * sends a monitor click to the connected GPUs.
+ */
 public class BlockExternalMonitor extends Block {
-	public BlockExternalMonitor(Material par2Material) {
-		super(par2Material);
-		this.setBlockName("monitor.big");
-		this.setCreativeTab(CCLights2.ccltab);
-		this.setHardness(0.6F).setStepSound(Block.soundTypeStone);
-	}
-	
-	@Override
-	public void breakBlock(World par1World, int par2, int par3, int par4, Block par5, int par6) {
-		TileEntityExternalMonitor tile = (TileEntityExternalMonitor) par1World.getTileEntity(par2, par3, par4);
-		tile.destroy();
-		super.breakBlock(par1World, par2, par3, par4, par5, par6);
+	@SideOnly(Side.CLIENT)
+	public static IIcon iconSide, iconBack, iconFront;
+
+	public BlockExternalMonitor(Material material) {
+		super(material);
+		setBlockName("monitor.big");
+		setCreativeTab(CCLights2.ccltab);
+		setHardness(0.6F);
+		setStepSound(Block.soundTypeMetal);
 	}
 
 	@Override
-	public boolean onBlockActivated(World world, int par2, int par3, int par4, EntityPlayer par5EntityPlayer, int par6, float vecX,
-			float vecY, float vecZ) {
-		TileEntityExternalMonitor tile = (TileEntityExternalMonitor) world.getTileEntity(par2,par3,par4);
-		float x = 0f;
-		float y = 0f;
-		switch (tile.m_dir)
-		{
-			case 0:
-			{
-				if (vecZ == 0.0f)
-				{
-					x = 1F-vecX;
-					y = vecY;
-				}
-				else
-				{
-					return false;
-				}
-				break;
-			}
-			case 1:
-			{
-				if (vecX == 1.0f)
-				{
-					x = vecY;
-					y = vecZ;
-				}
-				else
-				{
-					return false;
-				}
-				break;
-			}
-			case 2:
-			{
-				if (vecZ == 1.0f)
-				{
-					x = vecX;
-					y = vecY;
-				}
-				else
-				{
-					return false;
-				}
-				break;
-			}
-			case 3:
-			{
-				if (vecX == 0.0f)
-				{
-					x = vecY;
-					y = vecZ;
-				}
-				else
-				{
-					return false;
-				}
-				break;
-			}
+	public void breakBlock(World world, int x, int y, int z, Block block, int meta) {
+		TileEntity te = world.getTileEntity(x, y, z);
+		if (te instanceof TileEntityExternalMonitor) ((TileEntityExternalMonitor) te).destroy();
+		super.breakBlock(world, x, y, z, block, meta);
+	}
+
+	@Override
+	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ) {
+		TileEntity te = world.getTileEntity(x, y, z);
+		if (!(te instanceof TileEntityExternalMonitor)) return false;
+		TileEntityExternalMonitor tile = (TileEntityExternalMonitor) te;
+		if (side != tile.getFront()) return false;
+		if (player.isSneaking()) return false;
+		if (world.isRemote) return true;
+
+		// Fraction of the hit along the viewer's right-hand axis when facing the screen.
+		float along;
+		switch (tile.getDir()) {
+		case 0: along = 1f - hitX; break; // screen faces north, viewer's right is west
+		case 1: along = 1f - hitZ; break; // faces east, right is north
+		case 2: along = hitX; break;      // faces south, right is east
+		default: along = hitZ; break;     // faces west, right is south
 		}
-		int px = (int) Math.floor(x*32F);
-		int py = (int) Math.floor((1F-y)*32F);
-		px+=(tile.m_width-tile.m_xIndex-1)*32;
-		py+=(tile.m_height-tile.m_yIndex-1)*32;
-		if (!world.isRemote)
-		{
-			//Send it to the tileentity!
-			if (tile.mon != null && tile.mon.gpu != null)
-			{
-				for (GPU g : tile.mon.gpu)
-				{
-					g.tile.startClick((EntityPlayer) par5EntityPlayer, 0, px, py);
-					g.tile.endClick((EntityPlayer) par5EntityPlayer);
-				}
-			}
+		int[] px = tile.hitToPixel(along, hitY);
+		Monitor mon = tile.getMonitor();
+		if (mon == null) return true;
+		for (GPU g : mon.gpus) {
+			if (g.tile == null) continue;
+			g.tile.startClick(player, 0, px[0], px[1]);
+			g.tile.endClick(player);
 		}
 		return true;
 	}
 
 	@Override
-	public void setBlockBoundsBasedOnState(IBlockAccess par1iBlockAccess, int par2, int par3, int par4) {
-		setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+	public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase placer, ItemStack stack) {
+		if (world.isRemote) return;
+		TileEntity te = world.getTileEntity(x, y, z);
+		if (!(te instanceof TileEntityExternalMonitor)) return;
+		int l = MathHelper.floor_double(placer.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
+		((TileEntityExternalMonitor) te).onPlaced(l);
 	}
 
-	@Override
-	public boolean hasTileEntity(int meta)
-	{
-		return true;
-	}
-	
-	@Override
-	public TileEntity createTileEntity(World w, int meta)
-	{
-		return new TileEntityExternalMonitor();
-	}
-	
-	@Override
-	public void onBlockPlacedBy(World world, int i, int j, int k, EntityLivingBase entityliving, ItemStack item)
-	{
-		if(!world.isRemote){
-		int l = MathHelper.floor_double(entityliving.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
-		TileEntityExternalMonitor tile = (TileEntityExternalMonitor) world.getTileEntity(i, j, k);
-		tile.setDir(l);
-		tile.contractNeighbours();
-        tile.contract();
-        tile.expand();
-		}
-	}
-	
 	@Override
 	public boolean renderAsNormalBlock() {
 		return false;
@@ -154,9 +92,28 @@ public class BlockExternalMonitor extends Block {
 	public boolean isOpaqueCube() {
 		return false;
 	}
-	
-	 @Override
-	  public void registerBlockIcons(IIconRegister iconRegister) {
-	      blockIcon = iconRegister.registerIcon("cclights:monitorsides");
-	  }
+
+	@Override
+	public boolean hasTileEntity(int meta) {
+		return true;
+	}
+
+	@Override
+	public TileEntity createTileEntity(World world, int meta) {
+		return new TileEntityExternalMonitor();
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public IIcon getIcon(int side, int meta) {
+		return iconSide;
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public void registerBlockIcons(IIconRegister reg) {
+		blockIcon = iconSide = reg.registerIcon("cclights:monitor_big_side");
+		iconBack = reg.registerIcon("cclights:monitor_big_back");
+		iconFront = reg.registerIcon("cclights:monitor_big_front");
+	}
 }

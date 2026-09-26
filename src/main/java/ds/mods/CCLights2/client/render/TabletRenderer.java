@@ -1,53 +1,51 @@
 package ds.mods.CCLights2.client.render;
 
 import java.awt.Color;
-import java.util.UUID;
 
 import org.lwjgl.opengl.GL11;
 
-import ds.mods.CCLights2.CCLights2;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
+import ds.mods.CCLights2.client.TabletLink;
+import ds.mods.CCLights2.gpu.DrawState;
 import ds.mods.CCLights2.gpu.Texture;
 import ds.mods.CCLights2.item.ItemTablet;
-import ds.mods.CCLights2.utils.TabMesg;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderItem;
-import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.IItemRenderer;
 
+/**
+ * Renders the tablet item as a 3D slab with the paired transceiver's screen on it.
+ */
+@SideOnly(Side.CLIENT)
 public class TabletRenderer implements IItemRenderer {
-	
-	ModelTablet model = new ModelTablet();
-	TextureManager re;
-	ResourceLocation texture = new ResourceLocation("cclights", "textures/items/Tablet.png");
-	public static Texture defaultTexture = new Texture(16*32, 9*32);
-	public static Texture errorTexture = new Texture(16*32, 9*32);
-	public static DynamicTexture dyntex = new DynamicTexture(16*32,9*32);
-	public static int[] dyntex_data;
-	
-	public TabletRenderer()
-	{
-		dyntex_data = dyntex.getTextureData();
-		
-		defaultTexture.rgbCache = new int[16*32*9*32];
-		defaultTexture.fill(Color.blue);
-		defaultTexture.drawText("Hello, World!", 0, 0, Color.white);
-		defaultTexture.drawText("Please configure the tablet with a Tablet Transmitter.", 0, 9, Color.white);
-		defaultTexture.drawText("You can do this by right clicking it with your tablet.", 0, 18, Color.white);
+	private final ModelTablet model = new ModelTablet();
+	private final ResourceLocation texture = new ResourceLocation("cclights", "textures/items/Tablet.png");
+
+	public static final Texture defaultTexture = new Texture(TileEntityTTrans.WIDTH, TileEntityTTrans.HEIGHT);
+	public static final Texture errorTexture = new Texture(TileEntityTTrans.WIDTH, TileEntityTTrans.HEIGHT);
+
+	static {
+		DrawState s = new DrawState();
+		defaultTexture.setWantCache(true);
+		defaultTexture.fill(new Color(20, 40, 90));
+		s.color = Color.white;
+		defaultTexture.drawText(s, "Not paired.", 8, 8);
+		defaultTexture.drawText(s, "Right click a Tablet Transceiver with this tablet to pair it.", 8, 20);
+		defaultTexture.drawText(s, "Then right click the tablet to open its screen.", 8, 30);
 		defaultTexture.texUpdate();
-		
-		errorTexture.rgbCache = new int[16*32*9*32];
-		errorTexture.fill(Color.red);
-		errorTexture.drawText("Out of range.", 0, 0, Color.white);
+
+		errorTexture.setWantCache(true);
+		errorTexture.fill(new Color(120, 20, 20));
+		errorTexture.drawText(s, "Out of range.", 8, 8);
+		errorTexture.drawText(s, "Move closer to the transceiver this tablet is paired with.", 8, 20);
 		errorTexture.texUpdate();
 	}
 
@@ -57,129 +55,76 @@ public class TabletRenderer implements IItemRenderer {
 	}
 
 	@Override
-	public boolean shouldUseRenderHelper(ItemRenderType type, ItemStack item,
-			ItemRendererHelper helper) {
+	public boolean shouldUseRenderHelper(ItemRenderType type, ItemStack item, ItemRendererHelper helper) {
 		return true;
 	}
 
 	@Override
 	public void renderItem(ItemRenderType type, ItemStack item, Object... data) {
-		if (re == null)
-			re = Minecraft.getMinecraft().renderEngine;
-		re.bindTexture(texture);
+		Minecraft.getMinecraft().renderEngine.bindTexture(texture);
 		GL11.glPushMatrix();
-		switch (type)
-		{
+		switch (type) {
 		case ENTITY:
-			if(RenderItem.renderInFrame){
-			   GL11.glRotatef(90, 0F, 0F, 1F);
-			   GL11.glTranslatef(0, -0.5F, 0.10F);
-			}else{
-			   GL11.glRotatef(180, 0F, 0F, 1F);
-			   GL11.glTranslatef(0F, -0.25F, 0F);}
+			if (RenderItem.renderInFrame) {
+				GL11.glRotatef(90, 0F, 0F, 1F);
+				GL11.glTranslatef(0, -0.5F, 0.10F);
+			} else {
+				GL11.glRotatef(180, 0F, 0F, 1F);
+				GL11.glTranslatef(0F, -0.25F, 0F);
+			}
 			break;
-		case EQUIPPED:
-			int i;
-			for (i = 0; i<4; i++) {GL11.glPopMatrix();};
-			for (i = 0; i<4; i++) {GL11.glPushMatrix();};
+		case EQUIPPED: {
 			GL11.glScalef(.5F, .5F, .5F);
-			Entity entity = (Entity) data[1];
-			if (entity instanceof EntityZombie)
-				GL11.glTranslatef(0F, 0F, -0.5F);
-			else
-				GL11.glTranslatef(0F, 0.75F, -0.5F);
-			GL11.glRotatef(90F+60F, 1F, 0F, 0F);
+			Entity entity = data.length > 1 && data[1] instanceof Entity ? (Entity) data[1] : null;
+			if (entity instanceof EntityZombie) GL11.glTranslatef(0F, 0F, -0.5F);
+			else GL11.glTranslatef(0F, 0.75F, -0.5F);
+			GL11.glRotatef(90F + 60F, 1F, 0F, 0F);
 			GL11.glRotatef(180F, 0F, 0F, 1F);
 			break;
+		}
 		case EQUIPPED_FIRST_PERSON:
 			GL11.glRotatef(-45F, 0F, 1F, 0F);
-			GL11.glRotatef(-90F-60F, 1F, 0F, 0F);
+			GL11.glRotatef(-90F - 60F, 1F, 0F, 0F);
 			GL11.glTranslatef(-0.75F, .25F, 2.75F);
 			GL11.glScalef(4F, 1F, 4F);
-			break;
-		case FIRST_PERSON_MAP:
 			break;
 		case INVENTORY:
 			GL11.glRotatef(180, 0F, 0F, 1F);
 			GL11.glRotatef(180, 0F, 1F, 0F);
 			GL11.glTranslatef(0F, -0.25F, 0F);
-			GL11.glScalef(1F, 1F, 1F);
 			break;
 		default:
 			break;
 		}
-		{
-			model.draw();
-			NBTTagCompound nbt = ((ItemTablet)CCLights2.tablet).getNBT(item, Minecraft.getMinecraft().theWorld);
-			if (nbt == null)
-			{
-				GL11.glPopMatrix();
-				return;
-			}
-			//Well, we need to get the screen :P
-			Texture tex = defaultTexture;
-			if (nbt.getBoolean("canDisplay"))
-			{
-				String uuistr = nbt.getString("trans");
-				if (uuistr != null)
-				{
-					UUID trans = UUID.fromString(uuistr);
-					if (!(trans == null || TabMesg.getTabVar(trans, "x") == null))
-					{
-						if (Minecraft.getMinecraft().theWorld == null) {GL11.glPopMatrix(); return;}
-						TileEntity noncast = Minecraft.getMinecraft().theWorld
-								.getTileEntity(
-										(Integer)TabMesg.getTabVar(trans, "x"),
-										(Integer)TabMesg.getTabVar(trans, "y"),
-										(Integer)TabMesg.getTabVar(trans, "z"));
-						if (!(noncast == null || !(noncast instanceof TileEntityTTrans)))
-						{
-							TileEntityTTrans tile = (TileEntityTTrans) noncast;
-							
-							if (tile.mon.tex == null) {nbt.setBoolean("canDisplay", false); return;}
-							else if (isInOfRange(trans)){
-								tex = tile.mon.tex;
-							}
-							else{
-								//tablet is out of range,  fak shit up :D
-								tex = errorTexture;
-							}
-						}
-						else
-							nbt.setBoolean("canDisplay", false);
-					}
-					else
-						nbt.setBoolean("canDisplay", false);
-				}
-				else
-					nbt.setBoolean("canDisplay", false);
-			}
-			GL11.glTranslatef(0F, -0.0001F, 0F);
-			TextureUtil.uploadTexture(dyntex.getGlTextureId(), tex.rgbCache, 16*32, 9*32);
-			Tessellator tess = Tessellator.instance;
-			GL11.glDisable(GL11.GL_LIGHTING);
-			tess.startDrawingQuads();
-			tess.setBrightness(0xFF);
-			tess.addVertexWithUV(-8/16D, 0.5D-(2/16D), -(6/16D),0D,((double)tex.getHeight())/(9*32));
-			tess.addVertexWithUV(0.5D, 0.5D-(2/16D), -(6/16D),((double)tex.getWidth())/(16*32),((double)tex.getHeight())/(9*32));
-			tess.addVertexWithUV(0.5D, 0.5D-(2/16D), (3/16D),((double)tex.getWidth())/(16*32),0D);
-			tess.addVertexWithUV(-8/16D, 0.5D-(2/16D), (3/16D),0D,0D);
-			tess.draw();
-			GL11.glEnable(GL11.GL_LIGHTING);
-		}
+		model.draw();
+
+		Texture tex = screenFor(item);
+		GL11.glTranslatef(0F, -0.0001F, 0F);
+		TextureCache.bind(tex);
+		float lastX = OpenGlHelper.lastBrightnessX, lastY = OpenGlHelper.lastBrightnessY;
+		OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
+		GL11.glDisable(GL11.GL_LIGHTING);
+		GL11.glColor4f(1F, 1F, 1F, 1F);
+		Tessellator t = Tessellator.instance;
+		t.startDrawingQuads();
+		t.setNormal(0, -1, 0);
+		double y = 0.5D - (2 / 16D);
+		t.addVertexWithUV(-8 / 16D, y, -(6 / 16D), 0D, 1D);
+		t.addVertexWithUV(0.5D, y, -(6 / 16D), 1D, 1D);
+		t.addVertexWithUV(0.5D, y, (3 / 16D), 1D, 0D);
+		t.addVertexWithUV(-8 / 16D, y, (3 / 16D), 0D, 0D);
+		t.draw();
+		GL11.glEnable(GL11.GL_LIGHTING);
+		OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, lastX, lastY);
 		GL11.glPopMatrix();
 	}
-	
-	public static boolean isInOfRange(UUID trans){
-		int xDifference = (int) Math.abs(Minecraft.getMinecraft().thePlayer.posX - (Integer)TabMesg.getTabVar(trans, "x"));
-		int yDiference = (int) Math.abs(Minecraft.getMinecraft().thePlayer.posY - (Integer)TabMesg.getTabVar(trans, "y"));
-		int zDifference = (int) Math.abs(Minecraft.getMinecraft().thePlayer.posZ - (Integer)TabMesg.getTabVar(trans, "z"));
-		int tabletRange= 10;
-		if (xDifference < tabletRange && yDiference < tabletRange && zDifference < tabletRange){
-			return true;
-		}
-		return false;
-		
-	}
 
+	/** Picks what to show on a tablet: the transceiver screen, the pairing hint or the range error. */
+	public static Texture screenFor(ItemStack item) {
+		if (ItemTablet.getTransceiverId(item) == null) return defaultTexture;
+		TileEntityTTrans tile = TabletLink.findTransceiver(item);
+		if (tile == null || !TabletLink.inRange(tile)) return errorTexture;
+		Texture tex = tile.getScreenTexture();
+		return tex == null ? errorTexture : tex;
+	}
 }

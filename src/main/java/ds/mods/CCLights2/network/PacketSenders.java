@@ -1,13 +1,11 @@
 package ds.mods.CCLights2.network;
 
 import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.geom.AffineTransform;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Deque;
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.Locale;
 
 import javax.imageio.IIOImage;
@@ -15,6 +13,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
+import javax.imageio.stream.ImageOutputStream;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
@@ -25,300 +24,188 @@ import ds.mods.CCLights2.block.tileentity.TileEntityGPU;
 import ds.mods.CCLights2.block.tileentity.TileEntityMonitor;
 import ds.mods.CCLights2.block.tileentity.TileEntityTTrans;
 import ds.mods.CCLights2.gpu.DrawCMD;
+import ds.mods.CCLights2.gpu.GPU;
+import ds.mods.CCLights2.gpu.ShaderInstance;
 import ds.mods.CCLights2.gpu.Texture;
 import ds.mods.CCLights2.network.PacketHandler.PacketMessage;
-import ds.mods.CCLights2.serialize.Serialize;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.ChatAllowedCharacters;
+import net.minecraft.tileentity.TileEntity;
 
+/**
+ * Builders for every packet CCLights2 sends.
+ */
 public final class PacketSenders {
+	private PacketSenders() {}
 
-	public static void sendPacketsNow(Deque<DrawCMD> drawlist,
-			TileEntityGPU tile) {
-		if (tile == null) {
-			throw new IllegalArgumentException(
-					"GPU cannot send packet without Tile Entity!");
-		}
-		ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
-		outputStream.writeByte(PacketHandlerIMPL.NET_GPUDRAWLIST);
-		outputStream.writeInt(tile.xCoord);
-		outputStream.writeInt(tile.yCoord);
-		outputStream.writeInt(tile.zCoord);
-		outputStream.writeInt(drawlist.size());
-		while (!drawlist.isEmpty()) {
-			DrawCMD c = drawlist.removeLast();
-			outputStream.writeInt(c.cmd.ordinal());
-			outputStream.writeInt(c.args.length);
-			for (int g = 0; g < c.args.length; g++) {
-				Object v = c.args[g];
-				if (v != null && v.getClass().isArray())
-				{
-					Object[] arr = (Object[]) v;
-					outputStream.writeByte(-1);
-					outputStream.writeInt(arr.length);
-					for (int i=0; i<arr.length; i++)
-					{
-						Serialize.serialize(outputStream, arr[i]);
-					}
-				}
-				else
-				{
-					outputStream.writeByte(0);
-					Serialize.serialize(outputStream, v);
-				}
-			}
-		}
-		try {
-			PacketMessage[] packets = PacketChunker.instance.createPackets(
-					"CCLights2", outputStream.toByteArray());
+	/** Range within which clients receive draw commands. */
+	public static final double DRAW_RANGE = 256.0D;
 
-			for (int g = 0; g < packets.length; g++) {
-				CCLights2.network.sendToAllAround(packets[g], new TargetPoint(tile.getWorldObj().provider.dimensionId, tile.xCoord, tile.yCoord, tile.zCoord, 4096.0D));
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public static void GPUEvent(int par1, int par2, TileEntityMonitor tile,
-			int wheel) {
+	private static ByteArrayDataOutput header(byte type, TileEntity tile) {
 		ByteArrayDataOutput out = ByteStreams.newDataOutput();
-
-		out.writeByte(PacketHandlerIMPL.NET_GPUEVENT);
+		out.writeByte(type);
 		out.writeInt(tile.xCoord);
 		out.writeInt(tile.yCoord);
 		out.writeInt(tile.zCoord);
-		out.writeUTF("monitor_scroll");
-		out.writeInt(3);
-
-		out.writeInt(0);
-		out.writeInt(par1);
-
-		out.writeInt(0);
-		out.writeInt(par2);
-
-		out.writeInt(0);
-		out.writeInt(wheel / 120);
-		createPacketAndSend(out);
+		return out;
 	}
 
-	public synchronized static void sendPacketToPlayer(int x, int y, int z,
-			TileEntityGPU tile, EntityPlayer player) {
+	private static void toServer(ByteArrayDataOutput out) {
 		try {
-			ByteArrayDataOutput out = ByteStreams.newDataOutput();
-			out.writeByte(PacketHandlerIMPL.NET_GPUINIT);
-			out.writeInt(x);
-			out.writeInt(y);
-			out.writeInt(z);
-			out.writeInt(tile.gpu.color.getRGB());
-			double[] matrix = new double[6];
-			tile.gpu.transform.getMatrix(matrix);
-			writeMatrix(out, matrix);
-			Iterator<AffineTransform> it = tile.gpu.transformStack.iterator();
-			out.writeInt(tile.gpu.transformStack.size());
-			while (it.hasNext()) {
-				it.next().getMatrix(matrix);
-				writeMatrix(out, matrix);
-			}
-			PacketMessage[] packets = PacketChunker.instance.createPackets(
-					"CCLights2", out.toByteArray());
-			for (int g = 0; g < packets.length; g++) {
-				CCLights2.network.sendTo(packets[g], (EntityPlayerMP)player);
+			for (PacketMessage p : PacketChunker.instance.createPackets(out.toByteArray())) {
+				CCLights2.network.sendToServer(p);
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-	}
-
-	public static void sendTextures(EntityPlayer whom, Texture tex, int id, int x,
-			int y, int z) {
-		try {
-			ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
-			outputStream.writeByte(PacketHandlerIMPL.NET_GPUDOWNLOAD);
-			outputStream.writeInt(x);
-			outputStream.writeInt(y);
-			outputStream.writeInt(z);
-			outputStream.writeInt(id);
-			outputStream.writeInt(tex.getWidth());
-			outputStream.writeInt(tex.getHeight());
-			int[] arr = new int[tex.getWidth() * tex.getHeight() * 4];
-			tex.img.getRGB(0, 0, tex.getWidth(), tex.getHeight(), arr, 0,
-					tex.getWidth());
-			outputStream.writeInt(arr.length);
-			for (int i = 0; i < arr.length; i++) {
-				outputStream.writeInt(arr[i]);
-			}
-			PacketMessage[] packets = PacketChunker.instance.createPackets(
-					"CCLights2", outputStream.toByteArray());
-			for (int g = 0; g < packets.length; g++) {
-				CCLights2.network.sendTo(packets[g], (EntityPlayerMP) whom);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
+			CCLights2.logger.warn("Failed to send packet to server: " + e);
 		}
 	}
 
-	public static void mouseEvent(int mx, int my, int par3,
-			TileEntityMonitor tile) {
-		ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
-		outputStream.writeByte(PacketHandlerIMPL.NET_GPUMOUSE);
-		outputStream.writeInt(tile.xCoord);
-		outputStream.writeInt(tile.yCoord);
-		outputStream.writeInt(tile.zCoord);
-		outputStream.writeInt(0);
-		outputStream.writeInt(par3);
-		outputStream.writeInt(mx);
-		outputStream.writeInt(my);
-		createPacketAndSend(outputStream);
+	private static void toPlayer(ByteArrayDataOutput out, EntityPlayer player) {
+		if (!(player instanceof EntityPlayerMP)) return;
+		try {
+			for (PacketMessage p : PacketChunker.instance.createPackets(out.toByteArray())) {
+				CCLights2.network.sendTo(p, (EntityPlayerMP) player);
+			}
+		} catch (IOException e) {
+			CCLights2.logger.warn("Failed to send packet to " + player.getCommandSenderName() + ": " + e);
+		}
 	}
 
-	public static void mouseEventMove(int mx, int my, TileEntityMonitor tile) {
-		ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
-		outputStream.writeByte(PacketHandlerIMPL.NET_GPUMOUSE);
-		outputStream.writeInt(tile.xCoord);
-		outputStream.writeInt(tile.yCoord);
-		outputStream.writeInt(tile.zCoord);
-		outputStream.writeInt(1);
-		outputStream.writeInt(mx);
-		outputStream.writeInt(my);
-		createPacketAndSend(outputStream);
+	private static void toAround(ByteArrayDataOutput out, TileEntity tile, double range) {
+		try {
+			TargetPoint point = new TargetPoint(tile.getWorldObj().provider.dimensionId, tile.xCoord, tile.yCoord, tile.zCoord, range);
+			for (PacketMessage p : PacketChunker.instance.createPackets(out.toByteArray())) {
+				CCLights2.network.sendToAllAround(p, point);
+			}
+		} catch (IOException e) {
+			CCLights2.logger.warn("Failed to broadcast packet: " + e);
+		}
 	}
 
-	public static void mouseEventUp(TileEntityMonitor tile) {
-		ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
-		outputStream.writeByte(PacketHandlerIMPL.NET_GPUMOUSE);
-		outputStream.writeInt(tile.xCoord);
-		outputStream.writeInt(tile.yCoord);
-		outputStream.writeInt(tile.zCoord);
-		outputStream.writeInt(2);
-		createPacketAndSend(outputStream);
+	// ------------------------------------------------------------------ server -> client
+
+	/** Flushes a GPU's pending draw commands to nearby clients. */
+	public static void sendDrawList(Collection<DrawCMD> drawlist, TileEntityGPU tile) {
+		if (drawlist.isEmpty()) return;
+		ByteArrayDataOutput out = header(PacketProcessor.NET_GPUDRAWLIST, tile);
+		out.writeInt(drawlist.size());
+		for (DrawCMD c : drawlist) Serialize.writeCommand(out, c);
+		toAround(out, tile, DRAW_RANGE);
 	}
 
+	/** Sends the complete GPU state to one player (on request, e.g. after the chunk loaded). */
+	public static void sendGPUSync(TileEntityGPU tile, EntityPlayer player) {
+		GPU gpu = tile.gpu;
+		ByteArrayDataOutput out = header(PacketProcessor.NET_GPUSYNC, tile);
+		synchronized (gpu) {
+			gpu.state.write(out);
+			out.writeInt(gpu.bindedSlot);
+			int count = 0;
+			for (int i = 0; i < gpu.textures.length; i++) if (gpu.textures[i] != null) count++;
+			out.writeInt(count);
+			for (int i = 0; i < gpu.textures.length; i++) {
+				Texture t = gpu.textures[i];
+				if (t == null) continue;
+				out.writeInt(i);
+				out.writeInt(t.getWidth());
+				out.writeInt(t.getHeight());
+				Serialize.write(out, t.getPixels(0, 0, t.getWidth(), t.getHeight()));
+			}
+			int shaderCount = 0;
+			for (int i = 1; i < gpu.shaders.length; i++) if (gpu.shaders[i] != null) shaderCount++;
+			out.writeInt(shaderCount);
+			for (int i = 1; i < gpu.shaders.length; i++) {
+				ShaderInstance sh = gpu.shaders[i];
+				if (sh == null) continue;
+				out.writeInt(i);
+				Serialize.writeString(out, sh.source);
+				Serialize.write(out, sh.values);
+				Serialize.write(out, sh.samplers);
+			}
+		}
+		toPlayer(out, player);
+	}
+
+	// ------------------------------------------------------------------ client -> server
+
+	public static void requestGPUSync(TileEntityGPU tile) {
+		toServer(header(PacketProcessor.NET_GPUDOWNLOAD, tile));
+	}
+
+	public static void mouseDown(int mx, int my, int button, TileEntityMonitor tile) {
+		ByteArrayDataOutput out = header(PacketProcessor.NET_GPUMOUSE, tile);
+		out.writeInt(0);
+		out.writeInt(button);
+		out.writeInt(mx);
+		out.writeInt(my);
+		toServer(out);
+	}
+
+	public static void mouseMove(int mx, int my, TileEntityMonitor tile) {
+		ByteArrayDataOutput out = header(PacketProcessor.NET_GPUMOUSE, tile);
+		out.writeInt(1);
+		out.writeInt(mx);
+		out.writeInt(my);
+		toServer(out);
+	}
+
+	public static void mouseUp(TileEntityMonitor tile) {
+		ByteArrayDataOutput out = header(PacketProcessor.NET_GPUMOUSE, tile);
+		out.writeInt(2);
+		toServer(out);
+	}
+
+	/** Raises a ComputerCraft event on the computers driving a monitor. */
+	public static void event(TileEntityMonitor tile, String event, Object... args) {
+		ByteArrayDataOutput out = header(PacketProcessor.NET_GPUEVENT, tile);
+		Serialize.writeString(out, event);
+		out.writeInt(args.length);
+		for (Object a : args) Serialize.write(out, a);
+		toServer(out);
+	}
+
+	public static void scroll(int mx, int my, int direction, TileEntityMonitor tile) {
+		event(tile, "monitor_scroll", mx, my, direction);
+	}
+
+	public static void keyDown(int keyCode, boolean repeat, TileEntityMonitor tile) {
+		event(tile, "key", keyCode, repeat);
+	}
+
+	public static void keyUp(int keyCode, TileEntityMonitor tile) {
+		event(tile, "key_up", keyCode);
+	}
+
+	public static void charTyped(char c, TileEntityMonitor tile) {
+		event(tile, "char", String.valueOf(c));
+	}
+
+	/** Scales a client screenshot to the transceiver's screen size and ships it as JPEG. */
 	public static void screenshot(TileEntityTTrans tile, BufferedImage screenshot) {
-		ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
-		outputStream.writeByte(PacketHandlerIMPL.NET_SCREENSHOT);
-		outputStream.writeInt(tile.xCoord);
-		outputStream.writeInt(tile.yCoord);
-		outputStream.writeInt(tile.zCoord);
-		Image scaledshot = screenshot.getScaledInstance(tile.mon.getWidth(), tile.mon.getHeight(), 1);
-		BufferedImage ScaledScreenshot = new BufferedImage(scaledshot.getWidth(null), scaledshot.getHeight(null), BufferedImage.TYPE_INT_RGB);
-		// Draw the image on to the buffered image
-		Graphics2D bGr = ScaledScreenshot.createGraphics();
-		bGr.drawImage(scaledshot, 0, 0, null);
-		bGr.dispose();
-
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		int w = tile.getMonitor().getWidth(), h = tile.getMonitor().getHeight();
+		BufferedImage scaled = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+		Graphics2D g = scaled.createGraphics();
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g.drawImage(screenshot, 0, 0, w, h, null);
+		g.dispose();
 		try {
-			//ImageIO.write(ScaledScreenshot, "jpg", baos);
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			ImageWriter writer = ImageIO.getImageWritersByFormatName("jpg").next();
-			ImageWriteParam iwparam = new JPEGImageWriteParam(Locale.getDefault());
-			iwparam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-			iwparam.setCompressionQuality(0.5f);
-			writer.setOutput(ImageIO.createImageOutputStream(baos));
-			writer.write(null, new IIOImage(ScaledScreenshot, null, null), iwparam);
-			byte[] screenshotArray = baos.toByteArray();
-			outputStream.writeInt(screenshotArray.length);
-			outputStream.write(screenshotArray);
-
-			PacketMessage[] packets = PacketChunker.instance.createPackets("CCLights2", outputStream.toByteArray());
-			for (int g = 0; g < packets.length; g++) {
-				CCLights2.network.sendToServer(packets[g]);
-			}
-		} catch (IOException e1) {
-			CCLights2.debug("failed to send screenshot packets");
+			ImageWriteParam param = new JPEGImageWriteParam(Locale.getDefault());
+			param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+			param.setCompressionQuality(0.6f);
+			ImageOutputStream ios = ImageIO.createImageOutputStream(baos);
+			writer.setOutput(ios);
+			writer.write(null, new IIOImage(scaled, null, null), param);
+			ios.close();
+			writer.dispose();
+			byte[] jpeg = baos.toByteArray();
+			ByteArrayDataOutput out = header(PacketProcessor.NET_SCREENSHOT, tile);
+			out.writeInt(jpeg.length);
+			out.write(jpeg);
+			toServer(out);
+		} catch (IOException e) {
+			CCLights2.logger.warn("Failed to encode tablet screenshot: " + e);
 		}
 	}
-
-	public static void sendKeyEvent(char par1, int par2, boolean repeat, TileEntityMonitor tile) {
-		ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
-		outputStream.writeByte(PacketHandlerIMPL.NET_GPUEVENT);
-		outputStream.writeInt(tile.xCoord);
-		outputStream.writeInt(tile.yCoord);
-		outputStream.writeInt(tile.zCoord);
-		outputStream.writeUTF("key");
-		outputStream.writeInt(2);
-		outputStream.writeInt(0);
-		outputStream.writeInt(par2);
-		outputStream.writeInt(3);
-		outputStream.writeBoolean(repeat);
-		createPacketAndSend(outputStream);
-
-		if (ChatAllowedCharacters.isAllowedCharacter(par1)) {
-			ByteArrayDataOutput outputStream1 = ByteStreams.newDataOutput();
-			outputStream1.writeByte(PacketHandlerIMPL.NET_GPUEVENT);
-			outputStream1.writeInt(tile.xCoord);
-			outputStream1.writeInt(tile.yCoord);
-			outputStream1.writeInt(tile.zCoord);
-			outputStream1.writeUTF("char");
-			outputStream1.writeInt(1);
-			outputStream1.writeInt(2);
-			outputStream1.writeChar(par1);
-			createPacketAndSend(outputStream1);
-		}
-	}
-	
-	public static void sendKeyEventUp(char par1, int par2, TileEntityMonitor tile) {
-		ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
-		outputStream.writeByte(PacketHandlerIMPL.NET_GPUEVENT);
-		outputStream.writeInt(tile.xCoord);
-		outputStream.writeInt(tile.yCoord);
-		outputStream.writeInt(tile.zCoord);
-		outputStream.writeUTF("key_up");
-		outputStream.writeInt(1);
-		outputStream.writeInt(0);
-		outputStream.writeInt(par2);
-		createPacketAndSend(outputStream);
-	}
-
-	public static void writeMatrix(ByteArrayDataOutput out, double[] matrix) {
-		for (int i = 0; i < matrix.length; i++) {
-			out.writeDouble(matrix[i]);
-		}
-	}
-
-	public synchronized static void ExternalMonitorUpdate(int xCoord,
-			int yCoord, int zCoord, int dimId, int m_width, int m_height,
-			int m_xIndex, int m_yIndex, int m_dir) {
-		ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
-		outputStream.writeByte(PacketHandlerIMPL.NET_GPUTILE);
-		outputStream.writeInt(xCoord);
-		outputStream.writeInt(yCoord);
-		outputStream.writeInt(zCoord);
-		outputStream.writeInt(m_width);
-		outputStream.writeInt(m_height);
-		outputStream.writeInt(m_xIndex);
-		outputStream.writeInt(m_yIndex);
-		outputStream.writeInt(m_dir);
-		PacketMessage packet = new PacketMessage();
-		packet.data = outputStream.toByteArray();
-		CCLights2.network.sendToAllAround(packet, new TargetPoint(dimId,xCoord, yCoord, zCoord, 4096.0D));
-	}
-
-	public static void GPUDOWNLOAD(int xCoord, int yCoord, int zCoord) {
-		ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
-		outputStream.writeByte(PacketHandlerIMPL.NET_GPUDOWNLOAD);
-		outputStream.writeInt(xCoord);
-		outputStream.writeInt(yCoord);
-		outputStream.writeInt(zCoord);
-		createPacketAndSend(outputStream);
-	}
-
-	public static void createPacketAndSend(ByteArrayDataOutput mergeStream) {
-		PacketMessage packet = new PacketMessage();
-		packet.data = mergeStream.toByteArray();
-		CCLights2.network.sendToServer(packet);
-	}
-
-	public static void SYNC(int monitorWidth, int monitorHeight,EntityPlayer player) {
-		ByteArrayDataOutput outputStream = ByteStreams.newDataOutput();
-		outputStream.writeByte(PacketHandlerIMPL.NET_SYNC);
-		outputStream.writeShort(monitorWidth);
-		outputStream.writeShort(monitorHeight);
-		PacketMessage packet = new PacketMessage();
-		packet.data = outputStream.toByteArray();
-		CCLights2.network.sendTo(packet, (EntityPlayerMP)player);
-	}
-
 }

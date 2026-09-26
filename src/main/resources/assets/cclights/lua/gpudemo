@@ -1,0 +1,192 @@
+-- gpudemo: shows off the GPU drawing features. Click the screen to advance, press Q to quit.
+local gpu = peripheral.find("GPU")
+if not gpu then
+	error("No GPU found. Place one next to the computer.", 0)
+end
+
+-- The demo is laid out for a 256x144 canvas; the canvas helper scales it to whatever screen
+-- is attached (a 4x2 external monitor is 128x64 pixels, a 16x9 one is 512x288).
+-- start from a clean GPU: frees textures left behind by programs that were terminated
+if gpu.reset then gpu.reset() end
+local canvas = dofile("/cclights2/canvas")
+local c = canvas.fit(gpu, 256, 144)
+local w, h = c.w, c.h
+local realW, realH, sx, sy = c.realW, c.realH, c.sx, c.sy
+
+local function reset()
+	gpu.resetClip()
+	gpu.setBlendMode("normal")
+	gpu.setAntialias(false)
+	gpu.setLineWidth(1)
+	gpu.setColor(0, 0, 0)
+	gpu.fill()
+	c.apply()
+end
+
+-- captions are drawn in real pixels so they stay readable on small walls
+local function caption(text)
+	gpu.push()
+	gpu.origin()
+	gpu.setColor(0, 0, 0, 170)
+	gpu.filledRectangle(0, realH - 11, realW, 11)
+	gpu.setColor(255, 255, 255)
+	gpu.drawText(text, 2, realH - 9)
+	gpu.pop()
+end
+
+local function waitClick()
+	while true do
+		local e, a = os.pullEvent()
+		if e == "monitor_up" or e == "key" then
+			if e == "key" and a == keys.q then return false end
+			return true
+		end
+	end
+end
+
+local demos = {
+	function()
+		caption("Primitives: rectangle, roundRectangle, oval, arc, triangle, polygon")
+		gpu.setColor(255, 80, 80)
+		gpu.filledRectangle(8, 8, 48, 32)
+		gpu.setColor(255, 200, 80)
+		gpu.filledRoundRectangle(64, 8, 48, 32, 12, 12)
+		gpu.setColor(80, 255, 120)
+		gpu.filledOval(120, 8, 48, 32)
+		gpu.setColor(80, 180, 255)
+		gpu.filledArc(176, 8, 40, 40, 20, 270)
+		gpu.setColor(220, 120, 255)
+		gpu.filledTriangle(8, 100, 56, 48, 104, 100)
+		gpu.setColor(255, 255, 255)
+		gpu.polygon(120, 56, 168, 48, 200, 72, 176, 104, 128, 96)
+		gpu.setLineWidth(3)
+		gpu.setColor(255, 255, 0)
+		gpu.line(8, 110, w - 8, 110)
+	end,
+	function()
+		caption("Curves and antialiasing: curve, bezier, setAntialias(true)")
+		gpu.setAntialias(true)
+		gpu.setLineWidth(2)
+		gpu.setColor(255, 120, 60)
+		gpu.curve(10, 100, w / 2, -60, w - 10, 100)
+		gpu.setColor(60, 200, 255)
+		gpu.bezier(10, 40, 60, 120, w - 60, -20, w - 10, 40)
+		gpu.setColor(255, 255, 255)
+		gpu.oval(w / 2 - 30, 30, 60, 60)
+	end,
+	function()
+		caption("Gradients and blend modes: gradientRectangle, setBlendMode('add')")
+		gpu.setColor(30, 30, 120)
+		gpu.gradientRectangle(0, 0, w, h - 12, 255, 60, 60, 255, true)
+		gpu.setBlendMode("add")
+		for i = 1, 8 do
+			gpu.setColor(0, 40, 0)
+			gpu.filledOval(i * (w / 9) - 20, 20 + (i % 2) * 30, 60, 60)
+		end
+		gpu.setBlendMode("screen")
+		gpu.setColor(120, 120, 120)
+		gpu.filledRectangle(20, 60, w - 40, 30)
+	end,
+	function()
+		caption("Transforms: push/translate/rotate/scale/pop with a clip rectangle")
+		gpu.setClip(16, 16, w - 32, h - 40)
+		gpu.setColor(20, 20, 20)
+		gpu.fill()
+		for i = 0, 11 do
+			gpu.push()
+			gpu.translate(w / 2, (h - 12) / 2)
+			gpu.rotate(i * math.pi / 6)
+			gpu.scale(1 + i * 0.1, 1)
+			gpu.setColor(80 + i * 14, 255 - i * 18, 128)
+			gpu.filledRectangle(10, -3, 60, 6)
+			gpu.pop()
+		end
+		gpu.resetClip()
+		gpu.setColor(255, 255, 255)
+		gpu.rectangle(16, 16, w - 32, h - 40)
+	end,
+	function()
+		caption("Screens: " .. realW .. "x" .. realH .. " px, canvas scaled by " .. string.format("%.2f x %.2f", sx, sy))
+		-- plain text pages are laid out in real pixels, 8 px per line
+		gpu.push()
+		gpu.origin()
+		gpu.setColor(255, 255, 255)
+		local lines = {
+			"gpu.getSize(0) = real pixel size.",
+			"Monitors: 64 px per block,",
+			"divided by setScale(n).",
+			"Shapes use /cclights2/canvas;",
+			"text stays its real size.",
+		}
+		local mon = gpu.getMonitor()
+		if mon and mon.getScale then lines[#lines + 1] = "Monitor scale: " .. mon.getScale() end
+		for i, line in ipairs(lines) do gpu.drawText(line, 4, 4 + (i - 1) * 9) end
+		gpu.pop()
+	end,
+	function()
+		caption("Textures: createTexture, bindTexture, drawTexture, blur, glow, copyTexture")
+		local tex = gpu.createTexture(64, 64)
+		gpu.bindTexture(tex)
+		gpu.setColor(0, 0, 0, 0)
+		gpu.fill()
+		gpu.setColor(255, 200, 40)
+		gpu.filledOval(8, 8, 48, 48)
+		gpu.setColor(40, 40, 40)
+		gpu.filledOval(20, 22, 8, 8)
+		gpu.filledOval(36, 22, 8, 8)
+		gpu.setLineWidth(3)
+		gpu.arc(18, 22, 28, 24, 200, 140)
+		gpu.bindTexture(0)
+		local blurred = gpu.copyTexture(tex)
+		gpu.blur(blurred, 4)
+		local glowing = gpu.copyTexture(tex)
+		gpu.glow(glowing, 1.5)
+		gpu.setColor(255, 255, 255)
+		gpu.drawTexture(tex, 16, 16)
+		gpu.drawTexture(blurred, 96, 16)
+		gpu.drawTexture(glowing, 176, 16)
+		gpu.setColor(255, 255, 255, 128)
+		gpu.drawTextureScaled(tex, 16, 84, 32, 32)
+		gpu.setColor(255, 120, 120)
+		gpu.drawTextureScaled(tex, 56, 84, 32, 32)
+		gpu.freeTexture(tex)
+		gpu.freeTexture(blurred)
+		gpu.freeTexture(glowing)
+	end,
+	function()
+		caption("Text: drawText, getTextWidth, scaled through the transform")
+		local msg = "CCLights2"
+		gpu.push()
+		gpu.origin()
+		gpu.setColor(255, 255, 255)
+		gpu.drawText("Free memory: " .. gpu.getFreeMemory() .. " / " .. gpu.getTotalMemory(), 4, 4)
+		-- text scales up cleanly through the transform (never scale it down)
+		local y = 14
+		for i = 1, 4 do
+			if y + 8 * i > realH - 12 then break end
+			gpu.push()
+			gpu.translate(4, y)
+			gpu.scale(i, i)
+			gpu.setColor(255 - i * 40, 120 + i * 30, 255)
+			gpu.drawText(msg, 0, 0)
+			gpu.pop()
+			y = y + 8 * i + 2
+		end
+		gpu.pop()
+		gpu.setColor(255, 255, 0)
+		gpu.push()
+		gpu.origin()
+		gpu.drawText("right aligned", realW - gpu.getTextWidth("right aligned") - 4, realH - 20)
+		gpu.pop()
+	end,
+}
+
+for i, demo in ipairs(demos) do
+	reset()
+	demo()
+	if not waitClick() then break end
+end
+reset()
+gpu.origin()
+gpu.setColor(255, 255, 255)
+gpu.drawText("Thanks for watching!", 4, 4)

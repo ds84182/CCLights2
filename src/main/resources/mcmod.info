@@ -1,15 +1,17 @@
 [
 {
-  "modid" : "CCLights2",
-  "name" : "CCLights 2",
-  "version" : "0.4.3",
-  "url" : "ds84182.no-ip.info",
-  "credits" : "Visit the github repo!",
+  "modid": "CCLights2",
+  "name": "CCLights 2",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "https://github.com/ds84182/CCLights2",
+  "credits": "ds84182, Alekso56, gamax92, BlueAmulet",
   "authors": [
     "ds84182",
     "Alekso56"
   ],
-  "description": "CCLights 2 adds very advanced monitors and tablets to minecraft.",
-  "logoFile" : "mods/CCLights2/textures/items/ram.png"
+  "description": "Pixel-addressable GPUs, monitors and tablets for ComputerCraft.",
+  "requiredMods": [ "ComputerCraft" ],
+  "dependencies": [ "ComputerCraft" ]
 }
 ]

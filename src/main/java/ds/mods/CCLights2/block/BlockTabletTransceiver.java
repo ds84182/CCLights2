@@ -11,71 +11,49 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
-import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
 public class BlockTabletTransceiver extends Block {
-	IIcon sides = null;
-	
-	public BlockTabletTransceiver(int par1, Material par2Material) {
-		super(par2Material);
-		this.setBlockName("monitor.tablet");
-		this.setCreativeTab(CCLights2.ccltab);
-		this.setHardness(0.6F).setStepSound(Block.soundTypeStone);
+	@SideOnly(Side.CLIENT)
+	private IIcon iconFront, iconSide, iconTop;
+
+	public BlockTabletTransceiver(Material material) {
+		super(material);
+		setBlockName("monitor.tablet");
+		setCreativeTab(CCLights2.ccltab);
+		setHardness(0.6F);
+		setStepSound(Block.soundTypeMetal);
 	}
-	
+
 	@Override
-	public void onBlockPlacedBy(World world, int par2, int par3, int par4,
-			EntityLivingBase par5EntityLivingBase, ItemStack par6ItemStack) {
-		if(!world.isRemote){
-		int l = MathHelper.floor_double(par5EntityLivingBase.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
-		int i1 = world.getBlockMetadata(par2, par3, par4) >> 2;
-		++l;
-		l %= 4;
-		if (l == 0) {
-			world.setBlockMetadataWithNotify(par2, par3, par4, 4 | i1 << 2,2);
-		}
-
-		if (l == 1) {
-			world.setBlockMetadataWithNotify(par2, par3, par4, 2 | i1 << 2,2);
-		}
-
-		if (l == 2) {
-			world.setBlockMetadataWithNotify(par2, par3, par4, 5 | i1 << 2,2);
-		}
-
-		if (l == 3) {
-			world.setBlockMetadataWithNotify(par2, par3, par4, 3 | i1 << 2,2);
-		}
-		}
+	public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase placer, ItemStack stack) {
+		world.setBlockMetadataWithNotify(x, y, z, BlockMonitor.facingFromPlacer(placer), 2);
 	}
-	
+
 	@Override
 	@SideOnly(Side.CLIENT)
 	public IIcon getIcon(int side, int meta) {
-			if(meta == side || side == 4 && meta == 0) {
-			return this.blockIcon;
-			} else {
-			return sides;
-			}
+		if (side == 1) return iconTop;
+		if (side == 0) return iconSide;
+		if (meta < 2) return side == 3 ? iconFront : iconSide;
+		return side == meta ? iconFront : iconSide;
 	}
 
-	
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void registerBlockIcons(IIconRegister par1IconRegister) {
-		this.blockIcon = par1IconRegister.registerIcon("cclights:tabletTfront");
-	    sides = par1IconRegister.registerIcon("cclights:tabletTsides");
+	public void registerBlockIcons(IIconRegister reg) {
+		iconFront = reg.registerIcon("cclights:transceiver_front");
+		iconSide = reg.registerIcon("cclights:transceiver_side");
+		iconTop = reg.registerIcon("cclights:transceiver_top");
 	}
 
 	@Override
-	public boolean hasTileEntity(int metadata) {
+	public boolean hasTileEntity(int meta) {
 		return true;
 	}
 
 	@Override
-	public TileEntity createTileEntity(World world, int metadata) {
+	public TileEntity createTileEntity(World world, int meta) {
 		return new TileEntityTTrans();
 	}
-
 }

@@ -3,56 +3,54 @@ buildscript {
         mavenCentral()
         maven {
             name = "forge"
-            url = "http://files.minecraftforge.net/maven"
-        }
-        maven {
-            name = "sonatype"
-            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+            url = "https://maven.minecraftforge.net/"
         }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
+        // Maintained fork of ForgeGradle 1.2 that still resolves against today's Forge maven.
+        classpath('com.anatawa12.forge:ForgeGradle:1.2-1.1.+') {
+            changing = true
+        }
     }
 }
 
 apply plugin: 'forge'
 
-if (System.getenv().BUILD_NUMBER != null)
-	ext.buildNumber = System.getenv().BUILD_NUMBER?.toInteger()
-else
-	ext.buildNumber = 0
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
-version = "0.4.3"
+if (System.getenv().BUILD_NUMBER != null)
+    ext.buildNumber = System.getenv().BUILD_NUMBER.toInteger()
+else
+    ext.buildNumber = 0
+
+version = "${mod_version}.${project.ext.buildNumber}"
 group = "ds.mods.CCLights2"
-archivesBaseName = "CCLights2"
+archivesBaseName = "CCLights2-${minecraft_version}"
 
 minecraft {
-	version = "1.7.10-10.13.4.1448-1.7.10"
-	runDir = "eclipse"
-	replace "@VERSION@", project.version
-	replace "@BUILD@", project.ext.buildNumber
-}
-version = "${version}.${project.ext.buildNumber}"
-sourceSets.main.java.srcDir("./src/externs/java")
-
-jar.doFirst {
-	for (String s : new File("./src/externs/java").list())
-		delete new File(sourceSets.main.output.classesDir, s);
+    version = "${minecraft_version}-${forge_version}"
+    runDir = "run"
+    replace "@VERSION@", project.version
+    replace "@BUILD@", project.ext.buildNumber
 }
 
-//jar.classifier = "${ext.buildNumber}"
+// The ComputerCraft API is compiled against, but never shipped: the real one comes from the CC jar at runtime.
+sourceSets.main.java.srcDir("src/externs/java")
+
+jar {
+    exclude 'dan200/**'
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
 
 processResources {
-    // replace stuff in mcmod.info, nothing else
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-                
-        // replace version and mcversion
-        expand 'version':project.version, 'mcversion':project.minecraft.version
-    }
-        
-    // copy everything else, thats not the mcmod.info
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    filesMatching('mcmod.info') {
+        expand 'version': project.version, 'mcversion': project.minecraft.version
     }
 }
