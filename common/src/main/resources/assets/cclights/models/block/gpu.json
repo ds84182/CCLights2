@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "cclights:block/gpu_top",
+    "bottom": "cclights:block/gpu_bottom",
+    "side": "cclights:block/gpu_side"
+  }
+}

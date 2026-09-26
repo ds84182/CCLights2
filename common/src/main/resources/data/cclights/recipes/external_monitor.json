@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "LLL",
+    "LGL",
+    "LLL"
+  ],
+  "key": {
+    "G": {
+      "item": "cclights:monitor"
+    },
+    "L": {
+      "item": "minecraft:glass_pane"
+    }
+  },
+  "result": {
+    "item": "cclights:external_monitor",
+    "count": 8
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    " L ",
+    "LGL",
+    " L "
+  ],
+  "key": {
+    "G": {
+      "item": "cclights:monitor"
+    },
+    "L": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "item": "cclights:tablet_transceiver",
+    "count": 1
+  }
+}

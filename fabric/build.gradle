@@ -1,0 +1,76 @@
+apply plugin: "com.gradleup.shadow"
+
+architectury {
+    platformSetupLoomIde()
+    fabric()
+}
+
+loom {
+    runs {
+        client {
+            client()
+            name = "Fabric Client"
+            runDir = "run"
+        }
+        server {
+            server()
+            name = "Fabric Server"
+            runDir = "run/server"
+            // A dedicated server has no display; also proves Java2D (the GPU) works headless.
+            vmArg "-Djava.awt.headless=true"
+        }
+    }
+}
+
+configurations {
+    common {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentFabric.extendsFrom common
+
+    // Files in this configuration are bundled into the loader jar by shadowJar.
+    shadowBundle {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+}
+
+dependencies {
+    modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
+
+    // Full CC: Tweaked jar so runClient/runServer have ComputerCraft. Its Gradle metadata asks for a newer
+    // Fabric Loader and an older Fabric API; keep the versions pinned in gradle.properties instead.
+    modImplementation("cc.tweaked:cc-tweaked-${rootProject.minecraft_version}-fabric:${rootProject.cct_version}") {
+        exclude group: "net.fabricmc"
+        exclude group: "net.fabricmc.fabric-api"
+    }
+
+    common(project(path: ":common", configuration: "namedElements")) { transitive = false }
+    shadowBundle project(path: ":common", configuration: "transformProductionFabric")
+}
+
+processResources {
+    def props = [version: project.version, minecraft_version: rootProject.minecraft_version,
+                 cct_version: rootProject.cct_version, fabric_loader_version: rootProject.fabric_loader_version]
+    inputs.properties props
+    filesMatching("fabric.mod.json") {
+        expand props
+    }
+}
+
+shadowJar {
+    // pack.mcmeta exists in both common and the loader module; the loader copy (added first) wins.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    exclude "architectury.common.json"
+    configurations = [project.configurations.shadowBundle]
+    archiveClassifier = "dev-shadow"
+}
+
+remapJar {
+    inputFile.set shadowJar.archiveFile
+    dependsOn shadowJar
+}

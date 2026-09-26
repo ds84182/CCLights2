@@ -1,0 +1,110 @@
+-- shaderdemo: runs the GLSL fragment shaders shipped in /cclights2/shaders on the screen.
+-- Click the screen (or press space) to switch shader, drag to move iMouse, press Q to quit.
+-- usage: shaderdemo [file.frag]
+local gpu = peripheral.find("GPU")
+if not gpu then
+	error("No GPU found. Place one next to the computer.", 0)
+end
+
+local args = {...}
+local dir = "/cclights2/shaders"
+local files = {}
+if args[1] then
+	files = { args[1] }
+else
+	for _, f in ipairs(fs.list(dir)) do
+		if f:sub(-5) == ".frag" then files[#files + 1] = fs.combine(dir, f) end
+	end
+	table.sort(files)
+end
+if #files == 0 then error("No .frag files found in " .. dir, 0) end
+
+local function readFile(path)
+	local h = fs.open(path, "r")
+	if not h then error("Cannot open " .. path, 0) end
+	local s = h.readAll()
+	h.close()
+	return s
+end
+
+-- start from a clean GPU: frees textures and shaders left behind by terminated programs
+if gpu.reset then gpu.reset() end
+local w, h = gpu.getSize(0)
+-- Shaders are expensive on the CPU; render at half resolution and scale up.
+local rw, rh = math.floor(w / 2), math.floor(h / 2)
+local target = gpu.createTexture(rw, rh)
+
+local current = 0
+local shader = nil
+local mouse = { 0, 0, 0, 0 }
+
+local function load(i)
+	if shader then gpu.freeShader(shader) shader = nil end
+	current = i
+	local path = files[i]
+	local ok, id = pcall(gpu.createShader, readFile(path))
+	if not ok then
+		print(fs.getName(path) .. ": " .. tostring(id))
+		return
+	end
+	shader = id
+	print("Running " .. fs.getName(path) .. " (" .. i .. "/" .. #files .. ")")
+	local uniforms = gpu.getShaderUniforms(id)
+	-- legacy shaders expect these to be set by hand
+	if uniforms.resolution then gpu.setUniform(id, "resolution", rw, rh) end
+	local names = {}
+	for name, typ in pairs(uniforms) do names[#names + 1] = name .. ":" .. typ end
+	table.sort(names)
+	print("  uniforms: " .. table.concat(names, " "))
+end
+
+load(1)
+local start = os.clock()
+local frames, lastReport = 0, os.clock()
+local running = true
+while running do
+	if shader then
+		local t = os.clock() - start
+		gpu.bindTexture(target)
+		local uniforms = gpu.getShaderUniforms(shader)
+		if uniforms.time then gpu.setUniform(shader, "time", t) end
+		if uniforms.iMouse then gpu.setUniform(shader, "iMouse", mouse[1], mouse[2], mouse[3], mouse[4]) end
+		local ok, err = pcall(gpu.runShader, shader)
+		gpu.bindTexture(0)
+		if ok then
+			gpu.setColor(255, 255, 255)
+			gpu.drawTextureScaled(target, 0, 0, w, h)
+			gpu.setColor(0, 0, 0, 160)
+			gpu.filledRectangle(0, h - 10, w, 10)
+			gpu.setColor(255, 255, 255)
+			gpu.drawText(fs.getName(files[current]) .. "  click: next  q: quit", 2, h - 9)
+			frames = frames + 1
+			if os.clock() - lastReport >= 5 then
+				print(string.format("%.1f fps", frames / (os.clock() - lastReport)))
+				frames, lastReport = 0, os.clock()
+			end
+		else
+			print("runShader failed: " .. tostring(err))
+			shader = nil
+		end
+	end
+	-- give other programs a chance and collect input
+	local timer = os.startTimer(0)
+	while true do
+		local e, a, b, c = os.pullEvent()
+		if e == "timer" and a == timer then break end
+		if e == "monitor_down" then
+			mouse = { b / 2, (h - c) / 2, 1, 0 }
+		elseif e == "monitor_move" then
+			mouse[1], mouse[2] = b / 2, (h - c) / 2
+		elseif e == "monitor_up" then
+			mouse[3] = 0
+			load(current % #files + 1)
+		elseif e == "key" then
+			if a == keys.q then running = false break end
+			if a == keys.space then load(current % #files + 1) end
+		end
+	end
+end
+if shader then gpu.freeShader(shader) end
+gpu.freeTexture(target)

@@ -1,56 +1,62 @@
-buildscript {
+// Multi-loader build: common (vanilla + CC: Tweaked common API), fabric and forge (Minecraft 1.20.1).
+// The 1.7.10 ForgeGradle build this replaced is still in git history on master; its sources under
+// src/ are kept as a porting reference only and are not compiled by this build.
+plugins {
+    id "architectury-plugin" version "3.5-SNAPSHOT"
+    id "dev.architectury.loom" version "1.17-SNAPSHOT" apply false
+    id "com.gradleup.shadow" version "9.2.2" apply false
+}
+
+architectury {
+    minecraft = rootProject.minecraft_version
+}
+
+allprojects {
+    group = rootProject.maven_group
+    version = rootProject.mod_version
+}
+
+subprojects {
+    apply plugin: "java"
+    apply plugin: "dev.architectury.loom"
+    apply plugin: "architectury-plugin"
+
+    base {
+        // CCLights2-<loader>-1.20.1-<version>.jar
+        archivesName = "${rootProject.archives_base_name}-${project.name}-${rootProject.minecraft_version}"
+    }
+
+    loom {
+        silentMojangMappingsLicense()
+    }
+
     repositories {
-        mavenCentral()
         maven {
-            name = "forge"
-            url = "https://maven.minecraftforge.net/"
+            name = "SquidDev (CC: Tweaked)"
+            url = "https://maven.squiddev.cc"
+            content {
+                includeGroup("cc.tweaked")
+            }
         }
+        maven { url = "https://maven.fabricmc.net/" }
+        maven { url = "https://maven.minecraftforge.net/" }
+        maven { url = "https://maven.architectury.dev/" }
+        mavenCentral()
     }
+
     dependencies {
-        // Maintained fork of ForgeGradle 1.2 that still resolves against today's Forge maven.
-        classpath('com.anatawa12.forge:ForgeGradle:1.2-1.1.+') {
-            changing = true
-        }
+        minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
+        mappings loom.officialMojangMappings()
     }
-}
 
-apply plugin: 'forge'
+    java {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        withSourcesJar()
+    }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-if (System.getenv().BUILD_NUMBER != null)
-    ext.buildNumber = System.getenv().BUILD_NUMBER.toInteger()
-else
-    ext.buildNumber = 0
-
-version = "${mod_version}.${project.ext.buildNumber}"
-group = "ds.mods.CCLights2"
-archivesBaseName = "CCLights2-${minecraft_version}"
-
-minecraft {
-    version = "${minecraft_version}-${forge_version}"
-    runDir = "run"
-    replace "@VERSION@", project.version
-    replace "@BUILD@", project.ext.buildNumber
-}
-
-// The ComputerCraft API is compiled against, but never shipped: the real one comes from the CC jar at runtime.
-sourceSets.main.java.srcDir("src/externs/java")
-
-jar {
-    exclude 'dan200/**'
-}
-
-tasks.withType(JavaCompile) {
-    options.encoding = "UTF-8"
-}
-
-processResources {
-    inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
-
-    filesMatching('mcmod.info') {
-        expand 'version': project.version, 'mcversion': project.minecraft.version
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = "UTF-8"
+        options.release = 17
     }
 }

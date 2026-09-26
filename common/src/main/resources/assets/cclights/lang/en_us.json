@@ -1,0 +1,23 @@
+{
+  "itemGroup.cclights": "CCLights2",
+  "block.cclights.gpu": "GPU",
+  "block.cclights.monitor": "Monitor",
+  "block.cclights.external_monitor": "External Monitor",
+  "block.cclights.tablet_transceiver": "Tablet Transceiver",
+  "item.cclights.tablet": "Tablet",
+  "item.cclights.ram_1k": "Graphics RAM (1K)",
+  "item.cclights.ram_2k": "Graphics RAM (2K)",
+  "item.cclights.ram_4k": "Graphics RAM (4K)",
+  "item.cclights.ram_8k": "Graphics RAM (8K)",
+  "tooltip.cclights.ram.size": "%sK (%s texture units)",
+  "tooltip.cclights.ram.install": "Right click a GPU to install",
+  "tooltip.cclights.tablet.paired": "Paired with a transceiver",
+  "tooltip.cclights.tablet.camera": "Sneak + right click: send camera image",
+  "tooltip.cclights.tablet.unpaired": "Right click a Tablet Transceiver to pair",
+  "chat.cclights.gpu.ram_added": "%sK of RAM added to GPU (%s total)",
+  "chat.cclights.tablet.paired": "Tablet paired with transceiver",
+  "chat.cclights.tablet.not_paired": "This tablet is not paired: right click a Tablet Transceiver with it first.",
+  "chat.cclights.tablet.not_loaded": "The paired transceiver is not loaded on this client (too far away?).",
+  "chat.cclights.tablet.out_of_range": "Out of range: move within %s blocks of the transceiver.",
+  "chat.cclights.tablet.image_sent": "Camera image sent to the transceiver at %s,%s,%s (tablet_image event)."
+}

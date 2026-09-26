@@ -1,0 +1,74 @@
+apply plugin: "com.gradleup.shadow"
+
+architectury {
+    platformSetupLoomIde()
+    forge()
+}
+
+loom {
+    runs {
+        client {
+            client()
+            name = "Forge Client"
+            runDir = "run"
+        }
+        server {
+            server()
+            name = "Forge Server"
+            runDir = "run/server"
+            // A dedicated server has no display; also proves Java2D (the GPU) works headless.
+            vmArg "-Djava.awt.headless=true"
+        }
+    }
+}
+
+configurations {
+    common {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentForge.extendsFrom common
+
+    // Files in this configuration are bundled into the loader jar by shadowJar.
+    shadowBundle {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+}
+
+dependencies {
+    forge "net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}"
+
+    // Full CC: Tweaked jar (SRG-named on the maven; Loom remaps it to Mojang names for dev).
+    modImplementation "cc.tweaked:cc-tweaked-${rootProject.minecraft_version}-forge:${rootProject.cct_version}"
+    // CC: Tweaked ships these via Jar-in-Jar, which dev runs do not unpack.
+    forgeRuntimeLibrary "cc.tweaked:cobalt:${rootProject.cobalt_version}"
+    forgeRuntimeLibrary "com.jcraft:jzlib:${rootProject.jzlib_version}"
+
+    common(project(path: ":common", configuration: "namedElements")) { transitive = false }
+    shadowBundle project(path: ":common", configuration: "transformProductionForge")
+}
+
+processResources {
+    def props = [version: project.version, minecraft_version: rootProject.minecraft_version,
+                 cct_version: rootProject.cct_version, forge_version: rootProject.forge_version]
+    inputs.properties props
+    filesMatching("META-INF/mods.toml") {
+        expand props
+    }
+}
+
+shadowJar {
+    // pack.mcmeta exists in both common and the loader module; the loader copy (added first) wins.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    exclude "architectury.common.json"
+    configurations = [project.configurations.shadowBundle]
+    archiveClassifier = "dev-shadow"
+}
+
+remapJar {
+    inputFile.set shadowJar.archiveFile
+    dependsOn shadowJar
+}

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "cclights:block/tablet_transceiver"
+    },
+    "facing=south": {
+      "model": "cclights:block/tablet_transceiver",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "cclights:block/tablet_transceiver",
+      "y": 270
+    },
+    "facing=east": {
+      "model": "cclights:block/tablet_transceiver",
+      "y": 90
+    }
+  }
+}

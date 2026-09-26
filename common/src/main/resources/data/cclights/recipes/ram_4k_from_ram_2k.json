@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    {
+      "item": "cclights:ram_2k"
+    },
+    {
+      "item": "cclights:ram_2k"
+    }
+  ],
+  "result": {
+    "item": "cclights:ram_4k",
+    "count": 1
+  }
+}

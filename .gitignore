@@ -225,3 +225,8 @@ pip-log.txt
 .gradle/gradle.log
 *.log
 *.class
+fabric/run/
+forge/run/
+forge/.gradle/
+fabric/.gradle/
+common/.gradle/

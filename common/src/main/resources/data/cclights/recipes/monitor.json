@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "III",
+    "RLR",
+    "GGG"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "L": {
+      "item": "minecraft:glass_pane"
+    }
+  },
+  "result": {
+    "item": "cclights:monitor",
+    "count": 2
+  }
+}

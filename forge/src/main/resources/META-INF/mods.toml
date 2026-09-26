@@ -1,0 +1,36 @@
+modLoader = "javafml"
+loaderVersion = "[47,)"
+license = "Minecraft Mod Public License 1.0.1"
+issueTrackerURL = "https://github.com/ds84182/CCLights2/issues"
+
+[[mods]]
+modId = "cclights"
+version = "${version}"
+displayName = "CCLights2"
+displayURL = "https://github.com/ds84182/CCLights2"
+authors = "ds84182, Alekso56"
+credits = "ds84182, Alekso56, gamax92"
+description = '''
+Pixel-addressable GPUs, monitors and tablets for ComputerCraft (CC: Tweaked).
+'''
+
+[[dependencies.cclights]]
+modId = "forge"
+mandatory = true
+versionRange = "[47,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.cclights]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[${minecraft_version}]"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.cclights]]
+modId = "computercraft"
+mandatory = true
+versionRange = "[${cct_version},)"
+ordering = "AFTER"
+side = "BOTH"

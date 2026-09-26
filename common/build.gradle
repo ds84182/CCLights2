@@ -1,0 +1,32 @@
+architectury {
+    common(rootProject.enabled_platforms.split(","))
+}
+
+dependencies {
+    // Fabric Loader only for the @Environment annotation and mixin classes Architectury expects in common.
+    // Nothing in common may import net.fabricmc / net.minecraftforge; loader code goes through platform.Platform.
+    modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
+
+    // CC: Tweaked loader-neutral API (Mojang-mapped, so plain compileOnly). Pulls in cc-tweaked-1.20.1-core-api.
+    compileOnly "cc.tweaked:cc-tweaked-${rootProject.minecraft_version}-common-api:${rootProject.cct_version}"
+
+    // Tests run the Minecraft-free core headless.
+    testImplementation "cc.tweaked:cc-tweaked-${rootProject.minecraft_version}-core-api:${rootProject.cct_version}"
+    testImplementation platform("org.junit:junit-bom:${rootProject.junit_version}")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+    testImplementation "org.luaj:luaj-jse:${rootProject.luaj_version}"
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty "java.awt.headless", "true"
+    // Frames and shader renders written by the tests land here for manual review.
+    systemProperty "cclights.testOut", layout.buildDirectory.dir("test-output").get().asFile.absolutePath
+    maxHeapSize = "1G"
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+        showStandardStreams = false
+    }
+}

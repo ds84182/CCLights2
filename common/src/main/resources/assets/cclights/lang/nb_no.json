@@ -1,0 +1,23 @@
+{
+  "itemGroup.cclights": "CCLights2",
+  "block.cclights.gpu": "GPU",
+  "block.cclights.monitor": "Skjerm",
+  "block.cclights.external_monitor": "Ekstern Skjerm",
+  "block.cclights.tablet_transceiver": "Tablet-sender",
+  "item.cclights.tablet": "Tablet",
+  "item.cclights.ram_1k": "Grafikkminne (1K)",
+  "item.cclights.ram_2k": "Grafikkminne (2K)",
+  "item.cclights.ram_4k": "Grafikkminne (4K)",
+  "item.cclights.ram_8k": "Grafikkminne (8K)",
+  "tooltip.cclights.ram.size": "%sK (%s teksturenheter)",
+  "tooltip.cclights.ram.install": "Høyreklikk en GPU for å installere",
+  "tooltip.cclights.tablet.paired": "Paret med en sender",
+  "tooltip.cclights.tablet.camera": "Snik + høyreklikk: send kamerabilde",
+  "tooltip.cclights.tablet.unpaired": "Høyreklikk en Tablet-sender for å pare",
+  "chat.cclights.gpu.ram_added": "%sK minne lagt til GPU (%s totalt)",
+  "chat.cclights.tablet.paired": "Tablet paret med sender",
+  "chat.cclights.tablet.not_paired": "Denne tableten er ikke paret: høyreklikk en Tablet-sender med den først.",
+  "chat.cclights.tablet.not_loaded": "Den parede senderen er ikke lastet på denne klienten (for langt unna?).",
+  "chat.cclights.tablet.out_of_range": "Utenfor rekkevidde: gå innenfor %s blokker fra senderen.",
+  "chat.cclights.tablet.image_sent": "Kamerabilde sendt til senderen på %s,%s,%s (tablet_image-hendelse)."
+}

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "cclights",
+  "version": "${version}",
+  "name": "CCLights2",
+  "description": "Pixel-addressable GPUs, monitors and tablets for ComputerCraft (CC: Tweaked).",
+  "authors": [
+    "ds84182",
+    "Alekso56"
+  ],
+  "contributors": [
+    "gamax92"
+  ],
+  "contact": {
+    "sources": "https://github.com/ds84182/CCLights2"
+  },
+  "license": "MMPL-1.0.1",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "ds.mods.CCLights2.fabric.CCLights2Fabric"
+    ],
+    "client": [
+      "ds.mods.CCLights2.fabric.CCLights2FabricClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.10",
+    "fabric-api": "*",
+    "minecraft": "~${minecraft_version}",
+    "java": ">=17",
+    "computercraft": ">=${cct_version}"
+  }
+}

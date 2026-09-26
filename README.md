@@ -1,10 +1,20 @@
 # CCLights 2
 
-CCLights 2 adds pixel-addressable graphics to [ComputerCraft](http://www.computercraft.info/): a **GPU** peripheral that
+CCLights 2 adds pixel-addressable graphics to [CC: Tweaked](https://tweaked.cc/): a **GPU** peripheral that
 executes 2D draw commands, **monitors** and multi-block **external monitors** that show the result, and a wireless
 **tablet** that mirrors a **tablet transceiver** and can send camera images back to the computer.
 
-Minecraft 1.7.10, Forge 10.13.4.1614, ComputerCraft 1.7x (tested against the 1.74 API).
+## Versions and installation
+
+| Minecraft | Loader | Requires |
+| --- | --- | --- |
+| 1.20.1 | Forge 47.x | CC: Tweaked 1.120.2 (Forge build) |
+| 1.20.1 | Fabric Loader + Fabric API | CC: Tweaked 1.120.2 (Fabric build) |
+
+Put the CCLights2 jar for your loader and the matching CC: Tweaked jar into `mods/`. The same jar is needed on the
+server and on every client.
+
+A legacy version for Minecraft 1.7.10 (Forge, ComputerCraft 1.7x) exists in the history of this repository.
 
 ## Building
 
@@ -12,11 +22,14 @@ Minecraft 1.7.10, Forge 10.13.4.1614, ComputerCraft 1.7x (tested against the 1.7
 ./gradlew build
 ```
 
-The build uses the maintained ForgeGradle 1.2 fork (`com.anatawa12.forge:ForgeGradle:1.2-1.1.+`), which still
-resolves against today's Forge maven. Run Gradle with a JDK 8 (`JAVA_HOME`). The ComputerCraft API sources under
-`src/externs` are compiled against but not shipped in the jar. The jar lands in `build/libs/`.
+Run Gradle with a JDK 21 (Architectury Loom 1.17 requires it; the mod itself is compiled for Java 17). The
+project has a loader-independent `common` module (blocks, the GPU, the shader interpreter, resources and Lua
+programs) and one module per loader; each loader module produces its own jar under `<loader>/build/libs/`. The
+per-loader `runClient` tasks start a dev client with CC: Tweaked on the classpath.
 
-`./gradlew runClient` starts a dev client; drop a ComputerCraft 1.7x jar into `run/mods` first.
+The Lua programs and shaders live in `common/src/main/resources/data/cclights/lua/`: CC: Tweaked mounts them from
+the server's data packs (`ComputerCraftAPI.createResourceMount(server, "cclights", "lua")`), so a data pack can
+override or add files under `data/cclights/lua/`.
 
 ## Blocks and items
 
@@ -27,7 +40,7 @@ resolves against today's Forge maven. Run Gradle with a JDK 8 (`JAVA_HOME`). The
 | External Monitor | The in-world display. Place several next to each other facing the same way to build a wall of up to 16x9 blocks. Each block adds 64 pixels (configurable), so a 3x2 wall is 192x128 pixels; `gpu.getMonitor().setScale(n)` divides that by n for bigger, more readable pixels. Right click the screen to send a click. |
 | Tablet Transceiver | A 512x288 screen that paired tablets show wirelessly within `tabletRange` blocks. |
 | Tablet | Right click a transceiver to pair. Right click to open the screen. Sneak + right click sends a camera image (`tablet_image` event). |
-| Graphics RAM | 1K..8K sticks; combine two in a crafting grid to make a bigger one. |
+| Graphics RAM | Four items: `Graphics RAM (1K)`, `(2K)`, `(4K)` and `(8K)` (`cclights:ram_1k`, `ram_2k`, `ram_4k`, `ram_8k`). The base recipe makes eight 1K sticks; two sticks of the same size combine in a crafting grid into one of the next size. Right click a GPU to install. |
 
 Programs shipped on every computer next to a GPU under `/cclights2`: `tutorial` (interactive, one chapter per
 feature), `gpudemo` (shows every feature), `shaderdemo`, `tabletcam` (shows tablet photos), `tabletdemo` (a paint
@@ -124,6 +137,14 @@ Events carry the GPU's side as their last argument.
 | `char` | `character` |
 | `tablet_image` | `bytes, playerName` (feed `bytes` to `import`) |
 
+`monitor_down`, `monitor_move`, `monitor_up` and `monitor_scroll` are CCLights2's own events, raised by the GPU's
+monitors, tablets and transceivers. They are not CC: Tweaked's `monitor_touch`, which only comes from CC: Tweaked's
+own monitors.
+
+Key codes in `key` and `key_up` are the ones CC: Tweaked uses, i.e. GLFW key codes. Compare them against the `keys`
+API instead of numbers: `if key == keys.q then ... end`, `keys.backspace`, `keys.enter`, `keys.space`. Old
+programs that compared against LWJGL 2 numbers (such as `14` for backspace or `16` for Q) need updating.
+
 ## GLSL shaders
 
 The GPU runs fragment shaders written in a GLSL subset. There is no real OpenGL in the pipeline, so the shader
@@ -158,5 +179,8 @@ config bound the work a single call may do.
 
 ## Configuration
 
-`config/CCLights2.cfg`: monitor size, external monitor limits, tablet range, GPU memory, shader limits, whether
-screen contents are saved with the world, debug logging.
+A JSON config file in the `config/` folder: monitor size, external monitor limits, pixels per block, tablet range,
+GPU memory, shader limits, whether screen contents are saved with the world, debug logging.
+
+Crafting recipes are data-pack JSON (`data/cclights/recipes/`) and use vanilla ingredients only, so they work
+the same on Forge and Fabric; a data pack can override them.

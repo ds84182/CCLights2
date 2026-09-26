@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "cclights:block/gpu"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "parent": "cclights:block/facing_cube",
+  "textures": {
+    "front": "cclights:block/monitor_big_front",
+    "back": "cclights:block/monitor_big_back",
+    "side": "cclights:block/monitor_big_side",
+    "top": "cclights:block/monitor_top",
+    "bottom": "cclights:block/monitor_top"
+  }
+}
