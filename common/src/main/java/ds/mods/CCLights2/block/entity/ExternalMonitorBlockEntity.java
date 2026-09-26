@@ -11,6 +11,7 @@ import ds.mods.CCLights2.gpu.GPU;
 import ds.mods.CCLights2.gpu.Monitor;
 import ds.mods.CCLights2.utils.MonitorLocks;
 import ds.mods.CCLights2.utils.MonitorMath;
+import ds.mods.CCLights2.utils.WallLayout;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -36,9 +37,8 @@ import net.minecraft.world.phys.BlockHitResult;
  * Merging runs on the server only. Clients receive width/height/index/scale through the update tag
  * and look the origin up lazily, caching the reference so rendering never has to walk the world.
  */
-public class ExternalMonitorBlockEntity extends MonitorBlockEntity {
+public class ExternalMonitorBlockEntity extends MonitorBlockEntity implements WallLayout.Cell {
 	public static final int MAX_SCALE = 8;
-	private static final int MAX_MERGE_STEPS = 64;
 
 	private int width = 1;
 	private int height = 1;
@@ -47,8 +47,21 @@ public class ExternalMonitorBlockEntity extends MonitorBlockEntity {
 	/** Pixel magnification: the screen has pixelsPerBlock() / scale pixels per block. */
 	private int scale = 1;
 	private boolean destroyed = false;
-	private boolean ignoreMe = false;
 	private boolean dirty = false;
+	/** Server: the layout was checked against the neighbours once after loading. */
+	private boolean layoutValidated = false;
+
+	/**
+	 * Server thread only: wall blocks whose layout changed in the current merge/split, flushed to the
+	 * clients as soon as the operation ends. Waiting for each block's own tick is not enough: blocks in
+	 * loaded but non-ticking chunks (outside the simulation distance) would never send their update and
+	 * the clients would keep drawing the old wall over the new one.
+	 */
+	private static final java.util.LinkedHashSet<ExternalMonitorBlockEntity> PENDING_UPDATES = new java.util.LinkedHashSet<>();
+
+	/** Screen of a block that just stopped being an origin; its GPUs move to the wall it now belongs to. */
+	@Nullable
+	private Monitor orphanScreen;
 
 	/** Screen pixels read from NBT before this block's screen existed. */
 	@Nullable
@@ -68,11 +81,81 @@ public class ExternalMonitorBlockEntity extends MonitorBlockEntity {
 	}
 
 	/** Server ticker installed by ExternalMonitorBlock#getTicker: pushes structure changes to clients. */
+	/** How often (ticks) a block re-checks that its wall is intact; catches chunks that came back without a reload. */
+	private static final int LAYOUT_CHECK_TICKS = 60;
+	private int checkTicks = 0;
+
 	public static void serverTick(Level level, BlockPos pos, BlockState state, ExternalMonitorBlockEntity be) {
+		if (!be.layoutValidated) be.validateLayout();
+		else if (++be.checkTicks >= LAYOUT_CHECK_TICKS) {
+			be.checkTicks = 0;
+			if (!be.layoutIntact()) be.validateLayout();
+		}
 		if (be.dirty) {
 			be.dirty = false;
 			be.sendUpdate();
 		}
+	}
+
+	/** Marks this block's layout as changed; flushed by {@link #flushPendingUpdates()} or the next tick. */
+	private void touch() {
+		dirty = true;
+		if (level != null && !level.isClientSide) PENDING_UPDATES.add(this);
+	}
+
+	/** Sends the update tag of every block touched by the current merge/split to the clients now. */
+	private static void flushPendingUpdates() {
+		if (PENDING_UPDATES.isEmpty()) return;
+		List<ExternalMonitorBlockEntity> tiles = new ArrayList<>(PENDING_UPDATES);
+		PENDING_UPDATES.clear();
+		for (ExternalMonitorBlockEntity t : tiles) {
+			if (t.isRemoved() || t.level == null) continue;
+			t.dirty = false;
+			t.sendUpdate();
+		}
+	}
+
+	/**
+	 * Server, once after loading and whenever a neighbour changed: rebuilds the walls around this block
+	 * from the blocks actually present, so stale indices (neighbours changed while this chunk was
+	 * unloaded) and blocks placed by commands are picked up. Waits until the neighbourhood is loaded.
+	 */
+	private void validateLayout() {
+		if (level == null || level.isClientSide || destroyed || isRemoved()) return;
+		for (Direction d : Direction.values()) if (!level.isLoaded(worldPosition.relative(d))) return;
+		layoutValidated = true;
+		relayout();
+	}
+
+	/**
+	 * Cheap check that this block's wall still exists as stored: the origin is there and claims this
+	 * block (for members), or every cell is present with matching indices (for origins). Cells in
+	 * unloaded chunks count as fine until they load.
+	 */
+	private boolean layoutIntact() {
+		if (level == null) return true;
+		if (!isOrigin()) {
+			BlockPos op = worldPosition.relative(getRightDirection(), -xIndex).below(yIndex);
+			if (!level.isLoaded(op)) return true;
+			ExternalMonitorBlockEntity o = getSimilarMonitorAt(op);
+			return o != null && o.isOrigin() && o.width == width && o.height == height;
+		}
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				BlockPos p = worldPosition.relative(getRightDirection(), x).above(y);
+				if (!level.isLoaded(p)) continue;
+				ExternalMonitorBlockEntity m = getSimilarMonitorAt(p);
+				if (m == null || m.xIndex != x || m.yIndex != y || m.width != width || m.height != height) return false;
+			}
+		}
+		return true;
+	}
+
+	@Override
+	public void clearRemoved() {
+		super.clearRemoved();
+		// a block (re)added to the level is checked again against its (possibly changed) neighbours
+		layoutValidated = false;
 	}
 
 	// ------------------------------------------------------------------ geometry
@@ -164,6 +247,7 @@ public class ExternalMonitorBlockEntity extends MonitorBlockEntity {
 		if (o.scale == newScale) return false;
 		o.scale = newScale;
 		o.propagateTerminal(new ArrayList<>());
+		flushPendingUpdates();
 		return true;
 	}
 
@@ -244,7 +328,9 @@ public class ExternalMonitorBlockEntity extends MonitorBlockEntity {
 
 	@Override
 	public void onNeighborChanged() {
-		// The structure is maintained on placement and removal; nothing to do here.
+		// Merging happens on placement/removal and on the first tick; a standalone block re-checks its
+		// neighbours when they change so command-placed neighbours are picked up too.
+		if (level != null && !level.isClientSide) layoutValidated = false;
 	}
 
 	// ------------------------------------------------------------------ persistence and sync
@@ -298,6 +384,13 @@ public class ExternalMonitorBlockEntity extends MonitorBlockEntity {
 			MonitorLocks.resize(mon, pixelWidth(), pixelHeight(), true);
 		}
 		super.load(tag);
+		// Client: GPUs next to this block must re-attach right away (their screen object may have
+		// changed), not at their next periodic rescan, or their draw lists are dropped meanwhile.
+		if (changed && level != null && level.isClientSide) {
+			for (Direction d : Direction.values()) {
+				if (level.getBlockEntity(worldPosition.relative(d)) instanceof GpuBlockEntity g) g.onNeighborChanged();
+			}
+		}
 	}
 
 	@Override
@@ -318,7 +411,10 @@ public class ExternalMonitorBlockEntity extends MonitorBlockEntity {
 	public void destroy() {
 		if (destroyed) return;
 		destroyed = true;
-		if (level != null && !level.isClientSide) contractNeighbours();
+		if (level == null || level.isClientSide) return;
+		if (mon != null) MonitorLocks.detachAll(mon);
+		// this block is already invisible to getSimilarMonitorAt (destroyed), so it is the hole
+		relayout();
 	}
 
 	public boolean isDestroyed() {
@@ -328,10 +424,98 @@ public class ExternalMonitorBlockEntity extends MonitorBlockEntity {
 	/** Called by the block after placement on the server: merges with neighbouring walls. */
 	public void onPlaced() {
 		if (level == null || level.isClientSide) return;
-		contractNeighbours();
-		contract();
-		expand();
-		dirty = true;
+		relayout();
+	}
+
+	// ------------------------------------------------------------------ WallLayout.Cell
+
+	@Override
+	public int xIndex() {
+		return xIndex;
+	}
+
+	@Override
+	public int yIndex() {
+		return yIndex;
+	}
+
+	@Override
+	public int width() {
+		return width;
+	}
+
+	@Override
+	public int height() {
+		return height;
+	}
+
+	@Override
+	public void setLayout(int xi, int yi, int w, int h) {
+		xIndex = xi;
+		yIndex = yi;
+		width = w;
+		height = h;
+		invalidateCaches();
+		touch();
+		if (!isOrigin()) {
+			if (mon != null) {
+				// stopped being an origin: the wall this block joins inherits the screen's GPUs
+				orphanScreen = mon;
+				mon = null;
+			}
+			pendingScreen = null;
+		}
+	}
+
+	/**
+	 * Server: rebuilds the walls around this block from the blocks actually present (see
+	 * {@link WallLayout}), then rebuilds the shared screens of the walls that changed and pushes the new
+	 * layout to the clients right away.
+	 */
+	private void relayout() {
+		if (level == null || level.isClientSide) return;
+		final Direction right = getRightDirection();
+		final BlockPos base = worldPosition;
+		WallLayout.Grid grid = new WallLayout.Grid() {
+			@Override
+			public WallLayout.Cell at(int gx, int gy) {
+				return getSimilarMonitorAt(base.relative(right, gx).above(gy));
+			}
+
+			@Override
+			public boolean isLoaded(int gx, int gy) {
+				return level.isLoaded(base.relative(right, gx).above(gy));
+			}
+
+			@Override
+			public int maxWidth() {
+				return Config.externalMonitorMaxWidth;
+			}
+
+			@Override
+			public int maxHeight() {
+				return Config.externalMonitorMaxHeight;
+			}
+		};
+		WallLayout.Result result = WallLayout.relayout(grid, 0, 0);
+		for (WallLayout.Placed p : result.origins) {
+			ExternalMonitorBlockEntity origin = (ExternalMonitorBlockEntity) p.cell();
+			List<Monitor> screens = new ArrayList<>();
+			boolean changed = false;
+			for (int y = 0; y < origin.height; y++) {
+				for (int x = 0; x < origin.width; x++) {
+					ExternalMonitorBlockEntity m = getSimilarMonitorAt(base.relative(right, p.gx() + x).above(p.gy() + y));
+					if (m == null) continue;
+					if (result.changed.contains(m)) changed = true;
+					if (m.orphanScreen != null) {
+						screens.add(m.orphanScreen);
+						m.orphanScreen = null;
+					}
+				}
+			}
+			if (changed || !screens.isEmpty()) origin.propagateTerminal(screens);
+		}
+		flushPendingUpdates();
 	}
 
 	@Nullable
@@ -339,7 +523,7 @@ public class ExternalMonitorBlockEntity extends MonitorBlockEntity {
 		if (level == null || !level.isLoaded(pos)) return null;
 		BlockEntity be = level.getBlockEntity(pos);
 		if (!(be instanceof ExternalMonitorBlockEntity m)) return null;
-		if (m.isRemoved() || m.destroyed || m.ignoreMe || m.getFacing() != getFacing()) return null;
+		if (m.isRemoved() || m.destroyed || m.getFacing() != getFacing()) return null;
 		return m;
 	}
 
@@ -367,7 +551,7 @@ public class ExternalMonitorBlockEntity extends MonitorBlockEntity {
 				ExternalMonitorBlockEntity tile = origin.getNeighbour(x, y);
 				if (tile == null) continue;
 				tile.scale = origin.scale;
-				tile.dirty = true;
+				tile.touch();
 				tile.renderBox = null;
 				if (tile != origin && tile.mon != null) {
 					MonitorLocks.migrateGpus(tile.mon, shared);
@@ -375,183 +559,6 @@ public class ExternalMonitorBlockEntity extends MonitorBlockEntity {
 				}
 			}
 		}
-		origin.dirty = true;
-	}
-
-	/** Makes this block the origin of a width x height wall extending right and up from it. */
-	private void resize(int w, int h) {
-		Direction right = getRightDirection();
-		List<Monitor> oldScreens = new ArrayList<>();
-		for (int y = 0; y < h; y++) {
-			for (int x = 0; x < w; x++) {
-				ExternalMonitorBlockEntity m = getSimilarMonitorAt(worldPosition.relative(right, x).above(y));
-				if (m == null) continue;
-				m.xIndex = x;
-				m.yIndex = y;
-				m.width = w;
-				m.height = h;
-				m.invalidateCaches();
-				m.dirty = true;
-				if (m != this && m.mon != null) {
-					oldScreens.add(m.mon);
-					m.mon = null;
-					m.pendingScreen = null;
-				}
-			}
-		}
-		propagateTerminal(oldScreens);
-	}
-
-	private boolean mergeLeft() {
-		ExternalMonitorBlockEntity left = getNeighbour(-1, 0);
-		if (left != null && left.yIndex == 0 && left.height == height) {
-			int w = left.width + width;
-			if (w <= Config.externalMonitorMaxWidth) {
-				ExternalMonitorBlockEntity o = left.getNeighbour(0, 0);
-				if (o != null) {
-					o.resize(w, height);
-					left.expand();
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	private boolean mergeRight() {
-		ExternalMonitorBlockEntity right = getNeighbour(width, 0);
-		if (right != null && right.yIndex == 0 && right.height == height) {
-			int w = width + right.width;
-			if (w <= Config.externalMonitorMaxWidth) {
-				ExternalMonitorBlockEntity o = getNeighbour(0, 0);
-				if (o != null) {
-					o.resize(w, height);
-					expand();
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	private boolean mergeUp() {
-		ExternalMonitorBlockEntity above = getNeighbour(0, height);
-		if (above != null && above.xIndex == 0 && above.width == width) {
-			int h = above.height + height;
-			if (h <= Config.externalMonitorMaxHeight) {
-				ExternalMonitorBlockEntity o = getNeighbour(0, 0);
-				if (o != null) {
-					o.resize(width, h);
-					expand();
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	private boolean mergeDown() {
-		ExternalMonitorBlockEntity below = getNeighbour(0, -1);
-		if (below != null && below.xIndex == 0 && below.width == width) {
-			int h = height + below.height;
-			if (h <= Config.externalMonitorMaxHeight) {
-				ExternalMonitorBlockEntity o = below.getNeighbour(0, 0);
-				if (o != null) {
-					o.resize(width, h);
-					below.expand();
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	/** Merges with neighbouring walls of the same facing while the size limits allow. */
-	public void expand() {
-		dirty = true;
-		int guard = 0;
-		while ((mergeLeft() || mergeRight() || mergeUp() || mergeDown()) && ++guard < MAX_MERGE_STEPS) {}
-	}
-
-	/** Called on the block being removed: the rest of the wall splits into complete rectangles. */
-	public void contractNeighbours() {
-		if (mon != null) MonitorLocks.detachAll(mon);
-		ignoreMe = true;
-		try {
-			if (xIndex > 0) {
-				ExternalMonitorBlockEntity left = getNeighbour(xIndex - 1, yIndex);
-				if (left != null) left.contract();
-			}
-			if (xIndex + 1 < width) {
-				ExternalMonitorBlockEntity right = getNeighbour(xIndex + 1, yIndex);
-				if (right != null) right.contract();
-			}
-			if (yIndex > 0) {
-				ExternalMonitorBlockEntity below = getNeighbour(xIndex, yIndex - 1);
-				if (below != null) below.contract();
-			}
-			if (yIndex + 1 < height) {
-				ExternalMonitorBlockEntity above = getNeighbour(xIndex, yIndex + 1);
-				if (above != null) above.contract();
-			}
-		} finally {
-			ignoreMe = false;
-		}
-	}
-
-	/** Splits this wall into the largest rectangles that are still complete. */
-	public void contract() {
-		dirty = true;
-		int h = height;
-		int w = width;
-		ExternalMonitorBlockEntity origin = getNeighbour(0, 0);
-		if (origin == null) {
-			// The origin is gone: row 0 right of it becomes one wall, the rows above another.
-			ExternalMonitorBlockEntity rest = w > 1 ? getNeighbour(1, 0) : null;
-			ExternalMonitorBlockEntity upper = h > 1 ? getNeighbour(0, 1) : null;
-			if (rest != null) rest.resize(w - 1, 1);
-			if (upper != null) upper.resize(w, h - 1);
-			if (rest != null) rest.expand();
-			if (upper != null) upper.expand();
-			if (rest != this && upper != this) {
-				// This block was in neither piece (its indices were stale): stand alone.
-				if (mon != null) MonitorLocks.detachAll(mon);
-				mon = null;
-				width = height = 1;
-				xIndex = yIndex = 0;
-				invalidateCaches();
-				propagateTerminal(new ArrayList<>());
-				expand();
-			}
-			return;
-		}
-		for (int y = 0; y < h; y++) {
-			for (int x = 0; x < w; x++) {
-				if (origin.getNeighbour(x, y) != null) continue;
-				// (x,y) is the hole: split into the rows below it, the parts left/right of it and the rows above.
-				ExternalMonitorBlockEntity lower = null, left = null, right = null, upper = null;
-				if (y > 0) {
-					lower = origin;
-					lower.resize(w, y);
-				}
-				if (x > 0) {
-					left = origin.getNeighbour(0, y);
-					if (left != null) left.resize(x, 1);
-				}
-				if (x + 1 < w) {
-					right = origin.getNeighbour(x + 1, y);
-					if (right != null) right.resize(w - (x + 1), 1);
-				}
-				if (y + 1 < h) {
-					upper = origin.getNeighbour(0, y + 1);
-					if (upper != null) upper.resize(w, h - (y + 1));
-				}
-				if (lower != null) lower.expand();
-				if (left != null) left.expand();
-				if (right != null) right.expand();
-				if (upper != null) upper.expand();
-				return;
-			}
-		}
+		origin.touch();
 	}
 }
