@@ -15,11 +15,11 @@ import ds.mods.CCLights2.gpu.GPU;
 public class ClientDrawThread extends Thread {
 	private static final class Job {
 		final GPU gpu;
-		final List<DrawCMD> cmds;
+		final Runnable work;
 
-		Job(GPU gpu, List<DrawCMD> cmds) {
+		Job(GPU gpu, Runnable work) {
 			this.gpu = gpu;
-			this.cmds = cmds;
+			this.work = work;
 		}
 	}
 
@@ -31,8 +31,28 @@ public class ClientDrawThread extends Thread {
 		setPriority(Thread.NORM_PRIORITY - 1);
 	}
 
-	public void submit(GPU gpu, List<DrawCMD> cmds) {
-		queue.add(new Job(gpu, cmds));
+	public void submit(final GPU gpu, final List<DrawCMD> cmds) {
+		submit(gpu, new Runnable() {
+			@Override
+			public void run() {
+				for (DrawCMD cmd : cmds) {
+					try {
+						gpu.processCommand(cmd);
+					} catch (Exception e) {
+						if (Config.DEBUG) CCLights2.LOGGER.warn("Client failed to replay " + cmd.cmd + ": " + e);
+					}
+				}
+				gpu.updateMonitors();
+			}
+		});
+	}
+
+	/**
+	 * Runs arbitrary work on this GPU under its lock, in order with the draw lists queued before it.
+	 * Full-state snapshots go through here so a snapshot can never be overtaken by older draw lists.
+	 */
+	public void submit(GPU gpu, Runnable work) {
+		queue.add(new Job(gpu, work));
 	}
 
 	/** Drops everything still queued, e.g. when the world is unloaded. */
@@ -49,16 +69,12 @@ public class ClientDrawThread extends Thread {
 			} catch (InterruptedException e) {
 				return;
 			}
-			GPU gpu = job.gpu;
-			synchronized (gpu) {
-				for (DrawCMD cmd : job.cmds) {
-					try {
-						gpu.processCommand(cmd);
-					} catch (Exception e) {
-						if (Config.DEBUG) CCLights2.LOGGER.warn("Client failed to replay " + cmd.cmd + ": " + e);
-					}
+			synchronized (job.gpu) {
+				try {
+					job.work.run();
+				} catch (RuntimeException e) {
+					CCLights2.LOGGER.warn("Client draw job failed: " + e);
 				}
-				gpu.updateMonitors();
 			}
 		}
 	}

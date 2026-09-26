@@ -25,7 +25,6 @@ public final class Config {
 	public static final String CAT_GPU = "gpu";
 
 	public static boolean DEBUG = false;
-	public static boolean vanillaRecipes = true;
 	public static int monitorWidth = 256;
 	public static int monitorHeight = 144;
 	public static int externalMonitorMaxWidth = 16;
@@ -60,7 +59,6 @@ public final class Config {
 
 		Section general = new Section(root, CAT_GENERAL);
 		DEBUG = general.bool("debug", false, "Log debugging information");
-		vanillaRecipes = general.bool("vanillaRecipes", true, "Register the vanilla crafting recipes");
 		tabletRange = general.integer("tabletRange", 10, 1, 256, "Distance (blocks) a tablet can be from its transceiver and still show its screen");
 
 		Section monitors = new Section(root, CAT_MONITOR);

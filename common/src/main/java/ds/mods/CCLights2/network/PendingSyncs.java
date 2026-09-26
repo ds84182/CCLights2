@@ -22,6 +22,22 @@ public final class PendingSyncs {
 		deadlines.put(gpu, now + TIMEOUT_NANOS);
 	}
 
+	public static final int NONE = 0, AWAITING = 1, EXPIRED = 2;
+
+	/**
+	 * NONE when no sync is outstanding, AWAITING while one is, EXPIRED (once) when the request timed
+	 * out: draw lists were dropped meanwhile, so the caller must ask for a fresh sync.
+	 */
+	public static synchronized int state(GPU gpu, long now) {
+		Long d = deadlines.get(gpu);
+		if (d == null) return NONE;
+		if (now - d > 0) {
+			deadlines.remove(gpu);
+			return EXPIRED;
+		}
+		return AWAITING;
+	}
+
 	public static synchronized boolean isAwaiting(GPU gpu, long now) {
 		Long d = deadlines.get(gpu);
 		if (d == null) return false;

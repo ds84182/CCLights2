@@ -45,8 +45,18 @@ public final class ClientPacketHandlers {
 			GpuBlockEntity be = find(t);
 			GPU gpu = be == null ? null : be.getGpu();
 			if (gpu == null || cmds.isEmpty()) return;
+			// Before the first snapshot the replica is empty (no monitor, no textures): the lists would only
+			// fail noisily, and the snapshot requested on the first client tick contains them anyway.
+			if (!be.clientSynced) return;
+			int state = PendingSyncs.state(gpu, System.nanoTime());
 			// Contained in the snapshot we are waiting for; replaying would apply them twice.
-			if (PendingSyncs.isAwaiting(gpu, System.nanoTime())) return;
+			if (state == PendingSyncs.AWAITING) return;
+			if (state == PendingSyncs.EXPIRED) {
+				// The server never answered (rate limit, lag): draw lists were dropped, so the replica is
+				// stale until a fresh snapshot arrives.
+				be.needsClientSync = true;
+				return;
+			}
 			drawThread().submit(gpu, cmds);
 			break;
 		}
@@ -57,7 +67,9 @@ public final class ClientPacketHandlers {
 			GPU gpu = be == null ? null : be.getGpu();
 			if (gpu == null) return;
 			PendingSyncs.received(gpu);
-			WireFormat.applyGpuState(gpu, snap);
+			be.clientSynced = true;
+			// Through the draw thread so draw lists queued before this snapshot cannot run after it.
+			drawThread().submit(gpu, () -> WireFormat.applyGpuState(gpu, snap));
 			break;
 		}
 		default:

@@ -40,7 +40,8 @@ public final class ImportFiles {
 			if (Files.size(f) > MAX_FILE_SIZE) throw new LuaException(method + ": file too large (limit " + (MAX_FILE_SIZE >> 20) + " MB)");
 			return Files.readAllBytes(f);
 		} catch (IOException e) {
-			throw new LuaException(method + ": " + e.getMessage());
+			// the IOException message is usually the absolute path on the server; never show that to Lua
+			throw new LuaException(method + ": could not read '" + file + "' (" + e.getClass().getSimpleName() + ")");
 		}
 	}
 }

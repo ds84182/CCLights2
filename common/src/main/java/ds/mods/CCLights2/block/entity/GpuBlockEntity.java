@@ -99,6 +99,11 @@ public class GpuBlockEntity extends BlockEntity implements GpuHost, GpuLuaApi.Ho
 	private int ticks = 0;
 	/** Client: set when this replica needs the server's full state (first tick, new monitor). */
 	public volatile boolean needsClientSync = true;
+	/** Client: false until the first snapshot arrived; draw lists before that would replay against an empty GPU. */
+	public volatile boolean clientSynced = false;
+	/** Client: the server answers at most one sync request per GPU per half second; stay under that. */
+	private static final long SYNC_REQUEST_INTERVAL_NANOS = 600_000_000L;
+	private long lastSyncRequestNanos = Long.MIN_VALUE / 2;
 
 	public GpuBlockEntity(BlockPos pos, BlockState state) {
 		super(Registration.GPU_BE.get(), pos, state);
@@ -273,8 +278,12 @@ public class GpuBlockEntity extends BlockEntity implements GpuHost, GpuLuaApi.Ho
 			}
 		}
 		if (needsClientSync) {
-			needsClientSync = false;
-			requestSync();
+			long now = System.nanoTime();
+			if (now - lastSyncRequestNanos >= SYNC_REQUEST_INTERVAL_NANOS) {
+				needsClientSync = false;
+				lastSyncRequestNanos = now;
+				requestSync();
+			}
 		}
 		ticks++;
 	}
