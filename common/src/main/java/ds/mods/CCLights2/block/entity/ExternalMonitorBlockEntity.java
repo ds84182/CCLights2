@@ -160,6 +160,51 @@ public class ExternalMonitorBlockEntity extends MonitorBlockEntity implements Wa
 		scheduleValidation();
 	}
 
+	/** Cells of a wall that were in unloaded chunks during the last relayout; validated when they load. */
+	@Nullable
+	private List<BlockPos> unloadedCells;
+	private int unloadedChecks;
+	private static final int UNLOADED_CHECK_TICKS = 20;
+	private static final int UNLOADED_CHECK_LIMIT = 3000; // about 17 minutes
+
+	/**
+	 * Part of a wall was in unloaded space when the wall around this block changed, so those blocks
+	 * still carry the old layout. A chunk that is only demoted and later promoted again gets its block
+	 * entities back without any reload hook and may never tick (view distance ring), so the loaded side
+	 * polls the server task queue until those positions are loaded and then validates them directly.
+	 */
+	private void watchUnloaded(List<BlockPos> cells) {
+		unloadedCells = cells;
+		unloadedChecks = 0;
+		scheduleUnloadedCheck();
+	}
+
+	private void scheduleUnloadedCheck() {
+		if (level == null || level.isClientSide) return;
+		net.minecraft.server.MinecraftServer server = level.getServer();
+		if (server == null) return;
+		server.tell(new net.minecraft.server.TickTask(server.getTickCount() + UNLOADED_CHECK_TICKS, () -> {
+			List<BlockPos> cells = unloadedCells;
+			if (cells == null || isRemoved() || destroyed || level == null) return;
+			for (BlockPos p : cells) {
+				if (!level.isLoaded(p)) {
+					if (++unloadedChecks < UNLOADED_CHECK_LIMIT) scheduleUnloadedCheck();
+					else unloadedCells = null;
+					return;
+				}
+			}
+			unloadedCells = null;
+			for (BlockPos p : cells) {
+				if (level.getBlockEntity(p) instanceof ExternalMonitorBlockEntity m && !m.destroyed) {
+					m.layoutValidated = false;
+					m.validateLayout();
+				}
+			}
+			layoutValidated = false;
+			validateLayout();
+		}));
+	}
+
 	/** Bounded retries (ticks) for the validation scheduled after a chunk load, while neighbours load. */
 	private static final int VALIDATION_ATTEMPTS = 200;
 	private int validationAttempts;
@@ -522,6 +567,11 @@ public class ExternalMonitorBlockEntity extends MonitorBlockEntity implements Wa
 			}
 		};
 		WallLayout.Result result = WallLayout.relayout(grid, 0, 0);
+		if (!result.unloaded.isEmpty()) {
+			List<BlockPos> cells = new ArrayList<>();
+			for (int[] c : result.unloaded) cells.add(base.relative(right, c[0]).above(c[1]));
+			watchUnloaded(cells);
+		}
 		for (WallLayout.Placed p : result.origins) {
 			ExternalMonitorBlockEntity origin = (ExternalMonitorBlockEntity) p.cell();
 			List<Monitor> screens = new ArrayList<>();

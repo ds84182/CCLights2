@@ -59,6 +59,8 @@ public final class WallLayout {
 		/** Bottom-left cell of each resulting wall, with its plane coordinates. */
 		public final List<Placed> origins = new ArrayList<>();
 		public final Set<Cell> changed = new LinkedHashSet<>();
+		/** Plane positions of wall cells that were in unloaded space; those walls were left as they are. */
+		public final List<int[]> unloaded = new ArrayList<>();
 	}
 
 	/** A cell and where it is in the plane. */
@@ -107,13 +109,15 @@ public final class WallLayout {
 		}
 
 		// 2. units: intact walls stay whole, everything else is a single block
+		Result result = new Result();
+		Set<Long> unloadedSeen = new LinkedHashSet<>();
 		List<Unit> units = new ArrayList<>();
 		Set<Long> covered = new HashSet<>();
 		for (Map.Entry<Long, Cell> e : cells.entrySet()) {
 			long k = e.getKey();
 			if (covered.contains(k)) continue;
 			int x = (int) (k >> 32), y = (int) k;
-			Unit u = intactWall(grid, e.getValue(), x, y);
+			Unit u = intactWall(grid, e.getValue(), x, y, unloadedSeen);
 			if (u == null) u = new Unit(x, y, 1, 1);
 			for (int yy = u.y; yy < u.y + u.h; yy++) for (int xx = u.x; xx < u.x + u.w; xx++) covered.add(key(xx, yy));
 			units.add(u);
@@ -126,7 +130,7 @@ public final class WallLayout {
 		}
 
 		// 4. write the layout back
-		Result result = new Result();
+		for (long k : unloadedSeen) result.unloaded.add(new int[] { (int) (k >> 32), (int) k });
 		units.sort(Comparator.<Unit>comparingInt(u -> u.y).thenComparingInt(u -> u.x));
 		for (Unit u : units) {
 			Cell origin = null;
@@ -152,23 +156,26 @@ public final class WallLayout {
 	 * space are assumed present and mark the unit as unmergeable). Null when anything disagrees.
 	 */
 	@Nullable
-	private static Unit intactWall(Grid grid, Cell c, int x, int y) {
+	private static Unit intactWall(Grid grid, Cell c, int x, int y, Set<Long> unloadedSeen) {
 		int w = c.width(), h = c.height();
 		if (w < 1 || h < 1 || c.xIndex() < 0 || c.yIndex() < 0 || c.xIndex() >= w || c.yIndex() >= h) return null;
 		if (w > grid.maxWidth() || h > grid.maxHeight()) return null;
 		int ox = x - c.xIndex(), oy = y - c.yIndex();
 		Unit u = new Unit(ox, oy, w, h);
+		boolean intact = true;
 		for (int yy = 0; yy < h; yy++) {
 			for (int xx = 0; xx < w; xx++) {
 				if (!grid.isLoaded(ox + xx, oy + yy)) {
+					// possibly a stale member of this wall that cannot be checked or fixed now
+					unloadedSeen.add(key(ox + xx, oy + yy));
 					u.loaded = false;
 					continue;
 				}
 				Cell m = grid.at(ox + xx, oy + yy);
-				if (m == null || m.xIndex() != xx || m.yIndex() != yy || m.width() != w || m.height() != h) return null;
+				if (m == null || m.xIndex() != xx || m.yIndex() != yy || m.width() != w || m.height() != h) intact = false;
 			}
 		}
-		return u;
+		return intact ? u : null;
 	}
 
 	/** One merge pass; horizontal joins side-by-side units of equal height, vertical stacked units of equal width. */
@@ -206,7 +213,7 @@ public final class WallLayout {
 			for (int x = minX; x <= maxX; x++) {
 				Cell c = grid.at(x, y);
 				if (c == null) continue;
-				Unit u = intactWall(grid, c, x, y);
+				Unit u = intactWall(grid, c, x, y, new HashSet<>());
 				if (u == null) {
 					out.add("cell " + x + "," + y + " claims " + c.width() + "x" + c.height() + " at (" + c.xIndex() + "," + c.yIndex() + ") but that wall is not intact");
 					continue;
