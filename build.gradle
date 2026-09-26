@@ -1,6 +1,5 @@
 // Multi-loader build: common (vanilla + CC: Tweaked common API), fabric and forge (Minecraft 1.20.1).
-// The 1.7.10 ForgeGradle build this replaced is still in git history on master; its sources under
-// src/ are kept as a porting reference only and are not compiled by this build.
+// The 1.7.10 ForgeGradle build this replaced is still in git history.
 plugins {
     id "architectury-plugin" version "3.5-SNAPSHOT"
     id "dev.architectury.loom" version "1.17-SNAPSHOT" apply false

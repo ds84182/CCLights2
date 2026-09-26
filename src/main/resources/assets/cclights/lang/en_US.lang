@@ -1,7 +1,0 @@
-tile.gpu.name=GPU
-tile.monitor.normal.name=Monitor
-tile.monitor.big.name=External Monitor
-tile.monitor.tablet.name=Tablet Transceiver
-item.ram.name=Graphics RAM
-item.tablet.name=Tablet
-itemGroup.CCLights2=CCLights 2

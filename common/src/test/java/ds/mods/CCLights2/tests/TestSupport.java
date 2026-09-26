@@ -16,13 +16,10 @@ import ds.mods.CCLights2.gpu.Texture;
 final class TestSupport {
 	private TestSupport() {}
 
-	/** The shipped Lua programs (common data/cclights/lua, the CC:T resource mount), else the old 1.7.10 tree. */
+	/** The shipped Lua programs (common data/cclights/lua, what the CC:T resource mount serves). */
 	static File luaDir() {
-		File[] candidates = {
-				new File("src/main/resources/data/cclights/lua"),
-				new File("../src/main/resources/assets/cclights/lua"),
-		};
-		for (File f : candidates) if (new File(f, "gpudemo").isFile()) return f.getAbsoluteFile();
+		File f = new File("src/main/resources/data/cclights/lua");
+		if (new File(f, "gpudemo").isFile()) return f.getAbsoluteFile();
 		throw new IllegalStateException("Lua program directory not found (working dir " + new File(".").getAbsolutePath() + ")");
 	}
 
