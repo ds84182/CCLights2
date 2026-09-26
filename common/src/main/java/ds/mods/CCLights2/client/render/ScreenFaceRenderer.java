@@ -73,13 +73,19 @@ public class ScreenFaceRenderer<T extends MonitorBlockEntity> implements BlockEn
 	/** One full-bright quad in the plane z, facing +Z, textured with the whole screen texture. */
 	public static void drawScreen(PoseStack poseStack, MultiBufferSource buffers, ResourceLocation texture,
 			float x0, float y0, float x1, float y1, float z) {
+		drawScreenPart(poseStack, buffers, texture, x0, y0, x1, y1, z, 0F, 0F, 1F, 1F);
+	}
+
+	/** Like {@link #drawScreen} but textured with the sub-rectangle (u0, v0)-(u1, v1) of the texture, v0 at the top. */
+	public static void drawScreenPart(PoseStack poseStack, MultiBufferSource buffers, ResourceLocation texture,
+			float x0, float y0, float x1, float y1, float z, float u0, float v0, float u1, float v1) {
 		Matrix4f m = poseStack.last().pose();
 		VertexConsumer vc = buffers.getBuffer(RenderType.text(texture));
 		int light = LightTexture.FULL_BRIGHT;
 		// Counter-clockwise seen from +Z (the viewer), so face culling keeps it.
-		vc.vertex(m, x0, y0, z).color(255, 255, 255, 255).uv(0F, 1F).uv2(light).endVertex();
-		vc.vertex(m, x1, y0, z).color(255, 255, 255, 255).uv(1F, 1F).uv2(light).endVertex();
-		vc.vertex(m, x1, y1, z).color(255, 255, 255, 255).uv(1F, 0F).uv2(light).endVertex();
-		vc.vertex(m, x0, y1, z).color(255, 255, 255, 255).uv(0F, 0F).uv2(light).endVertex();
+		vc.vertex(m, x0, y0, z).color(255, 255, 255, 255).uv(u0, v1).uv2(light).endVertex();
+		vc.vertex(m, x1, y0, z).color(255, 255, 255, 255).uv(u1, v1).uv2(light).endVertex();
+		vc.vertex(m, x1, y1, z).color(255, 255, 255, 255).uv(u1, v0).uv2(light).endVertex();
+		vc.vertex(m, x0, y1, z).color(255, 255, 255, 255).uv(u0, v0).uv2(light).endVertex();
 	}
 }

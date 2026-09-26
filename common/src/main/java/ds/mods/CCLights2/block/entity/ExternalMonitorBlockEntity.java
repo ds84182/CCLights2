@@ -156,6 +156,30 @@ public class ExternalMonitorBlockEntity extends MonitorBlockEntity implements Wa
 		super.clearRemoved();
 		// a block (re)added to the level is checked again against its (possibly changed) neighbours
 		layoutValidated = false;
+		validationAttempts = 0;
+		scheduleValidation();
+	}
+
+	/** Bounded retries (ticks) for the validation scheduled after a chunk load, while neighbours load. */
+	private static final int VALIDATION_ATTEMPTS = 200;
+	private int validationAttempts;
+
+	/**
+	 * Chunks inside the view distance but outside the simulation distance are loaded but never tick, so
+	 * the ticker cannot run {@link #validateLayout()} there; a wall broken on the other side of a chunk
+	 * border while this side was unloaded would keep its stale layout (and draw over air) until a player
+	 * came close. Validation is therefore also run from the server's task queue after a (re)load, retried
+	 * a few ticks apart until the neighbourhood is loaded.
+	 */
+	private void scheduleValidation() {
+		if (level == null || level.isClientSide) return;
+		net.minecraft.server.MinecraftServer server = level.getServer();
+		if (server == null) return;
+		server.tell(new net.minecraft.server.TickTask(server.getTickCount() + 2, () -> {
+			if (isRemoved() || destroyed || layoutValidated || level == null) return;
+			validateLayout();
+			if (!layoutValidated && ++validationAttempts < VALIDATION_ATTEMPTS) scheduleValidation();
+		}));
 	}
 
 	// ------------------------------------------------------------------ geometry

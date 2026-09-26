@@ -46,8 +46,38 @@ public class ExternalMonitorRenderer implements BlockEntityRenderer<ExternalMoni
 
 		poseStack.pushPose();
 		ScreenFaceRenderer.faceFront(poseStack, facing);
-		ScreenFaceRenderer.drawScreen(poseStack, buffers, loc, x0, y0, x0 + w, y0 + h, 1F + ScreenFaceRenderer.SCREEN_OFFSET);
+		float z = 1F + ScreenFaceRenderer.SCREEN_OFFSET;
+		if (w == 1 && h == 1 || wallIntact(be, right, w, h)) {
+			ScreenFaceRenderer.drawScreen(poseStack, buffers, loc, x0, y0, x0 + w, y0 + h, z);
+		} else {
+			// The wall as this client knows it is not intact (the server has not re-laid it out yet, e.g.
+			// part of it was changed while unloaded): draw only over the cells that still belong to it,
+			// never over air or over blocks that now belong to another wall.
+			for (int cy = 0; cy < h; cy++) {
+				for (int cx = 0; cx < w; cx++) {
+					if (!isMember(be, right, cx, cy, w, h)) continue;
+					float u0 = (float) cx / w, u1 = (float) (cx + 1) / w;
+					float v0 = 1F - (float) (cy + 1) / h, v1 = 1F - (float) cy / h;
+					ScreenFaceRenderer.drawScreenPart(poseStack, buffers, loc, x0 + cx, y0 + cy, x0 + cx + 1, y0 + cy + 1, z, u0, v0, u1, v1);
+				}
+			}
+		}
 		poseStack.popPose();
+	}
+
+	private static boolean wallIntact(ExternalMonitorBlockEntity origin, Direction right, int w, int h) {
+		for (int cy = 0; cy < h; cy++) for (int cx = 0; cx < w; cx++) if (!isMember(origin, right, cx, cy, w, h)) return false;
+		return true;
+	}
+
+	/** True when the block at wall cell (cx, cy) exists and claims exactly that place in this wall. */
+	private static boolean isMember(ExternalMonitorBlockEntity origin, Direction right, int cx, int cy, int w, int h) {
+		if (cx == 0 && cy == 0) return true;
+		Level level = origin.getLevel();
+		if (level == null) return false;
+		BlockEntity be = level.getBlockEntity(origin.getBlockPos().relative(right, cx).above(cy));
+		return be instanceof ExternalMonitorBlockEntity m && m.getFacing() == origin.getFacing()
+				&& m.getXIndex() == cx && m.getYIndex() == cy && m.getWidthBlocks() == w && m.getHeightBlocks() == h;
 	}
 
 	/** True when the block next to the origin in {@code dir} is the wall's index 1 along x (or y). */
